@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260"><rect width="400" height="260" fill="#E3EEDD"/><rect y="190" width="400" height="70" fill="#C8B39A"/>
+    <path d="M0 190h400" stroke="#A8927A" stroke-width="3"/>
+    <rect x="236" y="40" width="110" height="88" rx="4" fill="#CFE3F3" stroke="#fff" stroke-width="6"/><path d="M291 40v88M236 84h110" stroke="#fff" stroke-width="4"/>
+    <rect x="232" y="34" width="12" height="104" fill="#9DB88E" opacity=".8"/><rect x="338" y="34" width="12" height="104" fill="#9DB88E" opacity=".8"/>
+    <rect x="34" y="130" width="170" height="70" rx="6" fill="#F7F7F5"/><rect x="34" y="150" width="170" height="50" rx="6" fill="#7E9CC0"/>
+    <rect x="40" y="132" width="50" height="22" rx="8" fill="#fff"/><rect x="26" y="104" width="12" height="100" rx="3" fill="#7A5C44"/>
+    <rect x="246" y="150" width="96" height="10" rx="2" fill="#8A6A50"/><rect x="252" y="160" width="8" height="40" fill="#8A6A50"/><rect x="328" y="160" width="8" height="40" fill="#8A6A50"/>
+    <rect x="270" y="130" width="40" height="20" rx="2" fill="#3F4A57"/><rect x="10" y="226" width="118" height="24" rx="12" fill="#0F172A" opacity=".72"/><text x="69" y="242" font-family="Inter,Arial" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Demo photo</text></svg>

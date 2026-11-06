@@ -1,4 +1,3 @@
-// Phase 1 adds the models from docs/02-data-model.md.
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,4 +5,252 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  LANDLORD
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RoomType {
+  SINGLE
+  SHARED
+  STUDIO
+  APARTMENT
+}
+
+enum Availability {
+  AVAILABLE
+  OCCUPIED
+}
+
+enum ReviewStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  REMOVED
+}
+
+enum Bathroom {
+  PRIVATE
+  SHARED
+}
+
+enum InquiryStatus {
+  NEW
+  HANDLED
+}
+
+enum ReportReason {
+  WRONG_INFORMATION
+  PHOTOS_DONT_MATCH
+  NO_LONGER_AVAILABLE
+  SUSPICIOUS
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  fullName     String
+  phone        String?
+  role         Role
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  landlordProfile LandlordProfile?
+  properties      Property[]       @relation("LandlordProperties")
+  saved           SavedProperty[]
+  views           PropertyView[]
+  searches        SearchHistory[]
+  inquiries       Inquiry[]        @relation("StudentInquiries")
+  messages        InquiryMessage[]
+  reports         Report[]         @relation("Reporter")
+  resolvedReports Report[]         @relation("Resolver")
+  reviewed        Property[]       @relation("Reviewer")
+  notifications   Notification[]
+  activity        ActivityLog[]
+  passwordResets  PasswordReset[]
+}
+
+model LandlordProfile {
+  userId        String  @id
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allowPhone    Boolean @default(true)
+  allowWhatsapp Boolean @default(true)
+  allowInApp    Boolean @default(true)
+}
+
+model Location {
+  id         String     @id @default(cuid())
+  name       String     @unique
+  distanceKm Decimal    @db.Decimal(3, 1)
+  angleDeg   Int        @default(0) // only for the schematic map
+  properties Property[]
+}
+
+model Property {
+  id            String       @id @default(cuid())
+  landlordId    String
+  landlord      User         @relation("LandlordProperties", fields: [landlordId], references: [id])
+  title         String
+  type          RoomType
+  rooms         Int          @default(1)
+  description   String
+  locationId    String
+  location      Location     @relation(fields: [locationId], references: [id])
+  landmark      String
+  address       String?
+  pinX          Float? // 0..1 position on the schematic map
+  pinY          Float?
+  distanceKm    Decimal      @db.Decimal(3, 1)
+  rentRwf       Int
+  water         Boolean
+  electricity   Boolean
+  bathroom      Bathroom
+  security      Boolean
+  selfContained Boolean
+  availability  Availability @default(AVAILABLE)
+  reviewStatus  ReviewStatus @default(DRAFT)
+  reviewNote    String?
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  reviewedById  String?
+  reviewedBy    User?        @relation("Reviewer", fields: [reviewedById], references: [id])
+  deletedAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  photos    PropertyPhoto[]
+  saves     SavedProperty[]
+  views     PropertyView[]
+  inquiries Inquiry[]
+  reports   Report[]
+
+  @@index([reviewStatus, availability])
+  @@index([rentRwf])
+  @@index([distanceKm])
+}
+
+model PropertyPhoto {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  position   Int
+  isCover    Boolean  @default(false)
+}
+
+model SavedProperty {
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+}
+
+model PropertyView {
+  userId     String
+  propertyId String
+  viewedAt   DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String
+  filters   Json
+  createdAt DateTime @default(now())
+}
+
+model Inquiry {
+  id         String           @id @default(cuid())
+  propertyId String
+  property   Property         @relation(fields: [propertyId], references: [id])
+  studentId  String
+  student    User             @relation("StudentInquiries", fields: [studentId], references: [id])
+  status     InquiryStatus    @default(NEW)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  messages   InquiryMessage[]
+}
+
+model InquiryMessage {
+  id        String   @id @default(cuid())
+  inquiryId String
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  propertyId     String
+  property       Property     @relation(fields: [propertyId], references: [id])
+  reporterId     String?
+  reporter       User?        @relation("Reporter", fields: [reporterId], references: [id])
+  reason         ReportReason
+  details        String?
+  status         ReportStatus @default(OPEN)
+  resolutionNote String?
+  resolvedById   String?
+  resolvedBy     User?        @relation("Resolver", fields: [resolvedById], references: [id])
+  createdAt      DateTime     @default(now())
+  resolvedAt     DateTime?
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // e.g. INQUIRY_RECEIVED, LISTING_APPROVED, AVAILABILITY_CHANGED
+  text      String
+  link      String // client route, e.g. /properties/abc
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
+  targetType String
+  targetId   String
+  text       String
+  createdAt  DateTime @default(now())
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
 }

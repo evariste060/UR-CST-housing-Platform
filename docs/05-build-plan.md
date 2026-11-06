@@ -21,8 +21,8 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Phase 1: create the Prisma schema exactly as in docs/02-data-model.md, run the first migration, and write prisma/seed.ts that inserts the same demonstration data as reference/prototype.html (LOCATIONS_SEED, LANDLORDS, PROPERTIES_SEED, USERS_SEED, INQUIRIES_SEED, REPORTS_SEED, NOTIFS_SEED, ACTIVITY_SEED). Hash the demo password demo1234 with bcrypt. For photos, generate the same SVG demo images as the prototype's photo() function and save them to apps/api/uploads/demo/. Add db:migrate, db:seed and db:reset scripts.
 
 **Done when**
-- [ ] `npm run db:reset` builds the database from scratch with 13 properties (11 approved, 2 pending)
-- [ ] Prisma Studio shows the three demo accounts
+- [x] `npm run db:reset` builds the database from scratch with 13 properties (11 approved, 2 pending)
+- [x] Prisma Studio shows the three demo accounts
 
 ## Phase 2 · Authentication and roles
 **Prompt**
@@ -90,3 +90,10 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **Version pins:** Prisma 6.19 (Prisma 7 moves the database URL out of `schema.prisma`, which would change docs/02), TypeScript 5.9 (`typescript-eslint` needs < 6.1), ESLint 9 (`eslint-plugin-jsx-a11y` does not support 10; npm marks 9.39 as unsupported, so upgrade when the plugin allows), jsdom 26 (31 needs a newer Node 22).
   - **Added to the proposal:** root `tsconfig.json` (typechecks `e2e`), `vitest` in `packages/shared`, a `format` script, and Prettier in `npm run lint`.
   - **Not verified:** `npm run db:reset`. Prisma blocks AI agents from running it without the user's explicit consent. `db:migrate` and `db:seed` were run and work, with nothing to migrate or seed until Phase 1. Check `db:reset` in Phase 1, where it is a "Done when" item.
+
+- **2026-11-06, Phase 1 done.** Full schema and `init` migration, demo seed in one transaction, bcrypt password hash, and 52 SVG demo photos in `apps/api/uploads/demo/`. Lint, typecheck and 24 unit tests pass on Node 22.16.0. `data.test.ts` runs the prototype's own data block and compares every constant and photo with the seed.
+  - **`db:reset`:** Prisma blocks AI agents from running it without explicit consent, so Claude ran it after the user sent the command. It rebuilt the local Docker database with 13 properties (11 approved, 2 pending), 12 users and 52 photos.
+  - **Changed from the docs:** enums in `docs/02` are now multi-line, because Prisma rejected the one-line form (formatting only). Accounts total 12, not 11: the prototype's 11 users plus the administrator. That is 4 landlords, including suspended Demo Landlord D, against the spec's 3.
+  - **Added beyond the listed constants:** the Demo Student's starting state from `freshState()` (p2 saved, p2 and p4 recently viewed, one search). Its saved filters use the query names from `docs/03-api.md`.
+  - **Values not in the prototype:** Landlord D's phone, the administrator's registration date, who resolved report r3 and when, and the recently-viewed times. Approval dates equal submitted dates, except p1 (23 Oct), so the featured query gives p1, p8, p4 like the prototype's Landing page.
+  - **Seed behaviour:** `db:seed` refuses to run if the database already has users, and only `db:reset` clears data. Every seeded account uses `demo1234`.

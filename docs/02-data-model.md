@@ -12,26 +12,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role           { STUDENT LANDLORD ADMIN }
-enum AccountStatus  { ACTIVE SUSPENDED }
-enum RoomType       { SINGLE SHARED STUDIO APARTMENT }
-enum Availability   { AVAILABLE OCCUPIED }
-enum ReviewStatus   { DRAFT PENDING APPROVED CHANGES_REQUESTED REJECTED REMOVED }
-enum Bathroom       { PRIVATE SHARED }
-enum InquiryStatus  { NEW HANDLED }
-enum ReportReason   { WRONG_INFORMATION PHOTOS_DONT_MATCH NO_LONGER_AVAILABLE SUSPICIOUS }
-enum ReportStatus   { OPEN RESOLVED }
+enum Role {
+  STUDENT
+  LANDLORD
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RoomType {
+  SINGLE
+  SHARED
+  STUDIO
+  APARTMENT
+}
+
+enum Availability {
+  AVAILABLE
+  OCCUPIED
+}
+
+enum ReviewStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  REMOVED
+}
+
+enum Bathroom {
+  PRIVATE
+  SHARED
+}
+
+enum InquiryStatus {
+  NEW
+  HANDLED
+}
+
+enum ReportReason {
+  WRONG_INFORMATION
+  PHOTOS_DONT_MATCH
+  NO_LONGER_AVAILABLE
+  SUSPICIOUS
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
 
 model User {
-  id            String        @id @default(cuid())
-  email         String        @unique
-  passwordHash  String
-  fullName      String
-  phone         String?
-  role          Role
-  status        AccountStatus @default(ACTIVE)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  fullName     String
+  phone        String?
+  role         Role
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   landlordProfile LandlordProfile?
   properties      Property[]       @relation("LandlordProperties")
@@ -49,11 +93,11 @@ model User {
 }
 
 model LandlordProfile {
-  userId       String  @id
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  allowPhone   Boolean @default(true)
+  userId        String  @id
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allowPhone    Boolean @default(true)
   allowWhatsapp Boolean @default(true)
-  allowInApp   Boolean @default(true)
+  allowInApp    Boolean @default(true)
 }
 
 model Location {
@@ -65,36 +109,36 @@ model Location {
 }
 
 model Property {
-  id            String        @id @default(cuid())
+  id            String       @id @default(cuid())
   landlordId    String
-  landlord      User          @relation("LandlordProperties", fields: [landlordId], references: [id])
+  landlord      User         @relation("LandlordProperties", fields: [landlordId], references: [id])
   title         String
   type          RoomType
-  rooms         Int           @default(1)
+  rooms         Int          @default(1)
   description   String
   locationId    String
-  location      Location      @relation(fields: [locationId], references: [id])
+  location      Location     @relation(fields: [locationId], references: [id])
   landmark      String
   address       String?
-  pinX          Float?        // 0..1 position on the schematic map
+  pinX          Float? // 0..1 position on the schematic map
   pinY          Float?
-  distanceKm    Decimal       @db.Decimal(3, 1)
+  distanceKm    Decimal      @db.Decimal(3, 1)
   rentRwf       Int
   water         Boolean
   electricity   Boolean
   bathroom      Bathroom
   security      Boolean
   selfContained Boolean
-  availability  Availability  @default(AVAILABLE)
-  reviewStatus  ReviewStatus  @default(DRAFT)
+  availability  Availability @default(AVAILABLE)
+  reviewStatus  ReviewStatus @default(DRAFT)
   reviewNote    String?
   submittedAt   DateTime?
   reviewedAt    DateTime?
   reviewedById  String?
-  reviewedBy    User?         @relation("Reviewer", fields: [reviewedById], references: [id])
+  reviewedBy    User?        @relation("Reviewer", fields: [reviewedById], references: [id])
   deletedAt     DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   photos    PropertyPhoto[]
   saves     SavedProperty[]
@@ -122,6 +166,7 @@ model SavedProperty {
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
   @@id([userId, propertyId])
 }
 
@@ -131,6 +176,7 @@ model PropertyView {
   viewedAt   DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
   @@id([userId, propertyId])
 }
 
@@ -144,14 +190,14 @@ model SearchHistory {
 }
 
 model Inquiry {
-  id         String         @id @default(cuid())
+  id         String           @id @default(cuid())
   propertyId String
-  property   Property       @relation(fields: [propertyId], references: [id])
+  property   Property         @relation(fields: [propertyId], references: [id])
   studentId  String
-  student    User           @relation("StudentInquiries", fields: [studentId], references: [id])
-  status     InquiryStatus  @default(NEW)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  student    User             @relation("StudentInquiries", fields: [studentId], references: [id])
+  status     InquiryStatus    @default(NEW)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
   messages   InquiryMessage[]
 }
 
@@ -185,11 +231,12 @@ model Notification {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String    // e.g. INQUIRY_RECEIVED, LISTING_APPROVED, AVAILABILITY_CHANGED
+  type      String // e.g. INQUIRY_RECEIVED, LISTING_APPROVED, AVAILABILITY_CHANGED
   text      String
-  link      String    // client route, e.g. /properties/abc
+  link      String // client route, e.g. /properties/abc
   readAt    DateTime?
   createdAt DateTime  @default(now())
+
   @@index([userId, readAt])
 }
 
@@ -205,16 +252,17 @@ model ActivityLog {
 }
 
 model PasswordReset {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
 }
 ```
 
 ## Notes
+- Enums are written on several lines because Prisma rejects one-line enums. This is a formatting change only.
 - `distanceKm` on Property is copied from the Location when created; an admin can adjust it later.
 - "Deleted" by a landlord = `deletedAt` set (soft delete, so Undo works and reports keep their history).
 - The compare list is client-only state (max 4), not stored in the database.
