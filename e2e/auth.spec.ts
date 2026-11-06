@@ -5,7 +5,7 @@ const PASSWORD = 'demo1234';
 
 test.describe('demo accounts land on the right home', () => {
   for (const [button, heading] of [
-    ['Demo Student', 'Student dashboard'],
+    ['Demo Student', 'Welcome back, Demo Student'],
     ['Demo Landlord A', 'Landlord dashboard'],
     ['Demo Administrator', 'Administrator dashboard'],
   ] as const) {
@@ -46,6 +46,7 @@ test('logging out returns to a guest session', async ({ page }) => {
   await page.getByRole('button', { name: /Demo Student/ }).click();
   await expect(page).toHaveURL(/\/student$/);
 
+  await page.goto('/account');
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByText('You have signed out.')).toBeVisible();
 

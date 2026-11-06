@@ -327,10 +327,10 @@ describe('Design system page', () => {
 describe('pages still to build', () => {
   it('says so plainly', async () => {
     stubApi(() => json({}));
-    renderRoute('/search');
+    renderRoute('/help');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Find Housing' }),
+      await screen.findByRole('heading', { level: 1, name: 'Help & support' }),
     ).toBeInTheDocument();
     expect(screen.getByText('This page is being built')).toBeInTheDocument();
   });

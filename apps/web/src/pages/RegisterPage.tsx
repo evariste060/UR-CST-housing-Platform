@@ -179,7 +179,7 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
 
 export function RegisterPage() {
   // The For Landlords menu opens this page with the landlord form already chosen.
-  const { state } = useLocation() as { state: { role?: AccountType } | null };
+  const { state } = useLocation() as { state: { role?: AccountType; from?: string } | null };
   const [role, setRole] = useState<AccountType | null>(state?.role ?? null);
 
   return (
@@ -216,7 +216,10 @@ export function RegisterPage() {
           </>
         )}
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account?{' '}
+          <Link to="/login" state={state}>
+            Log in
+          </Link>
         </p>
       </div>
     </main>

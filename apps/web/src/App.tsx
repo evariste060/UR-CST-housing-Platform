@@ -3,26 +3,24 @@ import { GuestOnly, RequireRole } from './auth/RequireRole';
 import { AppLayout } from './components/AppLayout';
 import { Icon } from './components/Icon';
 import { ComingSoonPage } from './pages/ComingSoonPage';
+import { AccountPage } from './pages/AccountPage';
+import { ComparePage } from './pages/ComparePage';
+import { ContactPage } from './pages/ContactPage';
 import { DesignSystemPage } from './pages/DesignSystemPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { HealthPage } from './pages/HealthPage';
+import { HistoryPage } from './pages/HistoryPage';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { PropertyPage } from './pages/PropertyPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { RoleHomePage } from './pages/RoleHomePage';
+import { SavedPage } from './pages/SavedPage';
+import { SearchPage } from './pages/SearchPage';
+import { StudentDashboardPage } from './pages/StudentDashboardPage';
 
 // Pages that later phases build. Each stands in with ComingSoonPage until then.
-const PUBLIC_PAGES_TO_BUILD = [
-  '/how-it-works',
-  '/search',
-  '/properties/:id',
-  '/saved',
-  '/compare',
-  '/history',
-  '/help',
-  '/account',
-  '/notifications',
-];
+const PUBLIC_PAGES_TO_BUILD = ['/help', '/notifications'];
 const LANDLORD_PAGES_TO_BUILD = [
   '/landlord/properties',
   '/landlord/properties/new',
@@ -57,7 +55,14 @@ export function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<HealthPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/how-it-works" element={<LandingPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/properties/:id" element={<PropertyPage />} />
+        <Route path="/properties/:id/contact" element={<ContactPage />} />
+        <Route path="/saved" element={<SavedPage />} />
+        <Route path="/compare" element={<ComparePage />} />
+        <Route path="/history" element={<HistoryPage />} />
         <Route path="/design-system" element={<DesignSystemPage />} />
         {PUBLIC_PAGES_TO_BUILD.map((path) => (
           <Route key={path} path={path} element={<ComingSoonPage />} />
@@ -71,7 +76,8 @@ export function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<RequireRole allow="STUDENT" />}>
-          <Route path="/student" element={<RoleHomePage title="Student dashboard" />} />
+          <Route path="/student" element={<StudentDashboardPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Route>
         <Route element={<RequireRole allow="LANDLORD" />}>
           <Route path="/landlord" element={<RoleHomePage title="Landlord dashboard" />} />

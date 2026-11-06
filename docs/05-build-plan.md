@@ -47,9 +47,9 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Phase 4: implement the public Properties and Student endpoints from docs/03-api.md (filters, sorting, pagination, smart search parse, saved, history, inquiries, reports), then build the Landing, Search & filters, Property details, Saved, Compare, Recently viewed & history, Contact landlord, Student dashboard and Account screens to match the prototype. Guests keep saved and compare in localStorage, and they merge into the account at login. Write a Playwright test for Journey A from docs/01-product-spec.md.
 
 **Done when**
-- [ ] Journey A passes in Playwright
-- [ ] Filter results and counts match the prototype for the same filters
-- [ ] Empty state buttons change the results
+- [x] Journey A passes in Playwright
+- [x] Filter results and counts match the prototype for the same filters
+- [x] Empty state buttons change the results
 
 ## Phase 5 · Landlord experience
 **Prompt**
@@ -121,3 +121,13 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
 - **2026-11-06, Phase 3 keyboard gap closed.** When an action taken from the keyboard shows a toast with Undo, focus now moves to Undo, and a screen reader hears what it undoes. The message stays up while focus is on it. Undo, Dismiss and Esc return focus to the control that led there, or to the page title if that control has gone. Focus stays put after mouse or touch actions, while someone is typing in a field, and while a dialog is open. This behaviour is new, not in the prototype.
   - **For Phase 5:** close a confirmation dialog before, or in the same update as, showing its toast with Undo, or focus will stay put. After a row is deleted, focus goes to the page title, so check that this feels right on My properties.
   - **Test stability:** two existing tests had started failing on the last commit too, so neither was caused by this change. `npm run e2e` now uses 3 browsers at once, because the default number timed out while loading pages. Testing Library's wait rose from 1 to 5 seconds, because the first render took longer than that when test files ran in parallel.
+
+- **2026-11-06, Phase 4 done.** Public property and student endpoints, smart search, Landing, Search, Property details, Saved, Compare, Recently viewed, Contact landlord, Student dashboard and Account. Filters live in the address, so a search can be shared or reloaded. Lint, typecheck, 290 unit tests (API 145, web 114, shared 31), 47 Playwright tests and the web build pass.
+  - **Done when:** Journey A runs in `e2e/student-journey.spec.ts`. `prototypeParity.test.ts` runs a copy of the prototype's `filterProps` against the API for 20 filter sets. The empty state buttons are covered in Playwright and in `SearchPage.test.tsx`.
+  - **Added to docs/03:** `GET /properties?ids=`, `GET /me/saved/ids`, `POST /me/history/restore`.
+  - **Agreed changes from the prototype:** the ends of the sliders mean "no limit" (30,000 to 250,000 RWF, 5 km). No "Demonstration" wording: a real "Message sent", Log in or Create an account returning to the same page, and a real prefilled WhatsApp link. Report reasons are chips; Compare's "Add a property…" stays a `<select>`. Notification choices stay off Account until Phase 7.
+  - **Other changes from the prototype:** distances always show one decimal ("1.0 km", as CLAUDE.md asks; the prototype shows "1 km"). Filter chips are larger (16px text, 44px tall), so they wrap differently. Neighbourhoods are listed closest first, because `Location` has no display order.
+  - **Stays on the device:** landlord and admin hearts, and the compare list for everyone (it clears at logout). A guest's saved list moves into their account when they log in. Guest history stays on the device and is not merged.
+  - **For Phase 5:** landlords need an Account page; `/account` is student-only for now. `ContactPage` covers the student side of inquiries only.
+  - **Test data:** the Playwright journeys write to the local database, so each run adds an inquiry and saved rows to the Demo Student. `npm run db:reset` puts the demo data back.
+  - **Still open:** Read aloud has not been checked by ear (from Phase 3).

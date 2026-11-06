@@ -1,8 +1,8 @@
+import type { Availability, ReviewStatus } from '@urcst/shared';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 
-export type Availability = 'AVAILABLE' | 'OCCUPIED';
-export type ReviewStatus = 'PENDING' | 'APPROVED' | 'CHANGES_REQUESTED' | 'REJECTED' | 'REMOVED';
+export type { Availability, ReviewStatus };
 
 export function Badge({
   tone,
@@ -35,6 +35,7 @@ export function AvailabilityBadge({ availability }: { availability: Availability
 }
 
 const REVIEW: Record<ReviewStatus, { tone: string; icon: IconName; label: string }> = {
+  DRAFT: { tone: 'neutral', icon: 'edit', label: 'Draft' },
   APPROVED: { tone: 'approved', icon: 'shieldcheck', label: 'Approved by admin' },
   PENDING: { tone: 'pending', icon: 'clock', label: 'Pending review' },
   CHANGES_REQUESTED: { tone: 'changes', icon: 'edit', label: 'Changes requested' },

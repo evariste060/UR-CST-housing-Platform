@@ -1,4 +1,4 @@
-import type { AccountStatus, Role } from '@prisma/client';
+import type { AccountStatus, Prisma, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { createApp } from '../app';
 import { prisma } from '../db';
@@ -12,7 +12,7 @@ const passwordHash = bcrypt.hashSync(PASSWORD, 4);
 
 export async function clearDatabase() {
   assertTestDatabase(process.env.DATABASE_URL as string);
-  await prisma.$executeRaw`TRUNCATE "ActivityLog", "PasswordReset", "LandlordProfile", "User" CASCADE`;
+  await prisma.$executeRaw`TRUNCATE "ActivityLog", "PasswordReset", "LandlordProfile", "Location", "User" CASCADE`;
 }
 
 export function createUser(
@@ -28,6 +28,47 @@ export function createUser(
       role,
       landlordProfile: role === 'LANDLORD' ? { create: {} } : undefined,
       ...rest,
+    },
+  });
+}
+
+let nextListing = 1;
+
+export async function createLocation(name = 'Kiyovu', distanceKm = 1) {
+  return prisma.location.upsert({
+    where: { name },
+    create: { name, distanceKm },
+    update: {},
+  });
+}
+
+/** An approved, available listing with one photo, unless `overrides` says otherwise. */
+export async function createListing(
+  landlordId: string,
+  overrides: Partial<Prisma.PropertyUncheckedCreateInput> = {},
+) {
+  const location = await createLocation();
+  const number = nextListing++;
+
+  return prisma.property.create({
+    data: {
+      landlordId,
+      locationId: location.id,
+      title: `Listing ${number}`,
+      type: 'SINGLE',
+      description: 'A tidy room close to campus with good light.',
+      landmark: 'Near the market',
+      distanceKm: 1,
+      rentRwf: 80000,
+      water: true,
+      electricity: true,
+      bathroom: 'PRIVATE',
+      security: true,
+      selfContained: true,
+      reviewStatus: 'APPROVED',
+      reviewedAt: new Date(),
+      photos: { create: { url: `/uploads/demo/${number}.svg`, position: 0, isCover: true } },
+      ...overrides,
     },
   });
 }

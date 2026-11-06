@@ -1,11 +1,17 @@
+import { EMPTY_FILTERS } from '@urcst/shared';
 import { useCallback, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ROLE_HOME, useAuth } from '../auth/useAuth';
 import { useLogout } from '../auth/useLogout';
 import { useDisplay } from '../display/DisplayProvider';
+import { api } from '../lib/api';
 import { pageLabel } from '../lib/routes';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { useReader } from '../reader/useReader';
+import { useCompare } from '../student/CompareProvider';
+import { countResults } from '../student/queries';
+import { useSaved } from '../student/SavedProvider';
+import { useRunSearch } from '../student/useHistory';
 import { buttonClass } from './Button';
 import {
   FindMenuItems,
@@ -16,36 +22,55 @@ import {
   useListProperty,
 } from './HeaderMenus';
 import { Icon, type IconName } from './Icon';
+import { useToast } from './Toast';
 import { HereTrail } from './Trail';
 
 type MenuName = 'find' | 'landlords' | 'text' | 'lang';
 
 const FIND_PATHS = ['/search', '/properties'];
 
+function CountPill({ count }: { count?: number }) {
+  return count ? <span className="count-pill">{count}</span> : null;
+}
+
 function NavItem({
   to,
   icon,
   label,
   end,
+  count,
 }: {
   to: string;
   icon: IconName;
   label: string;
   end?: boolean;
+  count?: number;
 }) {
   return (
     <NavLink to={to} end={end} className="nl">
       <Icon name={icon} />
       {label}
+      <CountPill count={count} />
     </NavLink>
   );
 }
 
-function SheetLink({ to, icon, label }: { to: string; icon: IconName; label: string }) {
+function SheetLink({
+  to,
+  icon,
+  label,
+  count,
+}: {
+  to: string;
+  icon: IconName;
+  label: string;
+  count?: number;
+}) {
   return (
     <NavLink to={to} end>
       <Icon name={icon} />
       {label}
+      <CountPill count={count} />
     </NavLink>
   );
 }
@@ -55,6 +80,8 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
   const { prefs, setPref, setPanelOpen } = useDisplay();
   const logOut = useLogout();
   const listProperty = useListProperty();
+  const saved = useSaved();
+  const compare = useCompare();
   const sheet = useRef<HTMLDivElement>(null);
   useFocusTrap(sheet, { onEscape: onClose });
 
@@ -83,8 +110,8 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
         </div>
         <SheetLink to="/" icon="home" label="Home" />
         <SheetLink to="/search" icon="search" label="Find Housing" />
-        <SheetLink to="/saved" icon="heart" label="Saved Properties" />
-        <SheetLink to="/compare" icon="layers" label="Compare" />
+        <SheetLink to="/saved" icon="heart" label="Saved Properties" count={saved.ids.length} />
+        <SheetLink to="/compare" icon="layers" label="Compare" count={compare.ids.length} />
         {isStudent ? (
           <>
             <SheetLink to="/history" icon="clock" label="Recently Viewed" />
@@ -155,7 +182,10 @@ export function PublicHeader() {
   const { prefs, setPref, setQuickFindOpen } = useDisplay();
   const reader = useReader();
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+  const saved = useSaved();
+  const compare = useCompare();
+  const runSearch = useRunSearch();
+  const toast = useToast();
   // Each remembers the page it was opened on, so moving to another page closes it.
   const [openMenu, setOpenMenu] = useState<{ name: MenuName; pathname: string } | null>(null);
   const [sheetPath, setSheetPath] = useState<string | null>(null);
@@ -169,10 +199,24 @@ export function PublicHeader() {
     onOpenChange: (open: boolean) => setOpenMenu(open ? { name, pathname } : null),
   });
 
-  function submitSearch(event: FormEvent) {
+  async function submitSearch(event: FormEvent) {
     event.preventDefault();
-    const query = search.trim();
-    navigate(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
+    const text = search.trim();
+    try {
+      const { filters } = text ? await api.parseSearch(text) : { filters: EMPTY_FILTERS };
+      runSearch(filters);
+      const count = await countResults(filters);
+      const places = `${count} result${count === 1 ? '' : 's'}`;
+      toast(
+        text
+          ? `Showing ${places} for "${text}". Adjust the filters any time.`
+          : `Showing all ${count} places.`,
+        { type: 'info' },
+      );
+    } catch {
+      // Without smart search, the words still work as a place to look for.
+      runSearch({ ...EMPTY_FILTERS, q: text });
+    }
   }
 
   const isStudent = user?.role === 'STUDENT';
@@ -193,7 +237,7 @@ export function PublicHeader() {
               <small>Student Accommodation Platform</small>
             </span>
           </Link>
-          <form className="hsearch" role="search" onSubmit={submitSearch}>
+          <form className="hsearch" role="search" onSubmit={(event) => void submitSearch(event)}>
             <div className="input-icon">
               <Icon name="search" />
               <label htmlFor="hs-q" className="sr-only">
@@ -320,8 +364,8 @@ export function PublicHeader() {
             >
               <FindMenuItems onDone={closeMenu} />
             </HeaderMenu>
-            <NavItem to="/saved" icon="heart" label="Saved Properties" />
-            <NavItem to="/compare" icon="layers" label="Compare" />
+            <NavItem to="/saved" icon="heart" label="Saved Properties" count={saved.ids.length} />
+            <NavItem to="/compare" icon="layers" label="Compare" count={compare.ids.length} />
             {isStudent ? (
               <>
                 <NavItem to="/history" icon="clock" label="Recently Viewed" />

@@ -1,6 +1,6 @@
 import { loginSchema, toFieldErrors, type LoginInput } from '@urcst/shared';
 import { useRef, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Field } from '../components/Field';
 import { Icon, type IconName } from '../components/Icon';
@@ -40,6 +40,8 @@ export function LoginPage() {
   const { setUser } = useAuth();
   const toast = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  // Keeps the page to return to when someone moves between Log in and Create an account.
+  const { state } = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
@@ -162,7 +164,10 @@ export function LoginPage() {
         )}
 
         <p className="auth-footer">
-          New here? <Link to="/register">Create an account</Link>
+          New here?{' '}
+          <Link to="/register" state={state}>
+            Create an account
+          </Link>
         </p>
       </div>
     </main>

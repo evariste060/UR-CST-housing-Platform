@@ -8,6 +8,7 @@ import { applyPrefs, loadPrefs } from './display/prefs';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
+import './styles/pages.css';
 import './styles/layout.css';
 import './styles/a11y.css';
 

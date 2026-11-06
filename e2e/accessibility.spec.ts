@@ -2,12 +2,17 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const PUBLIC_PAGES = [
-  ['/', 'UR-CST Student Housing'],
+  ['/', 'Find Your Next Home Near UR-CST'],
   ['/design-system', 'Design system'],
   ['/login', 'Log in'],
   ['/register', 'Create an account'],
   ['/forgot-password', 'Reset your password'],
-  ['/search', 'Find Housing'],
+  ['/search', 'Find accommodation near UR-CST'],
+  ['/properties/p1', 'Kiyovu Garden Single Room'],
+  ['/properties/p1/contact', 'Contact landlord'],
+  ['/saved', 'Saved properties'],
+  ['/compare', 'Compare properties'],
+  ['/history', 'Recently viewed & search history'],
 ] as const;
 
 async function pageIsReady(page: Page) {
@@ -261,6 +266,28 @@ test.describe('accessibility scan', () => {
     expect(await seriousProblems(page)).toEqual([]);
   });
 
+  test('the student pages have no serious problems', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('button', { name: /Demo Student/ }).click();
+    await expect(page).toHaveURL(/\/student$/);
+
+    for (const path of ['/student', '/account', '/saved', '/history']) {
+      await page.goto(path);
+      await pageIsReady(page);
+      await page.waitForLoadState('networkidle');
+      expect(await seriousProblems(page)).toEqual([]);
+    }
+
+    // The table only appears with two properties in compare.
+    await page.goto('/search');
+    for (const index of [0, 1]) {
+      await page.getByRole('article').nth(index).getByRole('button', { name: 'Compare' }).click();
+    }
+    await page.getByRole('link', { name: 'Compare now' }).click();
+    await expect(page.getByRole('table')).toBeVisible();
+    expect(await seriousProblems(page)).toEqual([]);
+  });
+
   test('the display panel and Quick find have no serious problems', async ({ page }) => {
     await page.goto('/design-system');
     await page.getByRole('button', { name: 'Display settings' }).click();
@@ -322,7 +349,7 @@ test.describe('touch targets and small screens', () => {
     await page.getByRole('button', { name: 'Open menu' }).click();
     await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: 'Compare' }).click();
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Compare' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Compare properties' })).toBeVisible();
     await expect(page.getByRole('dialog', { name: 'Menu' })).toBeHidden();
   });
 });

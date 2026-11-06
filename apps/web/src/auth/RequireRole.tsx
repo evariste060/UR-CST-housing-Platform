@@ -1,5 +1,5 @@
 import type { Role } from '@urcst/shared';
-import { Link, Navigate, Outlet } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ROLE_HOME, useAuth } from './useAuth';
 
@@ -44,8 +44,18 @@ export function RequireRole({ allow }: { allow: Role }) {
 /** Login and registration pages send people who are already logged in to their home page. */
 export function GuestOnly() {
   const { user, isPending } = useAuth();
+  const { pathname, state } = useLocation() as {
+    pathname: string;
+    state: { from?: string } | null;
+  };
 
   if (isPending) return <CheckingAccount />;
-  if (user) return <Navigate to={ROLE_HOME[user.role]} replace />;
+  if (user) {
+    const from = state?.from;
+    // Only a path on this site, so a crafted link cannot send someone elsewhere after login.
+    const back = from?.startsWith('/') && !from.startsWith('//') ? from : undefined;
+    const newStudent = pathname === '/register' && user.role === 'STUDENT';
+    return <Navigate to={back ?? (newStudent ? '/search' : ROLE_HOME[user.role])} replace />;
+  }
   return <Outlet />;
 }

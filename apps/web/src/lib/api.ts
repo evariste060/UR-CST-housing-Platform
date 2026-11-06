@@ -1,11 +1,24 @@
 import type {
   ApiErrorBody,
   AuthResponse,
+  ChangePasswordInput,
   ForgotPasswordInput,
+  HistoryResponse,
+  LocationDto,
   LoginInput,
   MeResponse,
+  Paginated,
+  PropertyDetail,
+  PropertySummary,
+  RecordSearchInput,
   RegisterInput,
+  ReportInput,
   ResetPasswordInput,
+  RestoreHistoryInput,
+  SavedIdsResponse,
+  SearchFilters,
+  StudentInquiry,
+  UpdateProfileInput,
 } from '@urcst/shared';
 
 export class ApiError extends Error {
@@ -48,6 +61,10 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
   return data as T;
 }
 
+interface Items<T> {
+  items: T[];
+}
+
 export const api = {
   me: () => request<MeResponse>('/auth/me'),
   login: (input: LoginInput) => request<AuthResponse>('/auth/login', 'POST', input),
@@ -57,4 +74,34 @@ export const api = {
     request<{ message: string }>('/auth/forgot-password', 'POST', input),
   resetPassword: (input: ResetPasswordInput) =>
     request<{ ok: true }>('/auth/reset-password', 'POST', input),
+  updateProfile: (input: UpdateProfileInput) => request<AuthResponse>('/me', 'PATCH', input),
+  changePassword: (input: ChangePasswordInput) =>
+    request<{ ok: true }>('/me/password', 'POST', input),
+
+  properties: (query: URLSearchParams) =>
+    request<Paginated<PropertySummary>>(`/properties?${query}`),
+  featured: () => request<Items<PropertySummary>>('/properties/featured'),
+  property: (id: string) => request<PropertyDetail>(`/properties/${encodeURIComponent(id)}`),
+  reportProperty: (id: string, input: ReportInput) =>
+    request<{ ok: true }>(`/properties/${encodeURIComponent(id)}/reports`, 'POST', input),
+  sendInquiry: (id: string, message: string) =>
+    request<{ id: string }>(`/properties/${encodeURIComponent(id)}/inquiries`, 'POST', {
+      message,
+    }),
+  locations: () => request<Items<LocationDto>>('/locations'),
+  parseSearch: (text: string) =>
+    request<{ filters: SearchFilters }>('/search/parse', 'POST', { text }),
+
+  saved: () => request<Paginated<PropertySummary>>('/me/saved?pageSize=50'),
+  savedIds: () => request<SavedIdsResponse>('/me/saved/ids'),
+  save: (id: string) => request<{ ok: true }>(`/me/saved/${encodeURIComponent(id)}`, 'POST'),
+  unsave: (id: string) => request<{ ok: true }>(`/me/saved/${encodeURIComponent(id)}`, 'DELETE'),
+  mergeSaved: (propertyIds: string[]) =>
+    request<{ merged: number }>('/me/saved/merge', 'POST', { propertyIds }),
+  history: () => request<HistoryResponse>('/me/history'),
+  clearHistory: () => request<{ ok: true }>('/me/history', 'DELETE'),
+  restoreHistory: (input: RestoreHistoryInput) =>
+    request<{ ok: true }>('/me/history/restore', 'POST', input),
+  recordSearch: (input: RecordSearchInput) => request<unknown>('/me/searches', 'POST', input),
+  inquiries: () => request<Paginated<StudentInquiry>>('/me/inquiries?pageSize=50'),
 };

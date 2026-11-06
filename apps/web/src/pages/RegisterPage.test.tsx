@@ -79,7 +79,7 @@ describe('RegisterPage', () => {
     expect(await screen.findByText('Passwords do not match.')).toBeInTheDocument();
   });
 
-  it('creates the account, welcomes the user and opens their home page', async () => {
+  it('creates the account, welcomes the user and opens the search', async () => {
     const fetchMock = stubApi(() =>
       json(
         {
@@ -99,7 +99,9 @@ describe('RegisterPage', () => {
     await fillStudent();
     await submit();
 
-    expect(await screen.findByRole('heading', { name: 'Student dashboard' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Find accommodation near UR-CST' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Account created. Welcome, Aline!')).toBeInTheDocument();
     expect(sentBody(fetchMock, '/auth/register')).toMatchObject({
       role: 'STUDENT',

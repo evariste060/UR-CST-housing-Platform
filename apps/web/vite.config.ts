@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api': env.API_PROXY_TARGET || 'http://localhost:4000',
+        '/uploads': env.API_PROXY_TARGET || 'http://localhost:4000',
       },
     },
     test: {

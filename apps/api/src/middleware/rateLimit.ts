@@ -30,3 +30,14 @@ export function forgotPasswordLimiter() {
     handler: (_req, _res, next) => next(tooManyAttempts),
   });
 }
+
+// Anyone can send a report without logging in, and each one notifies every administrator.
+export function reportLimiter() {
+  return rateLimit({
+    windowMs: WINDOW_MS,
+    limit: 5,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler: (_req, _res, next) => next(tooManyAttempts),
+  });
+}

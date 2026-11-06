@@ -1,7 +1,10 @@
+import { useQuery } from '@tanstack/react-query';
 import type { Role } from '@urcst/shared';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
+import { api } from '../lib/api';
 import { crumbsFor, type Crumb } from '../lib/routes';
+import { propertyKey } from '../student/queries';
 import { Badge } from './Badge';
 import { buttonClass } from './Button';
 import { Icon, type IconName } from './Icon';
@@ -34,7 +37,14 @@ function CrumbList({ crumbs }: { crumbs: Crumb[] }) {
 function useCrumbs() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  return { crumbs: crumbsFor(pathname, user?.role), role: user?.role };
+  const id = pathname.match(/^\/properties\/([^/]+)/)?.[1] ?? '';
+  // Reads what the page has loaded. It never fetches on its own.
+  const { data } = useQuery({
+    queryKey: propertyKey(id),
+    queryFn: () => api.property(id),
+    enabled: false,
+  });
+  return { crumbs: crumbsFor(pathname, user?.role, data?.title), role: user?.role };
 }
 
 /** "You are here" for landlord and administrator pages, on its own row with a Back link. */

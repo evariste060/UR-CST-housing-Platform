@@ -21,6 +21,7 @@ Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · �
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | GET | /properties | 🌐 | Approved only. Query: `q, locationId, minRent, maxRent, maxDistance, types=SINGLE,SHARED, layout=any\|self\|shared, water, electricity, privateBath, security, rooms=any\|1\|2, availableOnly, sort=recommended\|price-asc\|price-desc\|distance, page, pageSize`. Returns `{ items, total, page, pageSize }`. |
+| GET | /properties?ids=a,b | 🌐 | The listings with these ids, for the Compare, Saved and Recently viewed lists kept on the device. Same approved-only rule. |
 | GET | /properties/featured | 🌐 | 3 most recently approved available listings. |
 | GET | /properties/:id | 🌐 | Approved only for the public; owner and admin can see any status. Records a view for logged-in students. Includes landlord display name and only the enabled contact methods. |
 | POST | /properties/:id/reports | 🌐 | `{ reason, details? }`; notifies admins. |
@@ -31,8 +32,10 @@ Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · �
 | Method | Path | Notes |
 |---|---|---|
 | GET/POST/DELETE | /me/saved, /me/saved/:propertyId | Save is idempotent. |
+| GET | /me/saved/ids | Only the ids, for hearts and counts on every page. |
 | POST | /me/saved/merge | `{ propertyIds }` from guest localStorage after login. |
 | GET / DELETE | /me/history | Recently viewed + recent searches; DELETE clears both. |
+| POST | /me/history/restore | `{ views, searches }`; puts cleared history back, for Undo. |
 | POST | /me/searches | `{ label, filters }` |
 | GET | /me/inquiries | Student's inquiries with last message and replied flag. |
 | POST | /properties/:id/inquiries | 🎓 `{ message }` (≥ 10 chars). Creates inquiry + first message, notifies landlord. |

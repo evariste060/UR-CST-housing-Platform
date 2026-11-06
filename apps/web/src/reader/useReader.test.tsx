@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProviders } from '../AppProviders';
 import { ReaderBar } from '../components/ReaderBar';
 import { useReader } from './useReader';
@@ -40,11 +41,13 @@ function Harness({ blocks = ['First block', 'Second 5 km block'] }: { blocks?: s
 
 function renderReader() {
   render(
-    <MemoryRouter>
-      <AppProviders>
-        <Harness />
-      </AppProviders>
-    </MemoryRouter>,
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter>
+        <AppProviders>
+          <Harness />
+        </AppProviders>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

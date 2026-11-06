@@ -1050,7 +1050,8 @@ body.ph-page .a11y-dock {
   .filter-drawer-foot .btn {
     flex: 1;
   }
-  .mobile-filter-btn {
+  .mobile-filter-btn,
+  .icon-btn.mobile-filter-btn {
     display: inline-flex;
   }
   .shell {

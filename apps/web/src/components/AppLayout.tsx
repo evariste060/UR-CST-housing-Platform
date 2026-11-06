@@ -4,6 +4,7 @@ import { useAuth } from '../auth/useAuth';
 import { showsFooter, usesWorkspaceLayout } from '../lib/routes';
 import { A11yDock } from './A11yDock';
 import { AppShell } from './AppShell';
+import { CompareTray } from './CompareTray';
 import { DisplayPanel } from './DisplayPanel';
 import { Footer } from './Footer';
 import { PublicHeader } from './PublicHeader';
@@ -48,6 +49,7 @@ export function AppLayout() {
           {showsFooter(pathname) && <Footer />}
         </>
       )}
+      <CompareTray />
       <ReaderBar />
       <DisplayPanel />
       <QuickFind />

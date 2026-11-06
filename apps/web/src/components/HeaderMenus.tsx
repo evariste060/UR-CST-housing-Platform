@@ -4,6 +4,8 @@ import { useAuth } from '../auth/useAuth';
 import { useDisplay } from '../display/DisplayProvider';
 import { FONTS, PREF_LABELS, type FontName } from '../display/prefs';
 import { useRovingRadio } from '../lib/useRovingRadio';
+import { filtersFromParams } from '../student/filters';
+import { useRunSearch } from '../student/useHistory';
 import { Badge } from './Badge';
 import { Icon, type IconName } from './Icon';
 import { useToast } from './Toast';
@@ -12,6 +14,8 @@ interface MenuProps {
   id: string;
   label: string;
   buttonClass: string;
+  /** Extra class for the panel. */
+  panelClass?: string;
   button: ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,6 +27,7 @@ export function HeaderMenu({
   id,
   label,
   buttonClass,
+  panelClass,
   button,
   open,
   onOpenChange,
@@ -72,7 +77,12 @@ export function HeaderMenu({
         {button}
       </button>
       {open && (
-        <div className="hmenu" id={`menu-${id}`} role="group" aria-label={label}>
+        <div
+          className={panelClass ? `hmenu ${panelClass}` : 'hmenu'}
+          id={`menu-${id}`}
+          role="group"
+          aria-label={label}
+        >
           {children}
         </div>
       )}
@@ -92,8 +102,19 @@ const FIND_LINKS: { label: string; icon: IconName; search: string }[] = [
 ];
 
 export function FindMenuItems({ onDone }: { onDone: () => void }) {
+  const runSearch = useRunSearch();
+
   return FIND_LINKS.map(({ label, icon, search }) => (
-    <Link key={label} className="hmenu-item" to={`/search${search}`} onClick={onDone}>
+    <Link
+      key={label}
+      className="hmenu-item"
+      to={`/search${search}`}
+      onClick={(event) => {
+        event.preventDefault();
+        onDone();
+        runSearch(filtersFromParams(new URLSearchParams(search)).filters);
+      }}
+    >
       <Icon name={icon} />
       <span>{label}</span>
     </Link>

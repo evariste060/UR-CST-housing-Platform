@@ -98,7 +98,7 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByLabelText('Remember me'));
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-    expect(await screen.findByRole('heading', { name: 'Student dashboard' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Welcome back/ })).toBeInTheDocument();
     expect(sentBody(fetchMock, '/auth/login')).toEqual({
       email: 'student@demo.ur',
       password: 'demo1234',
@@ -136,7 +136,7 @@ describe('LoginPage', () => {
     stubApi(() => json({}), demoStudent);
     renderRoute('/login');
 
-    expect(await screen.findByRole('heading', { name: 'Student dashboard' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Welcome back/ })).toBeInTheDocument();
   });
 });
 

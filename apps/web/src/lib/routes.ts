@@ -43,13 +43,18 @@ const STATIC_TRAILS: Record<string, Crumb[]> = {
   '/admin/locations': [ADMIN, { label: 'Locations' }],
 };
 
-/** The "You are here" path for a page. Later phases add pages that show a listing's title. */
-export function crumbsFor(pathname: string, role?: Role): Crumb[] {
+/** The "You are here" path for a page. `title` names the listing on property pages. */
+export function crumbsFor(pathname: string, role?: Role, title = 'Property'): Crumb[] {
   const path = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname;
   if (path === '/help') return [workspaceRoot(role), { label: 'Help & support' }];
   if (path === '/notifications') return [workspaceRoot(role), { label: 'Notifications' }];
-  if (/^\/properties\/[^/]+$/.test(path)) {
-    return [HOME, { label: 'Find Housing', to: '/search' }, { label: 'Property' }];
+  const FIND: Crumb = { label: 'Find Housing', to: '/search' };
+  const listing = path.match(/^\/properties\/([^/]+)(\/contact)?$/);
+  if (listing) {
+    const property = `/properties/${listing[1]}`;
+    return listing[2]
+      ? [HOME, FIND, { label: title, to: property }, { label: 'Contact landlord' }]
+      : [HOME, FIND, { label: title }];
   }
   return STATIC_TRAILS[path] ?? [HOME, { label: 'Page not found' }];
 }
@@ -156,7 +161,6 @@ export const QUICK_FIND_PAGES: QuickFindPage[] = [
   ),
 ];
 
-/** Neighbourhoods and listings join these results in Phase 4, when their endpoints exist. */
 export function searchQuickFind(query: string, role?: Role): QuickFindPage[] {
   const audience: Audience = role ?? 'GUEST';
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
