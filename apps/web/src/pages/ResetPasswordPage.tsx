@@ -66,7 +66,7 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <main className="auth-wrap">
+    <main className="auth-wrap" id="main">
       <div className="auth-card">
         {expired || !token ? (
           <ExpiredLink />

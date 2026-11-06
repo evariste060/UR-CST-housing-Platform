@@ -43,3 +43,51 @@
   /* Layout idea: content max 1280px; student pages use a top header; landlord/admin use a left sidebar shell */
   color-scheme: light;
 }
+
+/* High contrast (light theme). The dark theme has its own block below. */
+html.hc:not(.dark) {
+  --muted: #1e293b;
+  --subtle: #334155;
+  --line: #64748b;
+  --line-strong: #334155;
+  --surface: #ffffff;
+  --slate-100: #e8edf3;
+}
+
+/* Dark theme, ported from the prototype. */
+html.dark {
+  color-scheme: dark;
+  --white: #111c30;
+  --surface: #0a1222;
+  --ink: #e6edf7;
+  --muted: #a9b7ca;
+  --subtle: #8c9bb0;
+  --line: #23324b;
+  --line-strong: #34476a;
+  --slate-100: #18253c;
+  --blue: #6ea0ff;
+  --blue-700: #a9c6ff;
+  --blue-50: #15274a;
+  --blue-100: #22407a;
+  --green-text: #5ee08f;
+  --green-50: #0f2a1c;
+  --amber-text: #fbc75a;
+  --amber-50: #2b2109;
+  --amber-border: #6b5419;
+  --red-text: #ff8a8a;
+  --red-50: #2c1517;
+  --red-border: #6e2a2e;
+}
+
+/* Not in the prototype: its dark colours overrode high contrast, so the setting did little there. */
+html.dark.hc {
+  --ink: #ffffff;
+  --muted: #e2e8f0;
+  --subtle: #cbd5e1;
+  --line: #94a3b8;
+  --line-strong: #cbd5e1;
+  --surface: #000000;
+  --white: #0a1222;
+  --slate-100: #1b2a44;
+  --blue-700: #dbe6fe;
+}

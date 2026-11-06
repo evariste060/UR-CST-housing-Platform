@@ -1,7 +1,9 @@
-import { Link, Outlet, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { GuestOnly, RequireRole } from './auth/RequireRole';
+import { AppLayout } from './components/AppLayout';
 import { Icon } from './components/Icon';
-import { TempHeader } from './components/TempHeader';
+import { ComingSoonPage } from './pages/ComingSoonPage';
+import { DesignSystemPage } from './pages/DesignSystemPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { HealthPage } from './pages/HealthPage';
 import { LoginPage } from './pages/LoginPage';
@@ -9,18 +11,34 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { RoleHomePage } from './pages/RoleHomePage';
 
-function Layout() {
-  return (
-    <>
-      <TempHeader />
-      <Outlet />
-    </>
-  );
-}
+// Pages that later phases build. Each stands in with ComingSoonPage until then.
+const PUBLIC_PAGES_TO_BUILD = [
+  '/how-it-works',
+  '/search',
+  '/properties/:id',
+  '/saved',
+  '/compare',
+  '/history',
+  '/help',
+  '/account',
+  '/notifications',
+];
+const LANDLORD_PAGES_TO_BUILD = [
+  '/landlord/properties',
+  '/landlord/properties/new',
+  '/landlord/inquiries',
+  '/landlord/account',
+];
+const ADMIN_PAGES_TO_BUILD = [
+  '/admin/review',
+  '/admin/users',
+  '/admin/reports',
+  '/admin/locations',
+];
 
 function NotFoundPage() {
   return (
-    <main className="page">
+    <main className="page" id="main">
       <div className="state error">
         <span className="state-ic">
           <Icon name="alert" />
@@ -38,8 +56,12 @@ function NotFoundPage() {
 export function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<AppLayout />}>
         <Route path="/" element={<HealthPage />} />
+        <Route path="/design-system" element={<DesignSystemPage />} />
+        {PUBLIC_PAGES_TO_BUILD.map((path) => (
+          <Route key={path} path={path} element={<ComingSoonPage />} />
+        ))}
 
         <Route element={<GuestOnly />}>
           <Route path="/login" element={<LoginPage />} />
@@ -53,9 +75,15 @@ export function App() {
         </Route>
         <Route element={<RequireRole allow="LANDLORD" />}>
           <Route path="/landlord" element={<RoleHomePage title="Landlord dashboard" />} />
+          {LANDLORD_PAGES_TO_BUILD.map((path) => (
+            <Route key={path} path={path} element={<ComingSoonPage />} />
+          ))}
         </Route>
         <Route element={<RequireRole allow="ADMIN" />}>
           <Route path="/admin" element={<RoleHomePage title="Administrator dashboard" />} />
+          {ADMIN_PAGES_TO_BUILD.map((path) => (
+            <Route key={path} path={path} element={<ComingSoonPage />} />
+          ))}
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

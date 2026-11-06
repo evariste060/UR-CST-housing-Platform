@@ -38,9 +38,9 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Phase 3: port the design tokens and component styles from reference/prototype.html into apps/web/src/styles, and build the components listed in docs/04-design-system.md. Build PublicHeader (two rows, as on the prototype landing page), AppShell for landlord/admin, Trail, QuickFind (Ctrl+K), DisplayPanel with all preferences including dark mode, the useReader hook and ReaderBar, Toast with Undo, ConfirmDialog, and the route-change focus/announcement. Add a /design-system route that shows every component in every state, like the prototype's Design system page.
 
 **Done when**
-- [ ] Every display preference changes every page and survives a reload
-- [ ] Listen reads the design-system page and highlights each block
-- [ ] Keyboard-only: you can reach and use every control and see where focus is
+- [x] Every display preference changes every page and survives a reload
+- [x] Listen reads the design-system page and highlights each block (order and highlight tested with a stand-in voice; the real voice still needs a check by ear)
+- [ ] Keyboard-only: you can reach and use every control and see where focus is (all but one: see the Phase 3 entry in the Progress log about Undo)
 
 ## Phase 4 · Student experience
 **Prompt**
@@ -107,3 +107,13 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **Testing:** `npm test` now needs Docker running and uses `urcst_housing_test`, and refuses any database whose name does not end in `_test`. `npm run e2e` needs the seeded demo data.
   - **Bugs found and fixed:** a failed session check caused an endless request loop that also kept removing the form (now a regression test). The API now connects to the database before it starts listening, because the first login otherwise took about 2.2 seconds and failed the browser tests after a cold start. After the fix, 6 cold runs passed 8 of 8 tests.
   - **Phase 9 reminder:** add `trust proxy` for the rate limits, a real mailer, and CSRF protection if cookies move to `SameSite=None`.
+
+- **2026-11-06, Phase 3 built, with one "Done when" item open.** Ported the prototype's tokens, component, layout and accessibility styles, including dark mode. Built `PublicHeader`, `AppShell`, `Trail`, `Footer`, `QuickFind`, `DisplayPanel`, `A11yDock`, `useReader`, `ReaderBar`, `Toast` with Undo, `Modal`, `ConfirmDialog`, `PickGroup`, `ToggleTile`, `Button`, `Badge`, state blocks, `OnThisPage`, `PropertyCard`, route-change focus and announcements, and `/design-system`. Lint and typecheck pass, as do 168 unit tests (api 55, web 97, shared 16) and 35 Playwright tests, which include axe scans with no serious or critical problems on the pages listed below.
+  - **Open item:** the Undo button on a toast can be used from the keyboard, but it sits at the end of the page and disappears after 7 seconds, so someone tabbing there may not reach it in time. The Playwright test moves focus to it directly. Needs a decision before Phase 5, which is where real Undo actions start.
+  - **Not checked by ear:** headless Chrome has no voices, so tests use a stand-in speech engine. They cover reading order, highlight, controls, speed and pronunciation text, but not the sound itself.
+  - **Axe coverage:** `/`, `/design-system` (light, dark, high contrast, dark high contrast), `/login`, `/register`, `/forgot-password`, `/search`, the landlord dashboard, the display panel and Quick find. The full route list is still Phase 8.
+  - **Changed from the prototype (see docs/04):** chips and display cards use arrow keys with one Tab stop, and no longer put `aria-pressed` on radios. Header menus are plain open/close panels, not `role="menu"`. One focus trap covers every dialog. `html.dark.hc` is new, because the dark colours overrode high contrast. Each page has its own tab title. The skip link is visible on focus. Every target is at least 44px, including several the prototype made smaller. On phones under 430px the logo text is hidden from view but kept for screen readers, to make room for those targets. Fixed hard-coded colours in dark mode that failed contrast, and the double full stop in the prototype's "Read what I tap" toast.
+  - **Changed from the docs:** the Design system page says Listen and Display are in the header on public pages and in a dock on workspace pages, because that is what the prototype does; `docs/04` now says so too. The Terms and Privacy text no longer says "Prototype text".
+  - **Temporary until later phases:** `ComingSoonPage` stands in for pages not built yet. Quick find searches pages only until Phase 4 adds neighbourhoods and listings. The student dashboard keeps a Log out button until the Account page exists. The header search and Find Housing menu already link to `/search?...`, and Phase 4 must read those values (`q`, `types`, `maxDistance`, `maxRent` and `availableOnly`, the names in docs/03).
+  - **Moved to later phases:** `LandingCard`, `Gallery`, `Lightbox`, `CompareTray` and `SchematicMap` (Phases 4 and 5), and `NotificationBell` with the sidebar and header counts (Phase 7), because they need real data.
+  - **Testing:** Playwright's limits rose to 60 seconds per test and 10 seconds per check, because scans are slow while 8 browsers share one dev server. Added `@axe-core/playwright`.

@@ -7,16 +7,27 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 const VISIBLE_MS = 4200;
+const VISIBLE_WITH_UNDO_MS = 7000;
 
-interface ToastMessage {
+type ToastType = 'success' | 'error' | 'info';
+
+interface ToastOptions {
+  type?: ToastType;
+  /** Adds an Undo button and keeps the message up for longer. */
+  undo?: () => void;
+}
+
+interface ToastMessage extends ToastOptions {
   id: number;
   text: string;
 }
 
-type ShowToast = (text: string) => void;
+type ShowToast = (text: string, options?: ToastOptions) => void;
+
+const ICONS: Record<ToastType, IconName> = { success: 'check', error: 'alert', info: 'info' };
 
 const ToastContext = createContext<ShowToast | null>(null);
 
@@ -29,10 +40,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const show = useCallback<ShowToast>(
-    (text) => {
+    (text, options = {}) => {
       const id = nextId.current++;
-      setToasts((current) => [...current, { id, text }]);
-      setTimeout(() => dismiss(id), VISIBLE_MS);
+      setToasts((current) => [...current, { id, text, ...options }]);
+      setTimeout(() => dismiss(id), options.undo ? VISIBLE_WITH_UNDO_MS : VISIBLE_MS);
     },
     [dismiss],
   );
@@ -42,11 +53,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div id="toasts">
-        {toasts.map(({ id, text }) => (
-          <div key={id} className="toast" role="status">
-            <Icon name="check" />
+      {/* Stays on the page while empty, so screen readers notice new messages. */}
+      <div id="toasts" aria-live="polite">
+        {toasts.map(({ id, text, type = 'success', undo }) => (
+          <div
+            key={id}
+            className={type === 'success' ? 'toast' : `toast ${type}`}
+            role={type === 'error' ? 'alert' : undefined}
+          >
+            <Icon name={ICONS[type]} />
             <span className="toast-text">{text}</span>
+            {undo && (
+              <button
+                type="button"
+                onClick={() => {
+                  dismiss(id);
+                  undo();
+                }}
+              >
+                <Icon name="undo" /> Undo
+              </button>
+            )}
             <button type="button" className="x" aria-label="Dismiss" onClick={() => dismiss(id)}>
               <Icon name="x" />
             </button>

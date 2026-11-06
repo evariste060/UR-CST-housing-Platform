@@ -39,7 +39,7 @@ export function ForgotPasswordPage() {
 
   if (sentTo) {
     return (
-      <main className="auth-wrap">
+      <main className="auth-wrap" id="main">
         <div className="auth-card">
           <div className="state success auth-sent" role="status">
             <span className="state-ic">
@@ -65,7 +65,7 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <main className="auth-wrap">
+    <main className="auth-wrap" id="main">
       <div className="auth-card">
         <h1 className="t-page auth-title">Reset your password</h1>
         <p className="muted auth-intro">

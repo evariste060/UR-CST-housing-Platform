@@ -1,0 +1,362 @@
+import { useCallback, useRef, useState, type FormEvent, type MouseEvent } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { ROLE_HOME, useAuth } from '../auth/useAuth';
+import { useLogout } from '../auth/useLogout';
+import { useDisplay } from '../display/DisplayProvider';
+import { pageLabel } from '../lib/routes';
+import { useFocusTrap } from '../lib/useFocusTrap';
+import { useReader } from '../reader/useReader';
+import { buttonClass } from './Button';
+import {
+  FindMenuItems,
+  HeaderMenu,
+  LandlordMenuItems,
+  LanguageMenuItems,
+  TextMenuItems,
+  useListProperty,
+} from './HeaderMenus';
+import { Icon, type IconName } from './Icon';
+import { HereTrail } from './Trail';
+
+type MenuName = 'find' | 'landlords' | 'text' | 'lang';
+
+const FIND_PATHS = ['/search', '/properties'];
+
+function NavItem({
+  to,
+  icon,
+  label,
+  end,
+}: {
+  to: string;
+  icon: IconName;
+  label: string;
+  end?: boolean;
+}) {
+  return (
+    <NavLink to={to} end={end} className="nl">
+      <Icon name={icon} />
+      {label}
+    </NavLink>
+  );
+}
+
+function SheetLink({ to, icon, label }: { to: string; icon: IconName; label: string }) {
+  return (
+    <NavLink to={to} end>
+      <Icon name={icon} />
+      {label}
+    </NavLink>
+  );
+}
+
+function MobileSheet({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
+  const { prefs, setPref, setPanelOpen } = useDisplay();
+  const logOut = useLogout();
+  const listProperty = useListProperty();
+  const sheet = useRef<HTMLDivElement>(null);
+  useFocusTrap(sheet, { onEscape: onClose });
+
+  const isStudent = user?.role === 'STUDENT';
+  const dark = prefs.theme === 'dark';
+
+  function closeOnBackdrop(event: MouseEvent) {
+    if (event.target === event.currentTarget) onClose();
+  }
+
+  return (
+    // The backdrop is a mouse shortcut. Keyboard users have Esc and the Close button.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div className="mobile-nav" id="mnav" onClick={closeOnBackdrop}>
+      <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="row-between sheet-head">
+          <span className="logo">
+            <span className="logo-mark2">
+              <Icon name="logoHouse" />
+            </span>
+            <span>UR-CST Housing</span>
+          </span>
+          <button type="button" className="icon-btn" aria-label="Close menu" onClick={onClose}>
+            <Icon name="x" />
+          </button>
+        </div>
+        <SheetLink to="/" icon="home" label="Home" />
+        <SheetLink to="/search" icon="search" label="Find Housing" />
+        <SheetLink to="/saved" icon="heart" label="Saved Properties" />
+        <SheetLink to="/compare" icon="layers" label="Compare" />
+        {isStudent ? (
+          <>
+            <SheetLink to="/history" icon="clock" label="Recently Viewed" />
+            <SheetLink to="/student" icon="dash" label="My Dashboard" />
+            <SheetLink to="/account" icon="user" label="Account & preferences" />
+          </>
+        ) : (
+          <SheetLink to="/how-it-works" icon="info" label="How It Works" />
+        )}
+        <SheetLink to="/help" icon="help" label="Support" />
+        <button
+          type="button"
+          className="nav-link"
+          onClick={() => {
+            onClose();
+            setPanelOpen(true);
+          }}
+        >
+          <Icon name="text" />
+          Text, font &amp; display
+        </button>
+        <button
+          type="button"
+          className="nav-link"
+          onClick={() => setPref('theme', dark ? 'light' : 'dark')}
+        >
+          <Icon name={dark ? 'sun' : 'moon'} />
+          {dark ? 'Light mode' : 'Dark mode'}
+        </button>
+        {user ? (
+          <>
+            {!isStudent && <SheetLink to={ROLE_HOME[user.role]} icon="dash" label="My workspace" />}
+            <button type="button" className="nav-link" onClick={logOut}>
+              <Icon name="logout" />
+              Log out
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="nav-link"
+              onClick={() => {
+                onClose();
+                listProperty();
+              }}
+            >
+              <Icon name="building" />
+              For Landlords: list a property
+            </button>
+            <hr className="divider" />
+            <Link className={buttonClass({ variant: 'secondary', block: true })} to="/login">
+              Login
+            </Link>
+            <Link className={`${buttonClass({ block: true })} sheet-signup`} to="/register">
+              Sign Up
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The two-row header for students, guests and public pages. */
+export function PublicHeader() {
+  const { user } = useAuth();
+  const { prefs, setPref, setQuickFindOpen } = useDisplay();
+  const reader = useReader();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  // Each remembers the page it was opened on, so moving to another page closes it.
+  const [openMenu, setOpenMenu] = useState<{ name: MenuName; pathname: string } | null>(null);
+  const [sheetPath, setSheetPath] = useState<string | null>(null);
+  const menu = openMenu?.pathname === pathname ? openMenu.name : null;
+  const sheetOpen = sheetPath === pathname;
+  const [search, setSearch] = useState('');
+
+  const closeMenu = useCallback(() => setOpenMenu(null), []);
+  const menuProps = (name: MenuName) => ({
+    open: menu === name,
+    onOpenChange: (open: boolean) => setOpenMenu(open ? { name, pathname } : null),
+  });
+
+  function submitSearch(event: FormEvent) {
+    event.preventDefault();
+    const query = search.trim();
+    navigate(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
+  }
+
+  const isStudent = user?.role === 'STUDENT';
+  const dark = prefs.theme === 'dark';
+  const findCurrent = FIND_PATHS.some((path) => pathname.startsWith(path));
+  const home = user && (isStudent ? '/account' : ROLE_HOME[user.role]);
+
+  return (
+    <>
+      <header className="header ph">
+        <div className="in">
+          <Link className="logo" to="/">
+            <span className="logo-mark2">
+              <Icon name="logoHouse" />
+            </span>
+            <span>
+              UR-CST Housing
+              <small>Student Accommodation Platform</small>
+            </span>
+          </Link>
+          <form className="hsearch" role="search" onSubmit={submitSearch}>
+            <div className="input-icon">
+              <Icon name="search" />
+              <label htmlFor="hs-q" className="sr-only">
+                Search accommodation
+              </label>
+              <input
+                className="input"
+                id="hs-q"
+                value={search}
+                placeholder="Search accommodation (e.g., Kiyovu, single room, under 100,000 RWF)"
+                autoComplete="off"
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
+            <button className="btn btn-primary" type="submit">
+              Search
+            </button>
+          </form>
+          <div className="hctl">
+            <button
+              type="button"
+              className="tool-btn"
+              aria-label={dark ? 'Light Mode' : 'Dark Mode'}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => setPref('theme', dark ? 'light' : 'dark')}
+            >
+              <Icon name={dark ? 'sun' : 'moon'} />
+              <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+            <button
+              type="button"
+              className="tool-btn"
+              aria-label="Listen"
+              title="Read this page aloud"
+              onClick={() => reader.start(pageLabel(pathname, user?.role))}
+            >
+              <Icon name="volume" />
+              <span>Listen</span>
+            </button>
+            <div className="hide-m">
+              <HeaderMenu
+                id="text"
+                label="Text options"
+                buttonClass="drop-btn"
+                button={
+                  <>
+                    <b className="aa">Aa</b> Text
+                    <Icon name="chevD" />
+                  </>
+                }
+                {...menuProps('text')}
+              >
+                <TextMenuItems onDone={closeMenu} />
+              </HeaderMenu>
+            </div>
+            <div className="hide-m">
+              <HeaderMenu
+                id="lang"
+                label="Language"
+                buttonClass="drop-btn"
+                button={
+                  <>
+                    <Icon name="globe" /> Language
+                    <Icon name="chevD" />
+                  </>
+                }
+                {...menuProps('lang')}
+              >
+                <LanguageMenuItems onDone={closeMenu} />
+              </HeaderMenu>
+            </div>
+            {user && home ? (
+              <Link className={`${buttonClass({ variant: 'secondary' })} hide-m`} to={home}>
+                <Icon name="user" />
+                {user.fullName}
+              </Link>
+            ) : (
+              <>
+                <Link className={`${buttonClass({ variant: 'outline' })} hide-m`} to="/login">
+                  Login
+                </Link>
+                <Link className={`${buttonClass()} hide-m`} to="/register">
+                  Sign Up
+                </Link>
+              </>
+            )}
+            <button
+              type="button"
+              className="icon-btn qf-m"
+              aria-label="Quick find"
+              onClick={() => setQuickFindOpen(true)}
+            >
+              <Icon name="search" />
+            </button>
+            <button
+              type="button"
+              className="icon-btn menu-btn"
+              aria-expanded={sheetOpen}
+              aria-controls="mnav"
+              aria-label="Open menu"
+              onClick={() => setSheetPath(pathname)}
+            >
+              <Icon name="menu" />
+            </button>
+          </div>
+        </div>
+      </header>
+      <div className="navrow">
+        <div className="in">
+          <nav className="nav2" aria-label="Main">
+            <NavItem to="/" end icon="home" label="Home" />
+            <HeaderMenu
+              id="find"
+              label="Find Housing"
+              buttonClass={findCurrent ? 'nl is-cur' : 'nl'}
+              button={
+                <>
+                  <Icon name="search" />
+                  Find Housing
+                  <Icon name="chevD" />
+                </>
+              }
+              {...menuProps('find')}
+            >
+              <FindMenuItems onDone={closeMenu} />
+            </HeaderMenu>
+            <NavItem to="/saved" icon="heart" label="Saved Properties" />
+            <NavItem to="/compare" icon="layers" label="Compare" />
+            {isStudent ? (
+              <>
+                <NavItem to="/history" icon="clock" label="Recently Viewed" />
+                <NavItem to="/student" icon="dash" label="My Dashboard" />
+              </>
+            ) : (
+              <>
+                <NavItem to="/how-it-works" icon="info" label="How It Works" />
+                {user ? (
+                  <NavItem to={ROLE_HOME[user.role]} icon="dash" label="My Workspace" />
+                ) : (
+                  <HeaderMenu
+                    id="landlords"
+                    label="For landlords"
+                    buttonClass="nl"
+                    button={
+                      <>
+                        <Icon name="building" />
+                        For Landlords
+                        <Icon name="chevD" />
+                      </>
+                    }
+                    {...menuProps('landlords')}
+                  >
+                    <LandlordMenuItems onDone={closeMenu} />
+                  </HeaderMenu>
+                )}
+              </>
+            )}
+            <NavItem to="/help" icon="help" label="Support" />
+          </nav>
+          <HereTrail />
+        </div>
+      </div>
+      {sheetOpen && <MobileSheet onClose={() => setSheetPath(null)} />}
+    </>
+  );
+}

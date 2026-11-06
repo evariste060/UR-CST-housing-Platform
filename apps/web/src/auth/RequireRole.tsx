@@ -11,7 +11,7 @@ const ROLE_LABEL: Record<Role, string> = {
 
 function CheckingAccount() {
   return (
-    <main className="page">
+    <main className="page" id="main">
       <p role="status">Checking your account…</p>
     </main>
   );
@@ -26,7 +26,7 @@ export function RequireRole({ allow }: { allow: Role }) {
   const label = ROLE_LABEL[allow];
 
   return (
-    <main className="page">
+    <main className="page" id="main">
       <div className="state narrow">
         <span className="state-ic">
           <Icon name="lock" />

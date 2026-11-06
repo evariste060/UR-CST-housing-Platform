@@ -4,7 +4,7 @@ import type { AuthUser } from '@urcst/shared';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { App } from '../App';
-import { ToastProvider } from '../components/Toast';
+import { AppProviders } from '../AppProviders';
 
 export const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
@@ -25,9 +25,9 @@ export function renderRoute(route: string) {
   render(
     <QueryClientProvider client={new QueryClient()}>
       <MemoryRouter initialEntries={[route]}>
-        <ToastProvider>
+        <AppProviders>
           <App />
-        </ToastProvider>
+        </AppProviders>
       </MemoryRouter>
     </QueryClientProvider>,
   );

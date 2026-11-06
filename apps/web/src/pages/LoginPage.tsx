@@ -81,7 +81,7 @@ export function LoginPage() {
   }
 
   return (
-    <main className="auth-wrap">
+    <main className="auth-wrap" id="main">
       <div className="auth-card">
         <h1 className="t-page auth-title">Log in</h1>
         <p className="muted auth-intro">

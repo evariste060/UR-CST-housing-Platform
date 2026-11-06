@@ -39,6 +39,15 @@ Type: Inter (400–800). Page heading 32/700, section 22/700, card title 17/600,
 6. Respect `prefers-reduced-motion`.
 7. Target: zero serious or critical axe violations on every route (checked in Phase 8).
 
+## Decisions made while building (Phase 3)
+- **Preferences:** `urcst-prefs` also stores `rate` (0.8, 1, 1.25) and `clickRead` (off, on).
+- **Where the controls are:** public pages have Listen, Text and dark mode in the header. Landlord and admin pages have the Listen and Display dock at the bottom left.
+- **High contrast in dark mode:** `html.dark.hc` has its own colours, because the dark theme would otherwise override `html.hc`.
+- **Chips and display cards:** `role="radio"` with `aria-checked` only. The group is one Tab stop and the arrow keys change the choice (`useRovingRadio`).
+- **Header menus:** plain open/close panels, not `role="menu"`, because they hold chips and links. Esc and clicking elsewhere close them.
+- **Dialogs:** `Modal`, `DisplayPanel`, `QuickFind` and the mobile menu share `useFocusTrap`, which also returns focus on close.
+- **Touch targets:** the 44px minimum applies to small buttons, chips and footer and trail links too.
+
 ## UX copy rules
 - From the user's side, short and specific. Buttons say what happens ("Submit Listing", "Mark as occupied").
 - Errors say what is wrong and how to fix it ("Enter an amount between 10,000 and 1,000,000 RWF.").

@@ -26,7 +26,7 @@ export function HealthPage() {
   const stateClass = isFetching ? '' : isError ? 'error' : 'success';
 
   return (
-    <main className="page">
+    <main className="page" id="main">
       <h1 className="t-page">UR-CST Student Housing</h1>
 
       <div className={`state ${stateClass}`}>

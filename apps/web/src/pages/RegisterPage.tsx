@@ -1,24 +1,17 @@
 import { registerSchema, toFieldErrors } from '@urcst/shared';
 import { useRef, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { ChoiceCards } from '../components/ChoiceCards';
 import { Field } from '../components/Field';
 import { Icon } from '../components/Icon';
+import { InfoDialog, type InfoTopic } from '../components/Modal';
 import { PasswordField } from '../components/PasswordField';
 import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
 
 type AccountType = 'STUDENT' | 'LANDLORD';
-type InfoTopic = 'terms' | 'privacy';
-
-const INFO: Record<InfoTopic, string> = {
-  terms:
-    'Listings are provided by landlords and checked by administrators, but students should visit a place and agree terms directly with the landlord before paying. The platform is not a party to any rental agreement.',
-  privacy:
-    "Landlords' phone numbers are shown only on their listings, students' messages are visible only to the landlord they contact, and accounts can be deleted on request.",
-};
 
 function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole: () => void }) {
   const { setUser } = useAuth();
@@ -173,12 +166,7 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
                 {errors.terms}
               </p>
             )}
-            {info && (
-              <div className="notice">
-                <Icon name="info" />
-                <span>{INFO[info]}</span>
-              </div>
-            )}
+            {info && <InfoDialog topic={info} onClose={() => setInfo(null)} />}
           </div>
         </div>
         <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
@@ -190,10 +178,12 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
 }
 
 export function RegisterPage() {
-  const [role, setRole] = useState<AccountType | null>(null);
+  // The For Landlords menu opens this page with the landlord form already chosen.
+  const { state } = useLocation() as { state: { role?: AccountType } | null };
+  const [role, setRole] = useState<AccountType | null>(state?.role ?? null);
 
   return (
-    <main className="auth-wrap">
+    <main className="auth-wrap" id="main">
       <div className="auth-card wide">
         {role ? (
           <RegisterForm role={role} onChangeRole={() => setRole(null)} />
