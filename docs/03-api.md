@@ -1,6 +1,6 @@
 # 03 · REST API
 
-Base URL `/api`. JSON in and out. Errors: `{ "error": { "code": "VALIDATION_ERROR", "message": "Plain-English message", "fields": { "rentRwf": "Enter an amount between 10,000 and 1,000,000 RWF." } } }`. Status codes: 400 validation, 401 not logged in, 403 wrong role or not the owner, 404 not found, 409 conflict (e.g. email taken, location in use).
+Base URL `/api`. JSON in and out. Errors: `{ "error": { "code": "VALIDATION_ERROR", "message": "Plain-English message", "fields": { "rentRwf": "Enter an amount between 10,000 and 1,000,000 RWF." } } }`. Status codes: 400 validation, 401 not logged in, 403 wrong role or not the owner, 404 not found, 409 conflict (e.g. email taken, location in use), 429 too many attempts.
 
 Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · 🛡 admin
 
@@ -8,13 +8,13 @@ Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · �
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | /auth/register | 🌐 | `{ role: STUDENT\|LANDLORD, fullName, email, phone?, password }` (phone required for landlords). Sets session cookie. |
-| POST | /auth/login | 🌐 | `{ email, password }`. Suspended accounts get 403 with a clear message. |
+| POST | /auth/login | 🌐 | `{ email, password, remember? }`. `remember` keeps the login for 30 days; otherwise it ends when the browser closes. Suspended accounts get 403 with a clear message. Limited to 10 failed attempts per 15 minutes (429). |
 | POST | /auth/logout | 🌐 | Clears cookie. |
 | GET | /auth/me | 🌐 | Current user or `null`. |
-| POST | /auth/forgot-password | 🌐 | Always 200 ("If an account exists…"). Dev: reset link logged to console. |
-| POST | /auth/reset-password | 🌐 | `{ token, password }` |
+| POST | /auth/forgot-password | 🌐 | Always 200 ("If an account exists…"). Dev: reset link logged to console. Links last 1 hour and work once. Limited to 5 requests per 15 minutes (429). |
+| POST | /auth/reset-password | 🌐 | `{ token, password }`. Ends every session for that user. |
 | PATCH | /me | 🎓🏠🛡 | Update name, email, phone. |
-| POST | /me/password | 🎓🏠🛡 | `{ currentPassword, newPassword }` |
+| POST | /me/password | 🎓🏠🛡 | `{ currentPassword, newPassword }`. Keeps this session and ends the others. |
 | PATCH | /me/contact-preferences | 🏠 | `{ allowPhone, allowWhatsapp, allowInApp }`; at least one must stay on. |
 
 ## Properties (public)

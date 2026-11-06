@@ -29,9 +29,9 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Phase 2: implement the Auth section of docs/03-api.md (register for student or landlord, login, logout, me, forgot/reset password with a console mailer, PATCH /me, password change, landlord contact preferences). JWT in an httpOnly SameSite=Lax cookie, bcrypt, zod validation from packages/shared, middleware requireAuth and requireRole, rate-limit login and forgot-password. Then build the Login, Registration (role step first) and Forgot/Reset screens in the web app to match the prototype, including the demo-account buttons and the exact validation messages. Add api tests with Supertest.
 
 **Done when**
-- [ ] All three demo accounts can log in and land on the right home (student dashboard, landlord dashboard, admin dashboard)
-- [ ] A suspended user cannot log in and sees why
-- [ ] Wrong input shows the same messages as the prototype
+- [x] All three demo accounts can log in and land on the right home (student dashboard, landlord dashboard, admin dashboard)
+- [x] A suspended user cannot log in and sees why
+- [x] Wrong input shows the same messages as the prototype
 
 ## Phase 3 · Design system, layout and accessibility layer
 **Prompt**
@@ -97,3 +97,13 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **Added beyond the listed constants:** the Demo Student's starting state from `freshState()` (p2 saved, p2 and p4 recently viewed, one search). Its saved filters use the query names from `docs/03-api.md`.
   - **Values not in the prototype:** Landlord D's phone, the administrator's registration date, who resolved report r3 and when, and the recently-viewed times. Approval dates equal submitted dates, except p1 (23 Oct), so the featured query gives p1, p8, p4 like the prototype's Landing page.
   - **Seed behaviour:** `db:seed` refuses to run if the database already has users, and only `db:reset` clears data. Every seeded account uses `demo1234`.
+
+- **2026-11-06, Phase 2 done.** Auth and account API (register, login, logout, me, forgot and reset password, `PATCH /me`, password change, contact preferences), JWT cookie sessions, `requireAuth`, `requireRole`, rate limits, and the Login, Registration, Forgot and Reset screens. Lint, typecheck, 103 unit and API tests and 8 Playwright tests pass on Node 22.16.0. Wrong input was compared live with the prototype in 10 cases and every message matched.
+  - **Changed from the docs:** `User.tokenVersion` added (see docs/02). `remember` on login and 429 responses added (see docs/03).
+  - **Changed from the prototype:** removed its "Prototype" and "simulated" wording. The login error is now only "The email or password is not correct." Added messages for suspended accounts, expired reset links and too many attempts. Students go to `/student` after registering until Search exists in Phase 4. Terms and Privacy open as an inline notice until the Modal exists in Phase 3. The Terms link, checkbox row and toast buttons are 44px high, not the prototype's 32 to 40px.
+  - **Temporary until later phases:** `TempHeader` (Phase 3) and the placeholder dashboards at `/student`, `/landlord` and `/admin` (Phases 4 to 6). `Toast` has no Undo yet, and `ChoiceCards` has no "Selected" state yet (Phase 3). The login form does not yet merge guest lists (Phase 4).
+  - **Not built yet:** the Account screens, because Phase 2 only asks for their API. Phase 5 does not list the landlord Account screen (screen 18), so it needs adding there.
+  - **Demo accounts:** the buttons appear in development only, unless a build sets `VITE_SHOW_DEMO_ACCOUNTS=true`. A production build was checked and contains neither the buttons nor the password.
+  - **Testing:** `npm test` now needs Docker running and uses `urcst_housing_test`, and refuses any database whose name does not end in `_test`. `npm run e2e` needs the seeded demo data.
+  - **Bugs found and fixed:** a failed session check caused an endless request loop that also kept removing the form (now a regression test). The API now connects to the database before it starts listening, because the first login otherwise took about 2.2 seconds and failed the browser tests after a cold start. After the fix, 6 cold runs passed 8 of 8 tests.
+  - **Phase 9 reminder:** add `trust proxy` for the rate limits, a real mailer, and CSRF protection if cookies move to `SameSite=None`.

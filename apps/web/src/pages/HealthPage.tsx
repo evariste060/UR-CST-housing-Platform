@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { healthResponseSchema, type HealthResponse } from '@urcst/shared';
+import { Icon, type IconName } from '../components/Icon';
 
 async function fetchHealth(): Promise<HealthResponse> {
   const response = await fetch('/api/health');
@@ -7,18 +8,10 @@ async function fetchHealth(): Promise<HealthResponse> {
   return healthResponseSchema.parse(await response.json());
 }
 
-// Icon paths are copied from the ICONS set in reference/prototype.html.
-const ICON_PATHS = {
-  check: 'm5 12 5 5 9-10',
-  alert: 'M12 3 2 20h20L12 3zM12 10v4M12 17h.01',
-};
-
-function StateIcon({ name }: { name: keyof typeof ICON_PATHS }) {
+function StateIcon({ name }: { name: IconName }) {
   return (
     <span className="state-ic">
-      <svg className="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={ICON_PATHS[name]} />
-      </svg>
+      <Icon name={name} />
     </span>
   );
 }

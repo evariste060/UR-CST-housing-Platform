@@ -74,6 +74,7 @@ model User {
   phone        String?
   role         Role
   status       AccountStatus @default(ACTIVE)
+  tokenVersion Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -262,6 +263,7 @@ model PasswordReset {
 ```
 
 ## Notes
+- `tokenVersion` is added to the login token. Changing or resetting a password increases it, which ends every other session for that user.
 - Enums are written on several lines because Prisma rejects one-line enums. This is a formatting change only.
 - `distanceKm` on Property is copied from the Location when created; an admin can adjust it later.
 - "Deleted" by a landlord = `deletedAt` set (soft delete, so Undo works and reports keep their history).

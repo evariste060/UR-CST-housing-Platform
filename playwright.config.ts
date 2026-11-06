@@ -13,7 +13,8 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
+    // Goes through Vite to the API, so the tests wait until both are ready.
+    url: 'http://localhost:5173/api/health',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

@@ -1,30 +1,31 @@
-import express, { type NextFunction, type Request, type Response } from 'express';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import { AppError, errorHandler } from './lib/errors';
+import { consoleMailer, type Mailer } from './lib/mailer';
+import { authRouter } from './routes/auth';
 import { healthRouter } from './routes/health';
+import { meRouter } from './routes/me';
 
-export function createApp() {
+interface AppOptions {
+  mailer?: Mailer;
+}
+
+export function createApp({ mailer = consoleMailer }: AppOptions = {}) {
   const app = express();
 
   app.disable('x-powered-by');
   app.use(express.json());
+  app.use(cookieParser());
 
   app.use('/api/health', healthRouter);
+  app.use('/api/auth', authRouter(mailer));
+  app.use('/api/me', meRouter);
 
-  app.use((_req, res) => {
-    res.status(404).json({
-      error: { code: 'NOT_FOUND', message: 'We could not find that page.' },
-    });
+  app.use(() => {
+    throw new AppError(404, 'NOT_FOUND', 'We could not find that page.');
   });
 
-  // Express treats a four-argument function as the error handler, so `_next` must stay.
-  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err);
-    res.status(500).json({
-      error: {
-        code: 'SERVER_ERROR',
-        message: 'Something went wrong on our side. Please try again.',
-      },
-    });
-  });
+  app.use(errorHandler);
 
   return app;
 }
