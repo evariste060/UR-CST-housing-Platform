@@ -1,0 +1,1 @@
+Compare the screen $ARGUMENTS in the running web app with the same screen in reference/prototype.html. Use Playwright to take screenshots of both at 1440px and 390px wide. List every difference in layout, wording, states and behaviour, then fix the ones that are not intentional (intentional differences are recorded in the docs).

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+apps/api/uploads/*
+!apps/api/uploads/demo/
+.DS_Store
