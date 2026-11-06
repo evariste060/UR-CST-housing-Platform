@@ -1,11 +1,18 @@
-import { changePasswordSchema, toFieldErrors, updateProfileSchema } from '@urcst/shared';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  changePasswordSchema,
+  contactPreferencesSchema,
+  toFieldErrors,
+  updateProfileSchema,
+  type ContactPreferences,
+} from '@urcst/shared';
 import { useRef, useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/useAuth';
 import { useLogout } from '../auth/useLogout';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
-import { Icon } from '../components/Icon';
+import { Icon, type IconName } from '../components/Icon';
 import { PasswordField } from '../components/PasswordField';
 import { PickGroup } from '../components/PickGroup';
 import { useToast } from '../components/Toast';
@@ -14,11 +21,13 @@ import { PREF_LABELS } from '../display/prefs';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
 
+const CONTACT_KEY = ['contact-preferences'];
 const SIZE_OPTIONS = Object.entries(PREF_LABELS.size).map(([value, label]) => ({ value, label }));
 
 function ProfileForm() {
   const { user, setUser } = useAuth();
   const toast = useToast();
+  const isLandlord = user?.role === 'LANDLORD';
   const form = useRef<HTMLFormElement>(null);
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -80,11 +89,12 @@ function ProfileForm() {
       />
       <Field
         id="ac-phone"
-        label="Phone number (optional)"
+        label={isLandlord ? 'Phone number (shown to students)' : 'Phone number (optional)'}
         type="tel"
         value={phone}
         onChange={setPhone}
         autoComplete="tel"
+        required={isLandlord}
         error={errors.phone}
       />
       <div className="full">
@@ -219,7 +229,64 @@ function DisplaySection() {
   );
 }
 
+const CONTACT_METHODS: { key: keyof ContactPreferences; icon: IconName; label: string }[] = [
+  { key: 'allowPhone', icon: 'phone', label: 'Phone calls' },
+  { key: 'allowWhatsapp', icon: 'whatsapp', label: 'WhatsApp' },
+  { key: 'allowInApp', icon: 'message', label: 'In-app messages' },
+];
+
+function ContactMethods() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { data: prefs } = useQuery({
+    queryKey: CONTACT_KEY,
+    queryFn: api.contactPreferences,
+  });
+
+  async function toggle(key: keyof ContactPreferences) {
+    if (!prefs) return;
+    const next = { ...prefs, [key]: !prefs[key] };
+    const result = contactPreferencesSchema.safeParse(next);
+    if (!result.success) {
+      toast(result.error.issues[0]?.message ?? 'Please try again.', { type: 'error' });
+      return;
+    }
+    try {
+      queryClient.setQueryData(CONTACT_KEY, await api.saveContactPreferences(next));
+      toast('Contact preferences saved.');
+    } catch (error) {
+      toast(error instanceof ApiError ? error.message : 'Please try again.', { type: 'error' });
+    }
+  }
+
+  return (
+    <section className="panel" aria-labelledby="cp-h">
+      <h2 className="t-section" id="cp-h">
+        How students can contact you
+      </h2>
+      <p className="t-help">Only the methods you turn on are shown on your listings.</p>
+      <div className="account-switches">
+        {CONTACT_METHODS.map(({ key, icon, label }) => (
+          <label className="switch" key={key}>
+            <span>
+              <Icon name={icon} /> {label}
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={prefs?.[key] ?? false}
+              disabled={!prefs}
+              onChange={() => void toggle(key)}
+            />
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function AccountPage() {
+  const { user } = useAuth();
   const logOut = useLogout();
 
   return (
@@ -237,6 +304,7 @@ export function AccountPage() {
           </h2>
           <ProfileForm />
         </section>
+        {user?.role === 'LANDLORD' && <ContactMethods />}
         <section className="panel" aria-labelledby="pw-h">
           <h2 className="t-section" id="pw-h">
             Change password

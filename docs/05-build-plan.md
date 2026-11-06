@@ -56,9 +56,9 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Phase 5: implement the Landlord endpoints (summary, properties with draft autosave, photo upload/reorder/cover/delete, submit, availability with Undo, soft delete with restore, inquiries and replies) and build the Landlord dashboard, My properties, the 5-step Add/Edit wizard, Preview and Student inquiries screens to match the prototype. Show room availability and listing status as separate badges. Write a Playwright test for Journey B.
 
 **Done when**
-- [ ] Journey B passes
-- [ ] Refreshing the page in the middle of the wizard keeps the draft
-- [ ] Undo restores availability and deleted listings
+- [x] Journey B passes
+- [x] Refreshing the page in the middle of the wizard keeps the draft
+- [x] Undo restores availability and deleted listings
 
 ## Phase 6 · Administrator experience
 **Prompt**
@@ -131,3 +131,14 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **For Phase 5:** landlords need an Account page; `/account` is student-only for now. `ContactPage` covers the student side of inquiries only.
   - **Test data:** the Playwright journeys write to the local database, so each run adds an inquiry and saved rows to the Demo Student. `npm run db:reset` puts the demo data back.
   - **Still open:** Read aloud has not been checked by ear (from Phase 3).
+
+- **2026-11-06, Phase 5 done.** Landlord endpoints, draft autosave, photo upload, the 5-step Add/Edit wizard, Preview, Submitted, Dashboard, My properties, Student inquiries and the landlord side of Account. Lint and typecheck pass, as do 329 unit tests (api 178, web 115, shared 36), 53 Playwright tests and the web build.
+  - **Done when:** all three items run in `e2e/landlord-journey.spec.ts`. The refresh test covers `/new` and a later step, and refreshes before the delayed autosave has fired.
+  - **Added to docs/03:** `GET /landlord/properties/:id`, `POST /landlord/properties/:id/photos/:photoId/restore`, `GET /me/contact-preferences`, and `newInquiries` in the summary for the sidebar counts.
+  - **Added to docs/02:** `type`, `locationId` and `distanceKm` can be empty on a draft. `Property.draft` holds unsubmitted answers, and `PropertyPhoto.pendingAdd` and `pendingRemove` hold unsubmitted photo changes. A live listing stays as students see it until Submit, then goes to PENDING.
+  - **Changes from the proposal or the prototype:** Account is one role-aware page, not a separate landlord page. Chips replace `.seg` for availability, bathroom and facilities. The map pin also works from the keyboard. "Add 3 demo photos" and "replies are saved here only" are gone, and the server checks each photo's real file type. "5 or more" rooms is stored as 5. Draft rows show under All with a Draft badge and Continue. The trail shows "Edit accommodation" when editing, which the prototype does not cover.
+  - **Left for Phase 7:** notifications are not sent, although the Submitted page already says "We'll notify you of the result". The bell, the Notifications count and the Account notification settings are also Phase 7.
+  - **Bug found in Phase 4 and fixed:** two filters chosen quickly could lose the first one, which made Journey A fail now and then under load. `SearchPage` now keeps both, with a Playwright test that clicks twice before the page redraws.
+  - **Saving on refresh:** the wizard also saves as the page closes. This needs a saved draft, so text typed within half a second of the very first autosave on `/new` can still be lost on refresh.
+  - **Test data:** the Playwright journeys add listings, uploaded photos and replies to the demo data, so the demo landlord's screens fill up with test rows. `npm run db:reset` puts the demo data back. No new environment settings, so `.env.example` is unchanged.
+  - **Still open:** focus after deleting a row (noted in Phase 3) has only been tested with the mouse, and Read aloud has not been checked by ear.

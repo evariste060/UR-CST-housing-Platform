@@ -4,6 +4,7 @@ import { ROLE_HOME, useAuth } from '../auth/useAuth';
 import { useLogout } from '../auth/useLogout';
 import { useDisplay } from '../display/DisplayProvider';
 import { buttonClass } from './Button';
+import { useLandlordSummary } from '../landlord/queries';
 import { Icon, type IconName } from './Icon';
 import { Trail } from './Trail';
 
@@ -30,6 +31,22 @@ const ADMIN_ITEMS: SideItem[] = [
   { to: '/admin/locations', label: 'Locations', icon: 'map' },
   { to: '/notifications', label: 'Notifications', icon: 'bell' },
 ];
+
+function LandlordCount({ to }: { to: string }) {
+  const { data } = useLandlordSummary();
+  const [count, meaning] =
+    to === '/landlord/properties' ? [data?.pending, 'pending review'] : [data?.newInquiries, 'new'];
+
+  if (!count) return null;
+  return (
+    <span className="count-pill">
+      {count}
+      <span className="sr-only"> {meaning}</span>
+    </span>
+  );
+}
+
+const COUNTED = ['/landlord/properties', '/landlord/inquiries'];
 
 function QuickFindButton() {
   const { setQuickFindOpen } = useDisplay();
@@ -99,6 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink key={to} to={to} end={user ? to === ROLE_HOME[user.role] : false}>
               <Icon name={icon} />
               {label}
+              {isLandlord && COUNTED.includes(to) && <LandlordCount to={to} />}
             </NavLink>
           ))}
         </nav>

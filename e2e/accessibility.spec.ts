@@ -262,8 +262,19 @@ test.describe('accessibility scan', () => {
     await page.getByRole('button', { name: /Demo Landlord A/ }).click();
     await expect(page).toHaveURL(/\/landlord$/);
     await pageIsReady(page);
-
     expect(await seriousProblems(page)).toEqual([]);
+
+    for (const path of [
+      '/landlord/properties',
+      '/landlord/properties/new',
+      '/landlord/inquiries',
+      '/landlord/account',
+    ]) {
+      await page.goto(path);
+      await pageIsReady(page);
+      await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+      expect(await seriousProblems(page), path).toEqual([]);
+    }
   });
 
   test('the student pages have no serious problems', async ({ page }) => {

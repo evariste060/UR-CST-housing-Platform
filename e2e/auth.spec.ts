@@ -6,7 +6,7 @@ const PASSWORD = 'demo1234';
 test.describe('demo accounts land on the right home', () => {
   for (const [button, heading] of [
     ['Demo Student', 'Welcome back, Demo Student'],
-    ['Demo Landlord A', 'Landlord dashboard'],
+    ['Demo Landlord A', /^Good (morning|afternoon|evening), Demo Landlord A$/],
     ['Demo Administrator', 'Administrator dashboard'],
   ] as const) {
     test(`${button} opens the ${heading}`, async ({ page }) => {

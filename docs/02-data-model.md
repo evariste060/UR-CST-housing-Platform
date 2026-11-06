@@ -114,16 +114,16 @@ model Property {
   landlordId    String
   landlord      User         @relation("LandlordProperties", fields: [landlordId], references: [id])
   title         String
-  type          RoomType
+  type          RoomType? // empty until the wizard is filled in
   rooms         Int          @default(1)
   description   String
-  locationId    String
-  location      Location     @relation(fields: [locationId], references: [id])
+  locationId    String?
+  location      Location?    @relation(fields: [locationId], references: [id])
   landmark      String
   address       String?
   pinX          Float? // 0..1 position on the schematic map
   pinY          Float?
-  distanceKm    Decimal      @db.Decimal(3, 1)
+  distanceKm    Decimal?     @db.Decimal(3, 1)
   rentRwf       Int
   water         Boolean
   electricity   Boolean
@@ -133,6 +133,7 @@ model Property {
   availability  Availability @default(AVAILABLE)
   reviewStatus  ReviewStatus @default(DRAFT)
   reviewNote    String?
+  draft         Json? // wizard answers, copied to the columns above on submit
   submittedAt   DateTime?
   reviewedAt    DateTime?
   reviewedById  String?
@@ -159,6 +160,8 @@ model PropertyPhoto {
   url        String
   position   Int
   isCover    Boolean  @default(false)
+  pendingAdd    Boolean @default(false) // hidden from students until submit
+  pendingRemove Boolean @default(false) // deleted on submit, Undo clears it
 }
 
 model SavedProperty {
@@ -266,6 +269,8 @@ model PasswordReset {
 - `tokenVersion` is added to the login token. Changing or resetting a password increases it, which ends every other session for that user.
 - Enums are written on several lines because Prisma rejects one-line enums. This is a formatting change only.
 - `distanceKm` on Property is copied from the Location when created; an admin can adjust it later.
+- Wizard answers live in `Property.draft`. A new draft has an empty `type`, `locationId` and `distanceKm`, so it can never appear to students. Submit validates the answers, copies them to the columns and sets PENDING, which is why editing an approved listing changes nothing until then.
+- Photo changes wait for submit too. `pendingAdd` photos are hidden from students, `pendingRemove` photos are deleted on submit, and order and cover are kept in `draft.photos`.
 - "Deleted" by a landlord = `deletedAt` set (soft delete, so Undo works and reports keep their history).
 - The compare list is client-only state (max 4), not stored in the database.
 - Display preferences are stored in localStorage on the device, not in the database.

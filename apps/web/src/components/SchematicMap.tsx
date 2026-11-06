@@ -16,6 +16,12 @@ function position({ angleDeg, distanceKm }: LocationDto): [number, number] {
   ];
 }
 
+/** Where a neighbourhood sits on the map, in the same 0 to 1 terms as a placed pin. */
+export function areaPin(location: LocationDto) {
+  const [x, y] = position(location);
+  return { x: x / WIDTH, y: y / HEIGHT };
+}
+
 interface SchematicMapProps {
   locations: LocationDto[];
   area?: string;
@@ -23,7 +29,7 @@ interface SchematicMapProps {
   pin?: { x: number; y: number } | null;
 }
 
-/** A simple drawing of the area around campus, not to scale. Later reused by the wizard. */
+/** A simple drawing of the area around campus, not to scale. */
 export function SchematicMap({ locations, area, pin }: SchematicMapProps) {
   const location = locations.find(({ name }) => name === area);
   const pinAt: [number, number] | null = pin

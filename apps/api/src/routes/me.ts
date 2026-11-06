@@ -61,6 +61,20 @@ meRouter.post('/password', validate(changePasswordSchema), async (req, res) => {
   res.json({ ok: true });
 });
 
+meRouter.get('/contact-preferences', requireRole('LANDLORD'), async (req, res) => {
+  const profile = await prisma.landlordProfile.upsert({
+    where: { userId: req.user!.id },
+    create: { userId: req.user!.id },
+    update: {},
+  });
+  const prefs: ContactPreferences = {
+    allowPhone: profile.allowPhone,
+    allowWhatsapp: profile.allowWhatsapp,
+    allowInApp: profile.allowInApp,
+  };
+  res.json(prefs);
+});
+
 meRouter.patch(
   '/contact-preferences',
   requireRole('LANDLORD'),

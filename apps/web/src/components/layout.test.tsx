@@ -34,6 +34,15 @@ describe('routes', () => {
     expect(crumbsFor('/help')[0]?.label).toBe('Home');
   });
 
+  it('shows the wizard step after the page it belongs to', () => {
+    expect(
+      crumbsFor('/landlord/properties/new', 'LANDLORD', 'Step 1 of 5').map(({ label }) => label),
+    ).toEqual(['Landlord workspace', 'My properties', 'Add accommodation', 'Step 1 of 5']);
+    expect(crumbsFor('/landlord/properties/p1/edit', 'LANDLORD', 'Step 2 of 5').at(2)?.label).toBe(
+      'Edit accommodation',
+    );
+  });
+
   it('never offers workspace layouts to the wrong role', () => {
     expect(usesWorkspaceLayout('/landlord', 'LANDLORD')).toBe(true);
     expect(usesWorkspaceLayout('/admin', 'LANDLORD')).toBe(false);

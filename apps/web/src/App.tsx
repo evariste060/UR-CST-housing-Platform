@@ -10,6 +10,12 @@ import { DesignSystemPage } from './pages/DesignSystemPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { LandingPage } from './pages/LandingPage';
+import { DashboardPage } from './pages/landlord/DashboardPage';
+import { InquiriesPage } from './pages/landlord/InquiriesPage';
+import { PreviewPage } from './pages/landlord/PreviewPage';
+import { PropertiesPage } from './pages/landlord/PropertiesPage';
+import { SubmittedPage } from './pages/landlord/SubmittedPage';
+import { WizardPage } from './pages/landlord/WizardPage';
 import { LoginPage } from './pages/LoginPage';
 import { PropertyPage } from './pages/PropertyPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -21,12 +27,6 @@ import { StudentDashboardPage } from './pages/StudentDashboardPage';
 
 // Pages that later phases build. Each stands in with ComingSoonPage until then.
 const PUBLIC_PAGES_TO_BUILD = ['/help', '/notifications'];
-const LANDLORD_PAGES_TO_BUILD = [
-  '/landlord/properties',
-  '/landlord/properties/new',
-  '/landlord/inquiries',
-  '/landlord/account',
-];
 const ADMIN_PAGES_TO_BUILD = [
   '/admin/review',
   '/admin/users',
@@ -80,10 +80,14 @@ export function App() {
           <Route path="/account" element={<AccountPage />} />
         </Route>
         <Route element={<RequireRole allow="LANDLORD" />}>
-          <Route path="/landlord" element={<RoleHomePage title="Landlord dashboard" />} />
-          {LANDLORD_PAGES_TO_BUILD.map((path) => (
-            <Route key={path} path={path} element={<ComingSoonPage />} />
-          ))}
+          <Route path="/landlord" element={<DashboardPage />} />
+          <Route path="/landlord/properties" element={<PropertiesPage />} />
+          <Route path="/landlord/properties/new" element={<WizardPage key="new" />} />
+          <Route path="/landlord/properties/:id/edit" element={<WizardPage key="edit" />} />
+          <Route path="/landlord/properties/:id/preview" element={<PreviewPage />} />
+          <Route path="/landlord/properties/:id/submitted" element={<SubmittedPage />} />
+          <Route path="/landlord/inquiries" element={<InquiriesPage />} />
+          <Route path="/landlord/account" element={<AccountPage />} />
         </Route>
         <Route element={<RequireRole allow="ADMIN" />}>
           <Route path="/admin" element={<RoleHomePage title="Administrator dashboard" />} />

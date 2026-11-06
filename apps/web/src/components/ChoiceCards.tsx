@@ -36,6 +36,7 @@ interface ChoiceFieldProps<T extends string> extends ChoiceCardsProps<T> {
   value: T | undefined;
   help?: string;
   error?: string;
+  required?: boolean;
 }
 
 /** Large pick-one cards that keep the choice, with the "Selected" label and echo. */
@@ -46,6 +47,7 @@ export function ChoiceField<T extends string>({
   onChoose,
   help,
   error,
+  required = false,
 }: ChoiceFieldProps<T>) {
   const labelId = useId();
   const radio = useRovingRadio(
@@ -60,6 +62,12 @@ export function ChoiceField<T extends string>({
       <div className="pick-head">
         <span className="label" id={labelId}>
           {label}
+          {required && (
+            <span className="req" aria-hidden="true">
+              {' '}
+              *
+            </span>
+          )}
         </span>
         <span className="picked" aria-live="polite">
           {selected && <Icon name="check" />}
@@ -67,7 +75,12 @@ export function ChoiceField<T extends string>({
         </span>
       </div>
       {help && <p className="t-help">{help}</p>}
-      <div className="choice-grid" role="radiogroup" aria-labelledby={labelId}>
+      <div
+        className="choice-grid"
+        role="radiogroup"
+        aria-labelledby={labelId}
+        aria-required={required || undefined}
+      >
         {options.map((option) => (
           <button key={option.value} className="choice" {...radio(option.value)}>
             <Icon name={option.value === value ? 'check' : option.icon} />

@@ -76,7 +76,7 @@ describe('demo data matches the prototype', () => {
 
     for (const source of proto.PROPERTIES_SEED) {
       const seeded = byId(properties, source.id as string);
-      const location = byId(locations, seeded.locationId);
+      const location = byId(locations, seeded.locationId as string);
 
       expect(seeded).toMatchObject({
         title: source.title,

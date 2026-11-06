@@ -7,29 +7,45 @@ export const PUBLIC_LISTING = {
   deletedAt: null,
 } satisfies Prisma.PropertyWhereInput;
 
+/** A photo added in the wizard stays hidden until the listing is submitted. */
+const PUBLIC_PHOTOS = { pendingAdd: false };
+
 export const SUMMARY_INCLUDE = {
   location: true,
-  photos: { orderBy: [{ isCover: 'desc' }, { position: 'asc' }], take: 1 },
+  photos: {
+    where: PUBLIC_PHOTOS,
+    orderBy: [{ isCover: 'desc' }, { position: 'asc' }],
+    take: 1,
+  },
 } satisfies Prisma.PropertyInclude;
 
 export const DETAIL_INCLUDE = {
   location: true,
-  photos: { orderBy: [{ isCover: 'desc' }, { position: 'asc' }] },
+  photos: { where: PUBLIC_PHOTOS, orderBy: [{ isCover: 'desc' }, { position: 'asc' }] },
   landlord: { include: { landlordProfile: true } },
 } satisfies Prisma.PropertyInclude;
 
 type SummaryRow = Prisma.PropertyGetPayload<{ include: typeof SUMMARY_INCLUDE }>;
 type DetailRow = Prisma.PropertyGetPayload<{ include: typeof DETAIL_INCLUDE }>;
 
+/** Only a draft that was never submitted lacks these, and such a draft is never shown. */
+function submitted<T extends SummaryRow>(row: T) {
+  const { type, location, distanceKm } = row;
+  if (!type || !location || !distanceKm) throw new Error(`Listing ${row.id} is not complete.`);
+  return { type, location, distanceKm };
+}
+
 export function toSummary(row: SummaryRow): PropertySummary {
+  const { type, location, distanceKm } = submitted(row);
+
   return {
     id: row.id,
     title: row.title,
-    type: row.type,
+    type,
     rooms: row.rooms,
-    area: row.location.name,
+    area: location.name,
     landmark: row.landmark,
-    distanceKm: row.distanceKm.toNumber(),
+    distanceKm: distanceKm.toNumber(),
     rentRwf: row.rentRwf,
     water: row.water,
     electricity: row.electricity,
@@ -56,7 +72,7 @@ export function toDetail(row: DetailRow): PropertyDetail {
     description: row.description,
     address: row.address,
     reviewStatus: row.reviewStatus,
-    areaDistanceKm: row.location.distanceKm.toNumber(),
+    areaDistanceKm: submitted(row).location.distanceKm.toNumber(),
     pin: row.pinX !== null && row.pinY !== null ? { x: row.pinX, y: row.pinY } : null,
     photos: row.photos.map(({ id, url }) => ({ id, url })),
     landlord: {
@@ -75,9 +91,16 @@ interface Viewer {
 
 /** The public see approved listings. An owner or administrator can see any of theirs. */
 export function canView(
-  row: { reviewStatus: string; deletedAt: Date | null; landlordId: string },
+  row: {
+    reviewStatus: string;
+    deletedAt: Date | null;
+    landlordId: string;
+    locationId: string | null;
+  },
   viewer: Viewer | null,
 ) {
+  // The wizard shows a draft to its owner. It has nothing to show here yet.
+  if (row.locationId === null) return false;
   if (row.reviewStatus === 'APPROVED' && row.deletedAt === null) return true;
   if (viewer?.role === 'ADMIN') return true;
   return row.deletedAt === null && viewer?.role === 'LANDLORD' && viewer.id === row.landlordId;

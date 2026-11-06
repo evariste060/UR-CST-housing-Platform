@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { createApp } from '../app';
 import { prisma } from '../db';
 import type { Mailer } from '../lib/mailer';
+import type { Storage } from '../lib/storage';
 import { assertTestDatabase } from './testDatabase';
 
 export const PASSWORD = 'correct-password';
@@ -76,13 +77,24 @@ export async function createListing(
 /** An app whose mailer keeps reset links instead of printing them. */
 export function createTestApp() {
   const sentLinks: string[] = [];
+  const files = new Map<string, Buffer>();
+  const storage: Storage = {
+    async save(data, extension) {
+      const url = `/uploads/listings/${files.size + 1}.${extension}`;
+      files.set(url, data);
+      return url;
+    },
+    async remove(url) {
+      files.delete(url);
+    },
+  };
   const mailer: Mailer = {
     async sendPasswordReset(_to, link) {
       sentLinks.push(link);
     },
   };
 
-  return { app: createApp({ mailer }), sentLinks };
+  return { app: createApp({ mailer, storage }), sentLinks, files };
 }
 
 export function tokenFrom(link: string | undefined): string {

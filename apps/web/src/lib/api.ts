@@ -1,5 +1,20 @@
 import type {
   ApiErrorBody,
+  Availability,
+  AvailabilityResult,
+  ContactPreferences,
+  InquiryFilter,
+  InquiryStatus,
+  InquiryThread,
+  LandlordFilter,
+  LandlordInquiryList,
+  LandlordProperty,
+  LandlordPropertyList,
+  LandlordSummary,
+  ListingForm,
+  ListingPatch,
+  PhotoArrangement,
+  ReplyInput,
   AuthResponse,
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -34,14 +49,21 @@ export class ApiError extends Error {
 
 const NETWORK_MESSAGE = 'We could not reach the server. Check your connection and try again.';
 
-async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+async function request<T>(
+  path: string,
+  method = 'GET',
+  body?: unknown,
+  keepalive = false,
+): Promise<T> {
+  const isJson = body !== undefined && !(body instanceof FormData);
   let response: Response;
 
   try {
     response = await fetch(`/api${path}`, {
       method,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      keepalive,
+      headers: isJson ? { 'Content-Type': 'application/json' } : undefined,
+      body: isJson ? JSON.stringify(body) : (body as FormData | undefined),
     });
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', NETWORK_MESSAGE);
@@ -78,6 +100,69 @@ export const api = {
   changePassword: (input: ChangePasswordInput) =>
     request<{ ok: true }>('/me/password', 'POST', input),
 
+  contactPreferences: () => request<ContactPreferences>('/me/contact-preferences'),
+  saveContactPreferences: (prefs: ContactPreferences) =>
+    request<ContactPreferences>('/me/contact-preferences', 'PATCH', prefs),
+  landlordSummary: () => request<LandlordSummary>('/landlord/summary'),
+  landlordProperties: (filter: LandlordFilter, page: number, pageSize: number) =>
+    request<LandlordPropertyList>(
+      `/landlord/properties?filter=${filter}&page=${page}&pageSize=${pageSize}`,
+    ),
+  listing: (id: string) => request<ListingForm>(`/landlord/properties/${encodeURIComponent(id)}`),
+  createListing: (patch: ListingPatch) =>
+    request<ListingForm>('/landlord/properties', 'POST', patch),
+  updateListing: (id: string, patch: ListingPatch) =>
+    request<ListingForm>(`/landlord/properties/${encodeURIComponent(id)}`, 'PATCH', patch),
+  /** For the moment the page closes: the browser finishes this after the page has gone. */
+  saveListingOnLeave: (id: string, patch: ListingPatch) =>
+    request<ListingForm>(`/landlord/properties/${encodeURIComponent(id)}`, 'PATCH', patch, true),
+  addPhotos(id: string, files: File[]) {
+    const form = new FormData();
+    for (const file of files) form.append('photos', file);
+    return request<ListingForm>(
+      `/landlord/properties/${encodeURIComponent(id)}/photos`,
+      'POST',
+      form,
+    );
+  },
+  arrangePhotos: (id: string, arrangement: PhotoArrangement) =>
+    request<ListingForm>(
+      `/landlord/properties/${encodeURIComponent(id)}/photos`,
+      'PATCH',
+      arrangement,
+    ),
+  removePhoto: (id: string, photoId: string) =>
+    request<ListingForm>(
+      `/landlord/properties/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`,
+      'DELETE',
+    ),
+  restorePhoto: (id: string, photoId: string) =>
+    request<ListingForm>(
+      `/landlord/properties/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}/restore`,
+      'POST',
+    ),
+  submitListing: (id: string) =>
+    request<LandlordProperty>(`/landlord/properties/${encodeURIComponent(id)}/submit`, 'POST'),
+  setAvailability: (id: string, availability: Availability) =>
+    request<AvailabilityResult>(
+      `/landlord/properties/${encodeURIComponent(id)}/availability`,
+      'PATCH',
+      { availability },
+    ),
+  deleteListing: (id: string) =>
+    request<{ ok: true }>(`/landlord/properties/${encodeURIComponent(id)}`, 'DELETE'),
+  restoreListing: (id: string) =>
+    request<{ ok: true }>(`/landlord/properties/${encodeURIComponent(id)}/restore`, 'POST'),
+  landlordInquiries: (status: InquiryFilter, page: number, pageSize: number) =>
+    request<LandlordInquiryList>(
+      `/landlord/inquiries?status=${status}&page=${page}&pageSize=${pageSize}`,
+    ),
+  landlordInquiry: (id: string) =>
+    request<InquiryThread>(`/landlord/inquiries/${encodeURIComponent(id)}`),
+  replyToInquiry: (id: string, input: ReplyInput) =>
+    request<InquiryThread>(`/landlord/inquiries/${encodeURIComponent(id)}/messages`, 'POST', input),
+  setInquiryStatus: (id: string, status: InquiryStatus) =>
+    request<InquiryThread>(`/landlord/inquiries/${encodeURIComponent(id)}`, 'PATCH', { status }),
   properties: (query: URLSearchParams) =>
     request<Paginated<PropertySummary>>(`/properties?${query}`),
   featured: () => request<Items<PropertySummary>>('/properties/featured'),

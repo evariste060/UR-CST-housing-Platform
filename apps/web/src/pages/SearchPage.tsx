@@ -1,5 +1,5 @@
 import { EMPTY_FILTERS, type PropertySort, type SearchFilters } from '@urcst/shared';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Button, buttonClass } from '../components/Button';
@@ -170,8 +170,22 @@ export function SearchPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const search = usePropertySearch(filters, sort);
 
+  // The address updates a moment after a click, so a quick second click still sees the old
+  // filters. Each change adds only what it altered to the ones waiting to reach the address.
+  const waiting = useRef<SearchFilters | null>(null);
+  useEffect(() => {
+    waiting.current = null;
+  }, [params]);
+
   function change(next: SearchFilters, message?: string) {
-    setParams(filtersToParams(next, sort), { replace: true });
+    const merged: Record<string, unknown> = { ...(waiting.current ?? filters) };
+    const before: Record<string, unknown> = filters;
+    const after: Record<string, unknown> = next;
+    for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
+      if (after[key] !== before[key]) merged[key] = after[key];
+    }
+    waiting.current = merged as SearchFilters;
+    setParams(filtersToParams(waiting.current, sort), { replace: true });
     if (message) toast(message);
   }
 

@@ -15,6 +15,7 @@ Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · �
 | POST | /auth/reset-password | 🌐 | `{ token, password }`. Ends every session for that user. |
 | PATCH | /me | 🎓🏠🛡 | Update name, email, phone. |
 | POST | /me/password | 🎓🏠🛡 | `{ currentPassword, newPassword }`. Keeps this session and ends the others. |
+| GET | /me/contact-preferences | 🏠 | The landlord's current choices. |
 | PATCH | /me/contact-preferences | 🏠 | `{ allowPhone, allowWhatsapp, allowInApp }`; at least one must stay on. |
 
 ## Properties (public)
@@ -43,13 +44,15 @@ Legend: 🌐 anyone · 🎓 student · 🏠 landlord (own resources only) · �
 ## Landlord
 | Method | Path | Notes |
 |---|---|---|
-| GET | /landlord/summary | Totals: properties, available, occupied, pending; recent inquiries. |
-| GET | /landlord/properties | `?filter=all\|available\|occupied\|pending` |
+| GET | /landlord/summary | Totals: properties, available, occupied, pending, new inquiries; recent inquiries. |
+| GET | /landlord/properties | `?filter=all\|available\|occupied\|pending`; also returns `counts` for the tabs. |
+| GET | /landlord/properties/:id | The wizard's view: saved answers over the live listing, and photos. |
 | POST | /landlord/properties | Creates a DRAFT (wizard step 1 autosave). |
 | PATCH | /landlord/properties/:id | Partial update (autosave). Editing an APPROVED listing does not change it until submit. |
 | POST | /landlord/properties/:id/photos | multipart, max 10 photos, jpg/png/webp, ≤ 5 MB each. |
-| PATCH | /landlord/properties/:id/photos | `{ order: [photoId…], coverId }` |
-| DELETE | /landlord/properties/:id/photos/:photoId | |
+| PATCH | /landlord/properties/:id/photos | `{ order: [photoId…], coverId }`. Takes effect on submit. |
+| DELETE | /landlord/properties/:id/photos/:photoId | Takes effect on submit. |
+| POST | /landlord/properties/:id/photos/:photoId/restore | Undo for removing a photo. |
 | POST | /landlord/properties/:id/submit | Validates all steps; sets PENDING; notifies admins. |
 | PATCH | /landlord/properties/:id/availability | `{ availability }`; returns previous value for Undo; notifies students who saved it. |
 | DELETE | /landlord/properties/:id | Soft delete. `POST /landlord/properties/:id/restore` for Undo. |

@@ -6,6 +6,8 @@ export function useFocusFirstError(
   errors: Record<string, string>,
 ) {
   useEffect(() => {
-    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    formRef.current
+      ?.querySelector<HTMLElement>('[aria-invalid="true"], .has-error [role="radio"][tabindex="0"]')
+      ?.focus();
   }, [formRef, errors]);
 }

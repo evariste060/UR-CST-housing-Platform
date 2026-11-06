@@ -33,7 +33,6 @@ const STATIC_TRAILS: Record<string, Crumb[]> = {
   '/design-system': [HOME, { label: 'Design system' }],
   '/landlord': [LANDLORD, { label: 'Dashboard' }],
   '/landlord/properties': [LANDLORD, { label: 'My properties' }],
-  '/landlord/properties/new': [LANDLORD, PROPERTIES, { label: 'Add accommodation' }],
   '/landlord/inquiries': [LANDLORD, { label: 'Student inquiries' }],
   '/landlord/account': [LANDLORD, { label: 'Account & preferences' }],
   '/admin': [ADMIN, { label: 'Dashboard' }],
@@ -55,6 +54,16 @@ export function crumbsFor(pathname: string, role?: Role, title = 'Property'): Cr
     return listing[2]
       ? [HOME, FIND, { label: title, to: property }, { label: 'Contact landlord' }]
       : [HOME, FIND, { label: title }];
+  }
+  const wizardPage = path.match(/^\/landlord\/properties\/[^/]+\/(preview|submitted)$/);
+  if (wizardPage) {
+    return [LANDLORD, PROPERTIES, { label: wizardPage[1] === 'preview' ? 'Preview' : 'Submitted' }];
+  }
+  if (path === '/landlord/properties/new') {
+    return [LANDLORD, PROPERTIES, { label: 'Add accommodation' }, { label: title }];
+  }
+  if (/^\/landlord\/properties\/[^/]+\/edit$/.test(path)) {
+    return [LANDLORD, PROPERTIES, { label: 'Edit accommodation' }, { label: title }];
   }
   return STATIC_TRAILS[path] ?? [HOME, { label: 'Page not found' }];
 }

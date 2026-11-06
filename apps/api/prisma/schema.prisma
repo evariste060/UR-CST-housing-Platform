@@ -109,16 +109,16 @@ model Property {
   landlordId    String
   landlord      User         @relation("LandlordProperties", fields: [landlordId], references: [id])
   title         String
-  type          RoomType
+  type          RoomType? // empty until the wizard is filled in
   rooms         Int          @default(1)
   description   String
-  locationId    String
-  location      Location     @relation(fields: [locationId], references: [id])
+  locationId    String?
+  location      Location?    @relation(fields: [locationId], references: [id])
   landmark      String
   address       String?
   pinX          Float? // 0..1 position on the schematic map
   pinY          Float?
-  distanceKm    Decimal      @db.Decimal(3, 1)
+  distanceKm    Decimal?     @db.Decimal(3, 1)
   rentRwf       Int
   water         Boolean
   electricity   Boolean
@@ -128,6 +128,7 @@ model Property {
   availability  Availability @default(AVAILABLE)
   reviewStatus  ReviewStatus @default(DRAFT)
   reviewNote    String?
+  draft         Json? // wizard answers, copied to the columns above on submit
   submittedAt   DateTime?
   reviewedAt    DateTime?
   reviewedById  String?
@@ -148,12 +149,14 @@ model Property {
 }
 
 model PropertyPhoto {
-  id         String   @id @default(cuid())
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  url        String
-  position   Int
-  isCover    Boolean  @default(false)
+  id            String   @id @default(cuid())
+  propertyId    String
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url           String
+  position      Int
+  isCover       Boolean  @default(false)
+  pendingAdd    Boolean  @default(false) // hidden from students until submit
+  pendingRemove Boolean  @default(false) // deleted on submit, Undo clears it
 }
 
 model SavedProperty {

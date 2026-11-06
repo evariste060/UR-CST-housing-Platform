@@ -101,3 +101,22 @@ test('the empty state buttons change the results', async ({ page }) => {
   await page.getByRole('button', { name: 'Clear all filters' }).click();
   await expect(page.locator('#res-count')).toHaveText('11 places match your search');
 });
+
+test('filters chosen in quick succession are all kept', async ({ page }) => {
+  await page.goto('/search');
+  const filters = page.getByRole('complementary', { name: 'Filters' });
+  const rent = await filters.getByRole('radio', { name: 'Up to 100,000' }).elementHandle();
+  const distance = await filters.getByRole('radio', { name: 'Within 2 km' }).elementHandle();
+
+  // Both clicks land before the page has redrawn, as they can on a slow phone.
+  await page.evaluate(
+    ([first, second]) => {
+      (first as HTMLElement).click();
+      (second as HTMLElement).click();
+    },
+    [rent, distance],
+  );
+
+  await expect(page).toHaveURL(/maxRent=100000/);
+  await expect(page).toHaveURL(/maxDistance=2/);
+});

@@ -155,12 +155,12 @@ describe('search matches the prototype on the same data', () => {
 
     listings = seedProperties.map((row) => ({
       id: row.id as string,
-      area: locationName.get(row.locationId) as string,
+      area: locationName.get(row.locationId as string) as string,
       title: row.title,
       landmark: row.landmark,
       rent: row.rentRwf,
       dist: Number(row.distanceKm),
-      type: row.type.toLowerCase(),
+      type: (row.type as string).toLowerCase(),
       selfContained: row.selfContained,
       water: row.water,
       electricity: row.electricity,

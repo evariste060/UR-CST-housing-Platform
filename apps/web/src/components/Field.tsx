@@ -1,4 +1,9 @@
-import type { HTMLInputAutoCompleteAttribute, HTMLInputTypeAttribute, ReactNode } from 'react';
+import type {
+  HTMLAttributes,
+  HTMLInputAutoCompleteAttribute,
+  HTMLInputTypeAttribute,
+  ReactNode,
+} from 'react';
 import { Icon } from './Icon';
 
 interface FieldProps {
@@ -12,6 +17,10 @@ interface FieldProps {
   required?: boolean;
   error?: string;
   autoComplete?: HTMLInputAutoCompleteAttribute;
+  /** Makes the field a text area with this many rows. */
+  rows?: number;
+  maxLength?: number;
+  inputMode?: HTMLAttributes<HTMLInputElement>['inputMode'];
   /** Lets PasswordField add its show/hide button next to the input. */
   trailing?: ReactNode;
 }
@@ -27,22 +36,38 @@ export function Field({
   required = false,
   error,
   autoComplete,
+  rows,
+  maxLength,
+  inputMode,
   trailing,
 }: FieldProps) {
   const describedBy = error ? `${id}-err` : help ? `${id}-help` : undefined;
 
-  const input = (
+  const shared = {
+    id,
+    name: id,
+    value,
+    placeholder,
+    maxLength,
+    'aria-describedby': describedBy,
+    'aria-invalid': error ? true : undefined,
+    'aria-required': required || undefined,
+  };
+
+  const input = rows ? (
+    <textarea
+      className="textarea"
+      rows={rows}
+      {...shared}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  ) : (
     <input
       className="input"
-      id={id}
-      name={id}
       type={type}
-      value={value}
-      placeholder={placeholder}
       autoComplete={autoComplete}
-      aria-describedby={describedBy}
-      aria-invalid={error ? true : undefined}
-      aria-required={required || undefined}
+      inputMode={inputMode}
+      {...shared}
       onChange={(event) => onChange(event.target.value)}
     />
   );

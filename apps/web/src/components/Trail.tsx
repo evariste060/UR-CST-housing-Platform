@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Role } from '@urcst/shared';
+import { WIZARD_STEPS, type Role } from '@urcst/shared';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { api } from '../lib/api';
@@ -34,8 +34,11 @@ function CrumbList({ crumbs }: { crumbs: Crumb[] }) {
   );
 }
 
+const wizardStepLabel = (step: number) =>
+  `Step ${step} of ${WIZARD_STEPS.length}: ${WIZARD_STEPS[step - 1]}`;
+
 function useCrumbs() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { user } = useAuth();
   const id = pathname.match(/^\/properties\/([^/]+)/)?.[1] ?? '';
   // Reads what the page has loaded. It never fetches on its own.
@@ -44,7 +47,11 @@ function useCrumbs() {
     queryFn: () => api.property(id),
     enabled: false,
   });
-  return { crumbs: crumbsFor(pathname, user?.role, data?.title), role: user?.role };
+  const inWizard = /^\/landlord\/properties\/(new|[^/]+\/edit)$/.test(pathname);
+  const step = inWizard
+    ? wizardStepLabel(Number(new URLSearchParams(search).get('step')) || 1)
+    : '';
+  return { crumbs: crumbsFor(pathname, user?.role, step || data?.title), role: user?.role };
 }
 
 /** "You are here" for landlord and administrator pages, on its own row with a Back link. */
