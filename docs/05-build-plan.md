@@ -40,7 +40,7 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 **Done when**
 - [x] Every display preference changes every page and survives a reload
 - [x] Listen reads the design-system page and highlights each block (order and highlight tested with a stand-in voice; the real voice still needs a check by ear)
-- [ ] Keyboard-only: you can reach and use every control and see where focus is (all but one: see the Phase 3 entry in the Progress log about Undo)
+- [x] Keyboard-only: you can reach and use every control and see where focus is
 
 ## Phase 4 · Student experience
 **Prompt**
@@ -116,4 +116,8 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **Changed from the docs:** the Design system page says Listen and Display are in the header on public pages and in a dock on workspace pages, because that is what the prototype does; `docs/04` now says so too. The Terms and Privacy text no longer says "Prototype text".
   - **Temporary until later phases:** `ComingSoonPage` stands in for pages not built yet. Quick find searches pages only until Phase 4 adds neighbourhoods and listings. The student dashboard keeps a Log out button until the Account page exists. The header search and Find Housing menu already link to `/search?...`, and Phase 4 must read those values (`q`, `types`, `maxDistance`, `maxRent` and `availableOnly`, the names in docs/03).
   - **Moved to later phases:** `LandingCard`, `Gallery`, `Lightbox`, `CompareTray` and `SchematicMap` (Phases 4 and 5), and `NotificationBell` with the sidebar and header counts (Phase 7), because they need real data.
-  - **Testing:** Playwright's limits rose to 60 seconds per test and 10 seconds per check, because scans are slow while 8 browsers share one dev server. Added `@axe-core/playwright`.
+  - **Testing:** Playwright's limits rose to 60 seconds per test and 10 seconds per check, because scans are slow while several browsers share one dev server. Added `@axe-core/playwright`.
+
+- **2026-11-06, Phase 3 keyboard gap closed.** When an action taken from the keyboard shows a toast with Undo, focus now moves to Undo, and a screen reader hears what it undoes. The message stays up while focus is on it. Undo, Dismiss and Esc return focus to the control that led there, or to the page title if that control has gone. Focus stays put after mouse or touch actions, while someone is typing in a field, and while a dialog is open. This behaviour is new, not in the prototype.
+  - **For Phase 5:** close a confirmation dialog before, or in the same update as, showing its toast with Undo, or focus will stay put. After a row is deleted, focus goes to the page title, so check that this feels right on My properties.
+  - **Test stability:** two existing tests had started failing on the last commit too, so neither was caused by this change. `npm run e2e` now uses 3 browsers at once, because the default number timed out while loading pages. Testing Library's wait rose from 1 to 5 seconds, because the first render took longer than that when test files ran in parallel.

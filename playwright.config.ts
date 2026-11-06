@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // More than this and pages time out while loading, because they all share one dev server.
+  workers: 3,
   // The accessibility scans are slow while several browsers share one dev server.
   timeout: 60_000,
   expect: { timeout: 10_000 },

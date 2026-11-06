@@ -6,6 +6,10 @@ const FOCUSABLE =
 // Dialogs can stack, for example Quick find opened over the display panel. Only the top one acts.
 const openTraps: symbol[] = [];
 
+export function hasOpenFocusTrap() {
+  return openTraps.length > 0;
+}
+
 interface FocusTrapOptions {
   onEscape: () => void;
   /** Where focus starts. Defaults to the first control in the dialog. */

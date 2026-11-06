@@ -178,9 +178,36 @@ test.describe('keyboard only', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByText('Demo: listing deleted.')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Undo', exact: true }).focus();
+    await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByText('Demo: listing restored.')).toBeVisible();
+    await expect(opener).toBeFocused();
+  });
+
+  test('Undo waits for someone using the keyboard, and Esc puts them back', async ({ page }) => {
+    await page.goto('/design-system');
+    await pageIsReady(page);
+    const opener = page.getByRole('button', { name: 'Toast with Undo' });
+
+    await opener.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeFocused();
+
+    await page.waitForTimeout(8000);
+    await expect(page.getByText('Availability updated successfully.')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByText('Availability updated successfully.')).toBeHidden();
+    await expect(opener).toBeFocused();
+  });
+
+  test('Undo stays out of the way of someone using a mouse', async ({ page }) => {
+    await page.goto('/design-system');
+    await pageIsReady(page);
+
+    await page.getByRole('button', { name: 'Toast with Undo' }).click();
+    await expect(page.getByText('Availability updated successfully.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Undo', exact: true })).not.toBeFocused();
   });
 
   test('Quick find goes to a page and focus lands on its title', async ({ page }) => {

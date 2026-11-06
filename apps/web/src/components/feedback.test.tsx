@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -72,6 +72,144 @@ describe('Toast', () => {
     return vi.advanceTimersByTimeAsync(5000).then(() => {
       expect(screen.getByText('Availability updated.')).toBeInTheDocument();
     });
+  });
+});
+
+describe('Toast with Undo, from the keyboard', () => {
+  function Example({ onUndo = () => {} }: { onUndo?: () => void }) {
+    const toast = useToast();
+    const [gone, setGone] = useState(false);
+    return (
+      <>
+        <button onClick={() => toast('Availability updated.', { undo: onUndo })}>Change</button>
+        {!gone && (
+          <button
+            onClick={() => {
+              setGone(true);
+              toast('Listing deleted.', { undo: onUndo });
+            }}
+          >
+            Delete
+          </button>
+        )}
+        <button>Elsewhere</button>
+        <input aria-label="Note" onChange={() => toast('Typed.', { undo: onUndo })} />
+        <main>
+          <h1>Page title</h1>
+        </main>
+      </>
+    );
+  }
+
+  function renderExample(onUndo?: () => void) {
+    render(
+      <ToastProvider>
+        <Example onUndo={onUndo} />
+      </ToastProvider>,
+    );
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('moves focus to Undo and says what it undoes', async () => {
+    renderExample();
+    screen.getByRole('button', { name: 'Change' }).focus();
+    await userEvent.keyboard('{Enter}');
+
+    const undo = screen.getByRole('button', { name: 'Undo' });
+    expect(undo).toHaveFocus();
+    expect(undo).toHaveAccessibleDescription('Availability updated.');
+  });
+
+  it('returns focus to the control that led there after Undo', async () => {
+    const onUndo = vi.fn();
+    renderExample(onUndo);
+    screen.getByRole('button', { name: 'Change' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Change' })).toHaveFocus();
+  });
+
+  it('closes on Esc and returns focus', async () => {
+    renderExample();
+    screen.getByRole('button', { name: 'Change' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByText('Availability updated.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Change' })).toHaveFocus();
+  });
+
+  it('goes to the page title when the control has gone', async () => {
+    renderExample();
+    screen.getByRole('button', { name: 'Delete' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.getByRole('heading', { name: 'Page title' })).toHaveFocus();
+  });
+
+  it('stays up while focus is on it, then goes once focus leaves', async () => {
+    vi.useFakeTimers();
+    renderExample();
+    const change = screen.getByRole('button', { name: 'Change' });
+    change.focus();
+    fireEvent.keyDown(change, { key: 'Enter' });
+    fireEvent.click(change);
+    expect(screen.getByRole('button', { name: 'Undo' })).toHaveFocus();
+
+    await act(() => vi.advanceTimersByTimeAsync(60_000));
+    expect(screen.getByText('Availability updated.')).toBeInTheDocument();
+
+    const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+    act(() => elsewhere.focus());
+    await act(() => vi.advanceTimersByTimeAsync(7000));
+    expect(screen.queryByText('Availability updated.')).not.toBeInTheDocument();
+    expect(elsewhere).toHaveFocus();
+  });
+
+  it('leaves focus alone after a mouse click', async () => {
+    renderExample();
+    await userEvent.click(screen.getByRole('button', { name: 'Change' }));
+
+    expect(screen.getByRole('button', { name: 'Change' })).toHaveFocus();
+  });
+
+  it('never takes focus from someone typing', async () => {
+    renderExample();
+    await userEvent.type(screen.getByLabelText('Note'), 'a');
+
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Note')).toHaveFocus();
+  });
+
+  it('never takes focus out of a dialog that stays open', async () => {
+    function InDialog() {
+      const toast = useToast();
+      return (
+        <ConfirmDialog
+          title="Delete this listing?"
+          body="This removes it."
+          confirm="Delete"
+          onCancel={() => {}}
+          onConfirm={() => toast('Listing deleted.', { undo: () => {} })}
+        />
+      );
+    }
+    render(
+      <ToastProvider>
+        <InDialog />
+      </ToastProvider>,
+    );
+    screen.getByRole('button', { name: 'Delete' }).focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
   });
 });
 

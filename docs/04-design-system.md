@@ -47,6 +47,7 @@ Type: Inter (400–800). Page heading 32/700, section 22/700, card title 17/600,
 - **Header menus:** plain open/close panels, not `role="menu"`, because they hold chips and links. Esc and clicking elsewhere close them.
 - **Dialogs:** `Modal`, `DisplayPanel`, `QuickFind` and the mobile menu share `useFocusTrap`, which also returns focus on close.
 - **Touch targets:** the 44px minimum applies to small buttons, chips and footer and trail links too.
+- **Toast with Undo:** after a keyboard action, focus moves to Undo and the toast stays up until focus leaves it. Undo, Dismiss and Esc return focus. Focus stays put after mouse or touch actions, in text fields and while a dialog is open.
 
 ## UX copy rules
 - From the user's side, short and specific. Buttons say what happens ("Submit Listing", "Mark as occupied").
