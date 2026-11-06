@@ -15,7 +15,7 @@ reference/prototype.html   The approved clickable prototype (open in a browser)
 ```
 
 ## Before you start (one time)
-1. Install **Node.js 20 LTS**, **Git** and **Docker Desktop** (for the local PostgreSQL database).
+1. Install **Node.js 22 LTS** (this repo pins it in `.nvmrc`), **Git** and **Docker Desktop** (for the local PostgreSQL database).
 2. Install Claude Code. Use one of these:
    - macOS / Linux / WSL: `curl -fsSL https://claude.ai/install.sh | bash`
    - Windows PowerShell: `irm https://claude.ai/install.ps1 | iex`

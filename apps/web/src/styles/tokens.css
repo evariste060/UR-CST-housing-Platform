@@ -1,0 +1,45 @@
+/* Copied from :root in reference/prototype.html. Phase 3 adds the dark theme. */
+:root {
+  /* Foundation colours (from the brief) */
+  --blue: #1d4ed8;
+  --blue-700: #1e40af;
+  --blue-50: #eff4ff;
+  --blue-100: #dbe6fe;
+  --ink: #0f172a;
+  --night: #0f172a;
+  --surface: #f8fafc;
+  --green: #16a34a;
+  --green-text: #15803d;
+  --green-50: #ecfdf3;
+  /* Semantic, used only where needed */
+  --amber-text: #92400e;
+  --amber-50: #fef6e0;
+  --amber-border: #f5d48a;
+  --red-text: #b91c1c;
+  --red-50: #fef2f2;
+  --red-border: #f5b5b5;
+  /* Neutrals with a slight blue bias */
+  --white: #ffffff;
+  --muted: #475569;
+  --subtle: #64748b;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --slate-100: #f1f5f9;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  /* 8px spacing system */
+  --s1: 0.5rem;
+  --s2: 1rem;
+  --s3: 1.5rem;
+  --s4: 2rem;
+  --s5: 2.5rem;
+  --s6: 3rem;
+  --s8: 4rem;
+  --r-sm: 8px;
+  --r: 12px;
+  --r-lg: 16px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.16);
+  --focus: 0 0 0 3px #ffffff, 0 0 0 5px var(--blue);
+  /* Layout idea: content max 1280px; student pages use a top header; landlord/admin use a left sidebar shell */
+  color-scheme: light;
+}

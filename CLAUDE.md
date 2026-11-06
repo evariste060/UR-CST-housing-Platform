@@ -15,13 +15,13 @@ This is a Human-Centered Design (HCD) university project by NKURUNZIZA Evariste.
 ## Stack
 - Monorepo with npm workspaces
   - `apps/web`: React 18 + TypeScript + Vite, React Router, TanStack Query, plain CSS with CSS variables (tokens in `apps/web/src/styles/tokens.css`). No UI framework.
-  - `apps/api`: Node.js 20 + Express + TypeScript, Prisma ORM, PostgreSQL 16
+  - `apps/api`: Node.js 22 + Express + TypeScript, Prisma ORM, PostgreSQL 16
   - `packages/shared`: zod schemas and TypeScript types shared by web and api (filters, DTOs, enums)
 - Auth: email + password (bcrypt), session as a signed JWT in an httpOnly, SameSite=Lax cookie. Roles: STUDENT, LANDLORD, ADMIN.
 - Photos: multer upload to `apps/api/uploads` in development, behind a small `storage` interface so it can move to Cloudinary or S3 later.
 - Email: `mailer` interface that logs to the console in development (password reset links).
 - Tests: Vitest (+ Supertest for api, Testing Library for web), Playwright for end-to-end journeys, `@axe-core/playwright` for accessibility.
-- Local database: `docker compose up -d db` (Postgres on port 5432).
+- Local database: `docker compose up -d db` (Postgres on port 5433, set by `DB_PORT`, because a Windows PostgreSQL service may already use 5432).
 
 ## Commands (create them in Phase 0 and keep them working)
 - `npm run dev`: api on :4000 and web on :5173 together

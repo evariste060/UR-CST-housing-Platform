@@ -11,10 +11,10 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 > Read CLAUDE.md and all files in docs/. Then set up Phase 0: an npm-workspaces monorepo with apps/web (Vite + React 18 + TypeScript + React Router + TanStack Query), apps/api (Express + TypeScript + Prisma), packages/shared (zod schemas and types). Add docker-compose.yml with Postgres 16, .env.example files, ESLint + Prettier, Vitest in both apps, Playwright at the root, and the root scripts listed in CLAUDE.md. The api should expose GET /api/health, and the web app should show a page that calls it. Propose the file list first and wait for my approval.
 
 **Done when**
-- [ ] `docker compose up -d db` starts Postgres
-- [ ] `npm run dev` serves the web app on :5173 and the api on :4000, and the page shows "API OK"
-- [ ] `npm run lint`, `npm run typecheck` and `npm test` pass
-- [ ] `.env` is in `.gitignore`
+- [x] `docker compose up -d db` starts Postgres
+- [x] `npm run dev` serves the web app on :5173 and the api on :4000, and the page shows "API OK"
+- [x] `npm run lint`, `npm run typecheck` and `npm test` pass
+- [x] `.env` is in `.gitignore`
 
 ## Phase 1 · Database and seed
 **Prompt**
@@ -84,3 +84,9 @@ Tip: start each phase in a fresh conversation (`/clear`) so Claude reads CLAUDE.
 
 ## Progress log
 Claude: after each phase, add a line here with the date, what was done, and anything skipped or changed.
+
+- **2026-11-06, Phase 0 done.** Monorepo (`apps/web`, `apps/api`, `packages/shared`), Docker Postgres 16, ESLint + Prettier, Vitest, Playwright and all root scripts. `GET /api/health` and a temporary home page with loading, "API OK" and error states; Landing replaces it in Phase 4. Lint, typecheck, 9 unit tests and 1 Playwright test pass on Node 22.16.0.
+  - **Changed from the docs:** Node 22 instead of 20 (20 is out of support, pinned in `.nvmrc`). Docker Postgres on port 5433 instead of 5432, because a Windows PostgreSQL service uses 5432. CLAUDE.md and README updated.
+  - **Version pins:** Prisma 6.19 (Prisma 7 moves the database URL out of `schema.prisma`, which would change docs/02), TypeScript 5.9 (`typescript-eslint` needs < 6.1), ESLint 9 (`eslint-plugin-jsx-a11y` does not support 10; npm marks 9.39 as unsupported, so upgrade when the plugin allows), jsdom 26 (31 needs a newer Node 22).
+  - **Added to the proposal:** root `tsconfig.json` (typechecks `e2e`), `vitest` in `packages/shared`, a `format` script, and Prettier in `npm run lint`.
+  - **Not verified:** `npm run db:reset`. Prisma blocks AI agents from running it without the user's explicit consent. `db:migrate` and `db:seed` were run and work, with nothing to migrate or seed until Phase 1. Check `db:reset` in Phase 1, where it is a "Done when" item.
