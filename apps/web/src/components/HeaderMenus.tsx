@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { useDisplay } from '../display/DisplayProvider';
@@ -20,7 +20,12 @@ interface MenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: ReactNode;
+  /** Also opens when a mouse rests on it. Touch and keyboard still use the button. */
+  openOnHover?: boolean;
 }
+
+/** Long enough to move the mouse from the button down into the panel. */
+const HOVER_CLOSE_DELAY_MS = 200;
 
 /** A button with a panel under it. Esc and clicking elsewhere close it. */
 export function HeaderMenu({
@@ -32,15 +37,24 @@ export function HeaderMenu({
   open,
   onOpenChange,
   children,
+  openOnHover = false,
 }: MenuProps) {
   const wrapper = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+  const openedByHover = useRef(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    if (!open) return;
-    wrapper.current
-      ?.querySelector<HTMLElement>('.hmenu [aria-checked="true"], .hmenu a, .hmenu button')
-      ?.focus();
+    if (!open) {
+      openedByHover.current = false;
+      return;
+    }
+    // A mouse passing over the menu must not pull keyboard focus into it.
+    if (!openedByHover.current) {
+      wrapper.current
+        ?.querySelector<HTMLElement>('.hmenu [aria-checked="true"], .hmenu a, .hmenu button')
+        ?.focus();
+    }
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
@@ -64,15 +78,50 @@ export function HeaderMenu({
     };
   }, [open, onOpenChange]);
 
+  useEffect(() => {
+    if (!open) clearTimeout(closeTimer.current);
+    return () => clearTimeout(closeTimer.current);
+  }, [open]);
+
+  function onPointerEnter(event: ReactPointerEvent) {
+    if (!openOnHover || event.pointerType !== 'mouse') return;
+    clearTimeout(closeTimer.current);
+    if (open) return;
+    openedByHover.current = true;
+    onOpenChange(true);
+  }
+
+  function onPointerLeave(event: ReactPointerEvent) {
+    if (!openOnHover || event.pointerType !== 'mouse' || !open) return;
+    closeTimer.current = setTimeout(() => {
+      const panel = wrapper.current?.querySelector('.hmenu');
+      if (!panel?.contains(document.activeElement)) onOpenChange(false);
+    }, HOVER_CLOSE_DELAY_MS);
+  }
+
+  function onButtonClick() {
+    // The menu is already showing from the hover, so this click keeps it there.
+    if (openedByHover.current) {
+      openedByHover.current = false;
+      return;
+    }
+    onOpenChange(!open);
+  }
+
   return (
-    <div className="rel" ref={wrapper}>
+    <div
+      className="rel"
+      ref={wrapper}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    >
       <button
         ref={trigger}
         type="button"
         className={buttonClass}
         aria-expanded={open}
         aria-controls={`menu-${id}`}
-        onClick={() => onOpenChange(!open)}
+        onClick={onButtonClick}
       >
         {button}
       </button>

@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AuthUser, Role } from '@urcst/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { crumbsFor, searchQuickFind, usesWorkspaceLayout } from '../lib/routes';
+import { crumbsFor, pageLabel, searchQuickFind, usesWorkspaceLayout } from '../lib/routes';
 import { json, renderRoute, stubApi } from '../test/render';
 
 const person = (role: Role): AuthUser => ({
@@ -34,13 +34,9 @@ describe('routes', () => {
     expect(crumbsFor('/help')[0]?.label).toBe('Home');
   });
 
-  it('shows the wizard step after the page it belongs to', () => {
-    expect(
-      crumbsFor('/landlord/properties/new', 'LANDLORD', 'Step 1 of 5').map(({ label }) => label),
-    ).toEqual(['Landlord workspace', 'My properties', 'Add accommodation', 'Step 1 of 5']);
-    expect(crumbsFor('/landlord/properties/p1/edit', 'LANDLORD', 'Step 2 of 5').at(2)?.label).toBe(
-      'Edit accommodation',
-    );
+  it('names the wizard pages', () => {
+    expect(pageLabel('/landlord/properties/new', 'LANDLORD')).toBe('Add accommodation');
+    expect(pageLabel('/landlord/properties/p1/edit', 'LANDLORD')).toBe('Edit accommodation');
   });
 
   it('never offers workspace layouts to the wrong role', () => {
@@ -62,14 +58,12 @@ describe('routes', () => {
 });
 
 describe('public header', () => {
-  it('shows guests the login buttons and the current page', async () => {
+  it('shows guests the login buttons', async () => {
     stubApi(() => json({}));
     renderRoute('/design-system');
 
     expect(await screen.findByRole('link', { name: 'Login' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign Up' })).toBeInTheDocument();
-    const trail = screen.getByRole('navigation', { name: 'You are here' });
-    expect(within(trail).getByText('Design system')).toHaveAttribute('aria-current', 'page');
   });
 
   it('highlights the active page in the navigation', async () => {
@@ -143,13 +137,12 @@ describe('public header', () => {
 });
 
 describe('workspace layout', () => {
-  it('shows landlords the sidebar, trail and Add accommodation', async () => {
+  it('shows landlords the sidebar and Add accommodation', async () => {
     stubApi(() => json({}), person('LANDLORD'));
     renderRoute('/landlord/properties/new');
 
     const side = await screen.findByRole('navigation', { name: 'Landlord navigation' });
     expect(within(side).getByRole('link', { name: 'My properties' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Back to My properties/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Add accommodation' }),

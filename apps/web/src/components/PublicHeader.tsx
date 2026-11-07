@@ -23,7 +23,6 @@ import {
 } from './HeaderMenus';
 import { Icon, type IconName } from './Icon';
 import { useToast } from './Toast';
-import { HereTrail } from './Trail';
 
 type MenuName = 'find' | 'landlords' | 'text' | 'lang';
 
@@ -353,6 +352,7 @@ export function PublicHeader() {
               id="find"
               label="Find Housing"
               buttonClass={findCurrent ? 'nl is-cur' : 'nl'}
+              openOnHover
               button={
                 <>
                   <Icon name="search" />
@@ -381,6 +381,7 @@ export function PublicHeader() {
                     id="landlords"
                     label="For landlords"
                     buttonClass="nl"
+                    openOnHover
                     button={
                       <>
                         <Icon name="building" />
@@ -397,7 +398,6 @@ export function PublicHeader() {
             )}
             <NavItem to="/help" icon="help" label="Support" />
           </nav>
-          <HereTrail />
         </div>
       </div>
       {sheetOpen && <MobileSheet onClose={() => setSheetPath(null)} />}

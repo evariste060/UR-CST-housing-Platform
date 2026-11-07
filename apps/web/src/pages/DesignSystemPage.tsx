@@ -462,8 +462,7 @@ export function DesignSystemPage() {
       <Section id="ds-way" title="Wayfinding & audio">
         <ul>
           <li>
-            <b>You are here trail</b> under every header, with the current page highlighted and a
-            Back link on deep pages.
+            <b>Active navigation item</b> is filled blue, so the current section is clear.
           </li>
           <li>
             <b>Quick find</b> (Ctrl + K) searches pages, neighbourhoods and rooms.

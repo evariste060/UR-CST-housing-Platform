@@ -51,7 +51,7 @@ This is a Human-Centered Design (HCD) university project by NKURUNZIZA Evariste.
 ## Accessibility and HCD requirements (apply on every screen)
 - Body text at least 16px; text contrast at least 4.5:1; never show status with colour alone (icon + word).
 - Touch targets at least 44 × 44px; visible keyboard focus; every control has a label.
-- "You are here" trail on every page and the active nav item highlighted.
+- The active nav item is highlighted on every page.
 - Prefer visible pick-one chips and cards over dropdowns and free typing. The selected option looks clearly different (solid blue + tick) and each group shows "Selected: …".
 - Display settings (font, text size, line spacing, contrast, highlight, light/dark) and Read aloud (Web Speech API) work on every page. See `docs/04-design-system.md`.
 - Empty, loading, error and success states exist for every data view.

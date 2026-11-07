@@ -6,7 +6,6 @@ import { useDisplay } from '../display/DisplayProvider';
 import { buttonClass } from './Button';
 import { useLandlordSummary } from '../landlord/queries';
 import { Icon, type IconName } from './Icon';
-import { Trail } from './Trail';
 
 interface SideItem {
   to: string;
@@ -100,7 +99,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <Trail />
       <div className="shell">
         <nav className="side" aria-label={`${roleName} navigation`}>
           <div className="role-tag">{roleName}</div>

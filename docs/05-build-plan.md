@@ -142,3 +142,7 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
   - **Saving on refresh:** the wizard also saves as the page closes. This needs a saved draft, so text typed within half a second of the very first autosave on `/new` can still be lost on refresh.
   - **Test data:** the Playwright journeys add listings, uploaded photos and replies to the demo data, so the demo landlord's screens fill up with test rows. `npm run db:reset` puts the demo data back. No new environment settings, so `.env.example` is unchanged.
   - **Still open:** focus after deleting a row (noted in Phase 3) has only been tested with the mouse, and Read aloud has not been checked by ear.
+
+- **2026-11-07, UI refinement started (branch `ui-refinement`).** This pass deliberately moves away from the prototype's look. Features stay the same.
+  - **Main navigation:** regular-weight text, Find Housing and For Landlords open on mouse hover, and hover gives a stronger background.
+  - **"You are here" removed from the whole app, as the user decided.** The rule is gone from `CLAUDE.md`, `docs/01` and `docs/04`. The Back link and the workspace label in that row went with it. The prototype still shows the trail.

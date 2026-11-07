@@ -42,7 +42,7 @@ const STATIC_TRAILS: Record<string, Crumb[]> = {
   '/admin/locations': [ADMIN, { label: 'Locations' }],
 };
 
-/** The "You are here" path for a page. `title` names the listing on property pages. */
+/** The path to a page, used to name it when it opens. `title` names the listing on property pages. */
 export function crumbsFor(pathname: string, role?: Role, title = 'Property'): Crumb[] {
   const path = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname;
   if (path === '/help') return [workspaceRoot(role), { label: 'Help & support' }];
@@ -59,11 +59,10 @@ export function crumbsFor(pathname: string, role?: Role, title = 'Property'): Cr
   if (wizardPage) {
     return [LANDLORD, PROPERTIES, { label: wizardPage[1] === 'preview' ? 'Preview' : 'Submitted' }];
   }
-  if (path === '/landlord/properties/new') {
-    return [LANDLORD, PROPERTIES, { label: 'Add accommodation' }, { label: title }];
-  }
+  if (path === '/landlord/properties/new')
+    return [LANDLORD, PROPERTIES, { label: 'Add accommodation' }];
   if (/^\/landlord\/properties\/[^/]+\/edit$/.test(path)) {
-    return [LANDLORD, PROPERTIES, { label: 'Edit accommodation' }, { label: title }];
+    return [LANDLORD, PROPERTIES, { label: 'Edit accommodation' }];
   }
   return STATIC_TRAILS[path] ?? [HOME, { label: 'Page not found' }];
 }

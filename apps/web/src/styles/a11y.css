@@ -340,15 +340,6 @@ body.reading-on .compare-tray {
   border-color: #fcd34d;
 }
 @media (max-width: 900px) {
-  .trail .in {
-    padding: 8px 16px;
-  }
-  .trail .here {
-    display: none;
-  }
-  .trail-right .badge {
-    display: none;
-  }
   .onpage {
     top: 68px;
     margin: -4px -16px 16px;
@@ -394,27 +385,6 @@ body.reading-on .compare-tray {
   .pick-summary .btn {
     width: 100%;
   }
-  .trail-right .btn {
-    padding: 4px 8px;
-  }
-}
-@media (max-width: 640px) {
-  .trail li:not(:nth-last-child(-n + 2)) {
-    display: none;
-  }
-  .trail li:nth-last-child(2)::before {
-    content: none;
-  }
-  .trail-right {
-    display: none;
-  }
-  .trail [aria-current='page'] {
-    max-width: 62vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-  }
 }
 
 html.dark .btn-primary {
@@ -430,9 +400,6 @@ html.dark .btn-success {
 html.dark .btn-danger {
   background: #b91c1c;
 }
-html.dark .nav2 .nl[aria-current='page'],
-html.dark .nav2 .nl.is-cur,
-html.dark .trail [aria-current='page'],
 html.dark .count-pill,
 html.dark .pchip[aria-checked='true'],
 html.dark .pchip[aria-pressed='true'],
@@ -570,12 +537,6 @@ html.dark img {
   padding: 0;
   width: fit-content;
 }
-.trail a,
-.here-trail a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
 @media (max-width: 640px) {
   .tool-btn {
     min-width: 44px;
@@ -604,9 +565,6 @@ html.dark .fchip {
 .mobile-nav .sheet a.btn-secondary {
   background: var(--white);
   border: 1px solid var(--line-strong);
-}
-.here-trail a {
-  min-width: 44px;
 }
 .pcard .title {
   display: inline-flex;

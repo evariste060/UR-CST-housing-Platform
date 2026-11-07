@@ -1,4 +1,4 @@
-/* Headers, sidebar, footer, trail and page layouts, ported from reference/prototype.html.
+/* Headers, sidebar, footer and page layouts, ported from reference/prototype.html.
    Later phases port the styles for their own pages. */
 /* Header */
 .header {
@@ -515,78 +515,6 @@ details.faq .a {
   box-shadow: inset 4px 0 0 var(--blue);
 }
 
-/* You are here trail */
-.trail {
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
-}
-.trail .in {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 8px 24px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-size: 0.875rem;
-  min-height: 48px;
-}
-.trail .here {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  color: var(--muted);
-  font-weight: 600;
-}
-.trail .here .ic {
-  color: var(--blue);
-}
-.trail ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  align-items: center;
-}
-.trail li {
-  display: inline-flex;
-  align-items: center;
-}
-.trail li + li::before {
-  content: '›';
-  color: var(--subtle);
-  margin: 0 6px;
-  font-weight: 700;
-}
-.trail a {
-  color: var(--ink);
-  padding: 4px 6px;
-  border-radius: 6px;
-}
-.trail a:hover {
-  background: var(--slate-100);
-}
-.trail [aria-current='page'] {
-  background: var(--blue);
-  color: #fff;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-.trail-right {
-  margin-left: auto;
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.shell + .trail,
-header + .trail {
-  position: relative;
-}
-
 /* On this page */
 .onpage {
   position: sticky;
@@ -862,81 +790,34 @@ body.ph-page .a11y-dock {
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 10px;
   color: var(--ink);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.9375rem;
   background: transparent;
-  border: 0;
+  border: 2px solid transparent;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 .nav2 .nl .ic {
   width: 20px;
   height: 20px;
 }
-.nav2 .nl:hover {
-  background: var(--slate-100);
+.nav2 .nl:hover,
+.nav2 .nl[aria-expanded='true'] {
+  background: var(--blue-100);
 }
 .nav2 .nl[aria-current='page'],
 .nav2 .nl.is-cur {
-  background: var(--blue);
-  color: #fff;
-}
-.nav2 .nl[aria-current='page'] .count-pill,
-.nav2 .nl.is-cur .count-pill {
-  background: #fff;
+  border-color: var(--blue);
   color: var(--blue);
 }
-.nav2 .nl[aria-expanded='true'] {
-  background: var(--blue-50);
-}
-.here-trail {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9375rem;
-  color: var(--ink);
-  min-width: 0;
-}
-.here-trail .ic {
-  color: var(--blue);
-  width: 20px;
-  height: 20px;
-}
-.here-trail ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-.here-trail li {
-  display: inline-flex;
-  align-items: center;
-}
-.here-trail li + li::before {
-  content: '›';
-  margin: 0 6px;
-  color: var(--subtle);
-  font-weight: 700;
-}
-.here-trail a {
-  color: var(--ink);
-}
-.here-trail [aria-current='page'] {
-  color: var(--blue);
-  font-weight: 700;
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  vertical-align: bottom;
+.nav2 .nl[aria-current='page']:hover,
+.nav2 .nl.is-cur:hover,
+.nav2 .nl.is-cur[aria-expanded='true'] {
+  color: var(--blue-700);
 }
 
 /* Responsive */
@@ -1250,10 +1131,6 @@ body.ph-page .a11y-dock {
     min-width: 44px;
     height: 44px;
   }
-  .here-trail {
-    margin-left: 0;
-    width: 100%;
-  }
 }
 @media (max-width: 1100px) {
   .lgrid {
@@ -1289,9 +1166,6 @@ body.ph-page .a11y-dock {
   }
   .navrow .in {
     padding: 8px 16px;
-  }
-  .here-trail .lbl {
-    display: none;
   }
   .header.ph .in {
     padding: 0 12px;

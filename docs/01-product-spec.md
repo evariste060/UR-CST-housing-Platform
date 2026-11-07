@@ -24,7 +24,7 @@ Rent payment, booking confirmation, rental contracts, nationwide listings, real 
 
 ## Key behaviours by screen
 ### Landing
-Two-row header: logo · smart search bar · Dark mode · Listen · Aa Text menu · Language menu · Login / Sign up. Second row: Home, Find Housing ▾ (presets), Saved Properties (count), Compare (count), How It Works, For Landlords ▾, Support, and "You are here" on the right. Hero with Location / Max budget / Room type fields that open visible pick lists, then Search. Featured Accommodation (3 cards), How It Works band, four trust items, footer.
+Two-row header: logo · smart search bar · Dark mode · Listen · Aa Text menu · Language menu · Login / Sign up. Second row: Home, Find Housing ▾ (presets), Saved Properties (count), Compare (count), How It Works, For Landlords ▾, Support. Hero with Location / Max budget / Room type fields that open visible pick lists, then Search. Featured Accommodation (3 cards), How It Works band, four trust items, footer.
 
 Smart search understands phrases like "Kiyovu single room under 100,000 within 2 km" (location, room types, max budget, distance, self-contained, private bathroom, security, water, electricity, available). Unknown text becomes a free-text location search.
 
