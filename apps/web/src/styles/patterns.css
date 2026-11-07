@@ -1,0 +1,239 @@
+/*
+ * Patterns repeated across many pages, as Tailwind utilities. One-off styling goes straight on the
+ * element instead. Read aloud finds `.notice`, `.badge` and similar by name, so keep those names.
+ */
+
+/* Text */
+@utility t-page {
+  @apply text-[2rem] font-bold tracking-[-0.02em] max-phone:text-[1.625rem];
+
+  .price-big & {
+    font-size: 2rem;
+  }
+}
+@utility t-section {
+  @apply text-[1.375rem] font-bold tracking-[-0.01em];
+}
+@utility t-card {
+  @apply text-[1.0625rem] font-semibold;
+}
+@utility t-support {
+  @apply text-sm text-muted;
+
+  .onpage > & {
+    @apply inline-flex flex-none items-center gap-1.5 font-semibold;
+  }
+}
+@utility t-label {
+  @apply text-[0.9375rem] font-semibold;
+}
+@utility t-help {
+  @apply text-sm text-muted;
+}
+@utility muted {
+  @apply text-muted;
+}
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+@utility choice-text {
+  @apply mt-1 block;
+
+  .demo-acc & {
+    @apply mt-0;
+  }
+}
+
+/* Layout */
+@utility page {
+  @apply mx-auto max-w-[1280px] px-6 pt-8 pb-24 max-phone:px-4 max-phone:pt-5 max-phone:pb-30;
+
+  .shell-main & {
+    @apply max-w-[1160px];
+  }
+}
+@utility page-head {
+  @apply mb-6 flex flex-wrap items-end justify-between gap-4 [&_p]:mt-1.5;
+}
+@utility stack {
+  @apply flex flex-col gap-4;
+}
+@utility stack-sm {
+  @apply flex flex-col gap-2;
+
+  html.relaxed & {
+    @apply gap-3;
+  }
+}
+@utility row {
+  @apply flex flex-wrap items-center gap-3;
+
+  .state & {
+    @apply mt-2 justify-center;
+  }
+}
+@utility row-between {
+  @apply flex flex-wrap items-center justify-between gap-3;
+}
+@utility panel {
+  @apply rounded-lg border border-line bg-card p-6 max-phone:p-[18px] [&_h2+*]:mt-3 [&_h3+*]:mt-3;
+}
+@utility panel-top {
+  @apply mt-3;
+}
+@utility list {
+  @apply rounded-lg border border-line bg-card;
+}
+
+/* Small pieces */
+@utility avatar {
+  @apply grid size-12 flex-none place-items-center rounded-full bg-blue-100 font-bold text-blue-700;
+
+  &.sm {
+    @apply size-9 text-[0.8125rem];
+  }
+}
+@utility link-btn {
+  @apply inline-flex min-h-11 cursor-pointer items-center gap-1 border-0 bg-transparent px-0.5 py-1 font-semibold text-blue underline underline-offset-3;
+}
+@utility tip {
+  @apply flex items-start gap-2.5 rounded-[10px] bg-slate-100 px-3 py-2.5 text-sm text-muted [&_.ic]:mt-px [&_.ic]:text-blue;
+}
+@utility notice {
+  @apply flex items-start gap-3 rounded-md border border-blue-100 bg-blue-50 px-4 py-3.5 text-[0.9375rem] text-ink [&>.ic]:mt-0.5 [&>.ic]:text-blue;
+
+  &.warn {
+    @apply border-amber-border bg-amber-50 [&>.ic]:text-amber-text;
+  }
+  &.ok {
+    @apply border-[#a7e3bc] bg-green-50 [&>.ic]:text-green-text;
+  }
+  &.err {
+    @apply border-red-border bg-red-50 [&>.ic]:text-red-text;
+  }
+}
+
+/* Forms */
+@utility field {
+  @apply flex flex-col gap-1.5 text-ink [&_.label]:text-[0.9375rem] [&_.label]:font-semibold [&_.req]:text-red-text [&_label]:text-[0.9375rem] [&_label]:font-semibold;
+}
+@utility form-grid {
+  @apply grid grid-cols-2 gap-x-5 gap-y-4 max-phone:grid-cols-1 [&_.full]:col-span-full;
+}
+@utility input {
+  @apply min-h-12 w-full rounded-[10px] border border-line-strong bg-card px-3.5 py-2.5 text-base text-ink hover:border-[#94a3b8] focus:border-blue focus:shadow-[0_0_0_3px_var(--blue-100)] focus:outline-none high-contrast:border-2;
+
+  .input-wrap & {
+    @apply pr-[52px];
+  }
+  .field.has-error & {
+    @apply border-red-text;
+  }
+  .hsearch & {
+    @apply min-h-11 rounded-full text-[0.9375rem];
+  }
+}
+@utility select {
+  @apply min-h-12 w-full rounded-[10px] border border-line-strong bg-card px-3.5 py-2.5 text-base text-ink hover:border-[#94a3b8] focus:border-blue focus:shadow-[0_0_0_3px_var(--blue-100)] focus:outline-none high-contrast:border-2;
+
+  .cmp-add & {
+    @apply w-auto max-w-[340px] min-w-0 flex-1;
+  }
+}
+@utility textarea {
+  @apply min-h-30 w-full resize-y rounded-[10px] border border-line-strong bg-card px-3.5 py-2.5 text-base leading-normal text-ink hover:border-[#94a3b8] focus:border-blue focus:shadow-[0_0_0_3px_var(--blue-100)] focus:outline-none high-contrast:border-2;
+
+  .field.has-error & {
+    @apply border-red-text;
+  }
+}
+@utility input-wrap {
+  @apply relative [&_.icon-btn]:absolute [&_.icon-btn]:top-0.5 [&_.icon-btn]:right-0.5;
+}
+@utility err-msg {
+  @apply flex items-start gap-1.5 text-sm font-medium text-red-text [&_.ic]:mt-0.5 [&_.ic]:size-4;
+}
+@utility check {
+  @apply flex min-h-11 cursor-pointer items-center gap-2.5 text-[0.9375rem] [&_input]:size-5 [&_input]:flex-none [&_input]:accent-blue;
+}
+
+/* Pick-one groups */
+@utility pick-group {
+  & + & {
+    @apply mt-[18px];
+  }
+  &.compact {
+    @apply mt-2.5;
+  }
+}
+@utility pick-head {
+  @apply mb-2 flex flex-wrap items-baseline justify-between gap-2 [&_.label]:text-[0.9375rem] [&_.label]:font-semibold [&_h3]:inline-flex [&_h3]:items-center [&_h3]:gap-2;
+}
+@utility picked {
+  @apply inline-flex items-center gap-1 text-[0.8125rem] text-muted [&_.ic]:size-3.5 [&_.ic]:text-green-text [&_b]:text-blue-700;
+}
+@utility pick-n {
+  @apply mr-2 inline-grid size-6 place-items-center rounded-full bg-blue-50 text-[0.8125rem] font-bold text-blue;
+}
+@utility chipset {
+  @apply flex flex-wrap gap-2;
+
+  .hmenu & {
+    @apply px-2 pb-1.5;
+  }
+}
+@utility pchip {
+  @apply inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-line-strong bg-card px-3.5 py-2 text-[0.9375rem] font-medium text-ink transition-[background,border-color] duration-100 hover:border-blue hover:bg-blue-50 high-contrast:border-2 [&_.ic]:size-[18px] [&_.ic]:text-blue;
+
+  &.sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+  &[aria-checked='true'],
+  &[aria-pressed='true'] {
+    @apply border-blue bg-blue font-bold text-white shadow-[0_2px_8px_rgba(29,78,216,0.28)] dark:border-[#2563eb] dark:bg-[#2563eb] [&_.ic]:text-white;
+  }
+  .pick-group.has-error & {
+    @apply border-red-border;
+  }
+}
+@utility opchip {
+  @apply inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-line-strong bg-card px-3 py-1.5 text-sm font-semibold text-ink hover:border-blue [&_.ic]:size-4 [&_.ic]:text-blue;
+
+  &[aria-current='true'] {
+    @apply border-ink bg-(--night) text-white [&_.ic]:text-white;
+  }
+}
+@utility ptile {
+  @apply flex min-h-[72px] cursor-pointer flex-col items-start gap-0.5 rounded-md border-[1.5px] border-line-strong bg-card px-3 py-2.5 text-left font-semibold hover:border-blue high-contrast:border-2 [&_.ic]:text-blue [&_.st]:text-xs [&_.st]:font-medium [&_.st]:text-muted;
+
+  &[aria-pressed='true'] {
+    @apply border-blue bg-blue text-white dark:border-[#2563eb] dark:bg-[#2563eb] [&_.ic]:text-white [&_.st]:text-white;
+  }
+}
+@utility choice-grid {
+  @apply grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3;
+}
+@utility choice {
+  @apply relative flex w-full cursor-pointer items-start gap-3 rounded-md border-2 border-line bg-card p-4 text-left hover:border-line-strong [&_.ic]:mt-0.5 [&_.ic]:size-6 [&_.ic]:text-blue;
+
+  &[aria-pressed='true'],
+  &[aria-checked='true'] {
+    @apply border-blue bg-blue-50 shadow-[0_0_0_1px_var(--blue)];
+  }
+  &[aria-pressed='true']::after,
+  &[aria-checked='true']::after {
+    @apply absolute -top-[11px] right-3 rounded-full bg-blue px-2 py-0.5 text-[0.6875rem] font-bold text-white content-['Selected'];
+  }
+  &.selected {
+    @apply border-blue bg-blue-50;
+  }
+}
+
+/* Shown from tablet width up. */
+@utility hide-m {
+  @apply max-tablet:hidden!;
+
+  & .rel {
+    @apply block;
+  }
+}

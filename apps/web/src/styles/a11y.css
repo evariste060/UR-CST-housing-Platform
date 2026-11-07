@@ -19,20 +19,9 @@ html.relaxed body {
   letter-spacing: 0.012em;
   word-spacing: 0.06em;
 }
-html.relaxed .stack-sm {
-  gap: 12px;
-}
 html.hc a {
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-html.hc .pchip,
-html.hc .choice,
-html.hc .ptile,
-html.hc .input,
-html.hc .select,
-html.hc .textarea {
-  border-width: 2px;
 }
 html.hl :focus-visible {
   box-shadow:
@@ -232,11 +221,6 @@ body.reading-on .compare-tray {
 .dp-sec {
   margin-top: 22px;
 }
-.dp-sec .pick-head h3 {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-}
 .dp-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -374,25 +358,13 @@ body.reading-on .compare-tray {
   .a11y-dock button {
     padding: 6px 12px;
   }
-  .hero-pick {
-    padding: 16px;
-  }
-  .pick-summary .btn {
-    width: 100%;
-  }
 }
-html.dark .count-pill,
-html.dark .pchip[aria-checked='true'],
-html.dark .pchip[aria-pressed='true'],
-html.dark .ptile[aria-pressed='true'] {
+html.dark .count-pill {
   background: #2563eb;
   border-color: #2563eb;
 }
 html.dark .map {
   filter: brightness(0.85);
-}
-html.dark .tip {
-  background: var(--slate-100);
 }
 html.dark .dp-preview,
 html.dark .drop {
@@ -409,8 +381,7 @@ html.dark .cmp tr.diff td,
 html.dark .cmp tr.diff th[scope='row'] {
   background: #142039;
 }
-html.dark .list-item.unread,
-html.dark .notif.unread {
+html.dark .list-item.unread {
   background: #13213b;
 }
 html.dark .bubble.in {
@@ -437,22 +408,12 @@ html.dark img {
 }
 
 /* Project rule: every touch target is at least 44 x 44px. The prototype has a few smaller ones. */
-.pchip.sm,
-.opchip,
 .reader-speed button,
-.toast button,
-.link-btn,
-.check,
-.field-link {
+.toast button {
   min-height: 44px;
 }
 .toast button {
   min-width: 44px;
-}
-.link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 .listen-btn {
   width: 44px;

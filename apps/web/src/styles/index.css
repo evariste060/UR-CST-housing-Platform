@@ -15,6 +15,7 @@
 @import './a11y.css' layer(legacy);
 
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import './patterns.css';
 
 /*
  * Every value points at a variable from tokens.css, so dark mode, high contrast and the display

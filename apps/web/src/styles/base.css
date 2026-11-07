@@ -42,9 +42,6 @@ h4 {
 p {
   margin: 0;
 }
-.num {
-  font-variant-numeric: tabular-nums;
-}
 :focus-visible {
   outline: none;
   box-shadow: var(--focus);
@@ -83,119 +80,29 @@ p {
 }
 
 /* Type scale */
-.t-page {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.t-section {
-  font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.t-card {
-  font-size: 1.0625rem;
-  font-weight: 600;
-}
 .t-body {
   font-size: 1rem;
-}
-.t-support {
-  font-size: 0.875rem;
-  color: var(--muted);
-}
-.t-label {
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-.t-help {
-  font-size: 0.875rem;
-  color: var(--muted);
 }
 .t-price {
   font-size: 1.375rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.muted {
-  color: var(--muted);
-}
 
 /* Layout */
-.page {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 32px 24px 96px;
-}
-.page-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.page-head p {
-  margin-top: 6px;
-}
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.stack-sm {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.row-between {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
 .grid-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
 }
-.panel {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 24px;
-}
 .panel-tight {
   padding: 16px;
-}
-.panel h2 + *,
-.panel h3 + * {
-  margin-top: 12px;
 }
 .divider {
   height: 1px;
   background: var(--line);
   margin: 16px 0;
   border: 0;
-}
-.breadcrumb {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--muted);
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.breadcrumb a {
-  color: var(--muted);
 }
 .two-col > * {
   min-width: 0;
