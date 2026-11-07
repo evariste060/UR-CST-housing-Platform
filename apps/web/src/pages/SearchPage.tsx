@@ -62,7 +62,7 @@ function SearchBox({ initial, onSearch }: { initial: string; onSearch: (text: st
           onChange={(event) => setText(event.target.value)}
         />
       </div>
-      <button className="btn btn-primary" type="submit">
+      <button className={buttonClass()} type="submit">
         Search
       </button>
     </form>
@@ -299,7 +299,7 @@ export function SearchPage() {
       <div className="toolbar">
         <button
           type="button"
-          className="btn btn-secondary mobile-filter-btn"
+          className={`${buttonClass({ variant: 'secondary' })} hidden! max-tablet:inline-flex!`}
           aria-expanded={drawerOpen}
           aria-controls="filters"
           onClick={() => setDrawerOpen(true)}

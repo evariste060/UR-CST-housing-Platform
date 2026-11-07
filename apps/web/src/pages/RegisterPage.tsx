@@ -10,6 +10,7 @@ import { PasswordField } from '../components/PasswordField';
 import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
+import { buttonClass } from '../components/Button';
 
 type AccountType = 'STUDENT' | 'LANDLORD';
 
@@ -169,7 +170,7 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
             {info && <InfoDialog topic={info} onClose={() => setInfo(null)} />}
           </div>
         </div>
-        <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+        <button className={buttonClass({ size: 'lg', block: true })} type="submit" disabled={busy}>
           Create Account
         </button>
       </form>

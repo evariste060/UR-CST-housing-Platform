@@ -24,6 +24,7 @@ import { RoleHomePage } from './pages/RoleHomePage';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
 import { StudentDashboardPage } from './pages/StudentDashboardPage';
+import { buttonClass } from './components/Button';
 
 // Pages that later phases build. Each stands in with ComingSoonPage until then.
 const PUBLIC_PAGES_TO_BUILD = ['/help', '/notifications'];
@@ -43,7 +44,7 @@ function NotFoundPage() {
         </span>
         <h1 className="state-title">Page not found</h1>
         <p>This page does not exist. Check the address or go back to the home page.</p>
-        <Link className="btn btn-primary" to="/">
+        <Link className={buttonClass()} to="/">
           Go to home
         </Link>
       </div>

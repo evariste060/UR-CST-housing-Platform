@@ -5,6 +5,7 @@ import { Field } from '../components/Field';
 import { Icon } from '../components/Icon';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
+import { buttonClass } from '../components/Button';
 
 export function ForgotPasswordPage() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -55,7 +56,7 @@ export function ForgotPasswordPage() {
                 <span>Development: no email is sent. The link is printed in the API console.</span>
               </div>
             )}
-            <Link className="btn btn-secondary" to="/login">
+            <Link className={buttonClass({ variant: 'secondary' })} to="/login">
               Back to Login
             </Link>
           </div>
@@ -90,7 +91,11 @@ export function ForgotPasswordPage() {
             autoComplete="email"
             error={errors.email}
           />
-          <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+          <button
+            className={buttonClass({ size: 'lg', block: true })}
+            type="submit"
+            disabled={busy}
+          >
             Send Reset Link
           </button>
         </form>

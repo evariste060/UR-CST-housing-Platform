@@ -2,6 +2,7 @@ import type { Role } from '@urcst/shared';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ROLE_HOME, useAuth } from './useAuth';
+import { buttonClass } from '../components/Button';
 
 const ROLE_LABEL: Record<Role, string> = {
   STUDENT: 'a student',
@@ -33,7 +34,7 @@ export function RequireRole({ allow }: { allow: Role }) {
         </span>
         <h1 className="state-title">Sign in as {label} to open this page</h1>
         <p>This area is only for {label.replace(/^an? /, '')} accounts.</p>
-        <Link className="btn btn-primary" to="/login">
+        <Link className={buttonClass()} to="/login">
           Go to login
         </Link>
       </div>

@@ -2,6 +2,7 @@ import type { PropertyPhotoDto } from '@urcst/shared';
 import { useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { Icon } from './Icon';
+import { buttonClass } from './Button';
 
 interface LightboxProps {
   photos: PropertyPhotoDto[];
@@ -118,7 +119,7 @@ export function Gallery({ photos, title }: { photos: PropertyPhotoDto[]; title: 
         </span>
         <button
           type="button"
-          className="btn btn-secondary btn-sm fs"
+          className={`${buttonClass({ variant: 'secondary', size: 'sm' })} fs`}
           onClick={() => setFullScreen(true)}
         >
           <Icon name="expand" />

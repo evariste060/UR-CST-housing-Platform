@@ -621,10 +621,6 @@ body.ph-page .a11y-dock {
   min-height: 44px;
   font-size: 0.9375rem;
 }
-.hsearch .btn {
-  border-radius: 10px;
-  padding: 10px 20px;
-}
 .hctl {
   display: flex;
   align-items: center;
@@ -685,14 +681,6 @@ body.ph-page .a11y-dock {
 .drop-btn:hover,
 .drop-btn[aria-expanded='true'] {
   border-color: var(--blue);
-}
-.btn-outline {
-  background: var(--white);
-  color: var(--blue);
-  border: 1.5px solid var(--blue);
-}
-.btn-outline:hover {
-  background: var(--blue-50);
 }
 .qf-m {
   display: none;

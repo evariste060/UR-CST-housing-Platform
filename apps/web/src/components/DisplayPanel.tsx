@@ -9,6 +9,7 @@ import { useRovingRadio } from '../lib/useRovingRadio';
 import { useReader } from '../reader/useReader';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
+import { badgeClass } from './Badge';
 
 interface CardOption {
   value: string;
@@ -102,7 +103,7 @@ function ReadAloudSection({ children }: { children: ReactNode }) {
           <Icon name="volume" /> Read aloud
         </h3>
         {!reader.supported && (
-          <span className="badge b-pending">Not supported in this browser</span>
+          <span className={badgeClass('pending')}>Not supported in this browser</span>
         )}
       </div>
       <p className="t-help dp-help">
@@ -189,7 +190,7 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
           this device.
         </p>
         <div className="dp-preview" aria-hidden="true">
-          <span className="badge b-available dp-preview-badge">
+          <span className={`${badgeClass('available')} dp-preview-badge`}>
             <Icon name="check" />
             Available
           </span>

@@ -299,14 +299,6 @@
   object-fit: cover;
   border: 2px solid #334155;
 }
-.compare-tray .btn-secondary {
-  background: transparent;
-  color: #fff;
-  border-color: #475569;
-}
-.compare-tray .btn-secondary:hover {
-  background: #1e293b;
-}
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);

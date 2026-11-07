@@ -6,6 +6,7 @@ import { PasswordField } from '../components/PasswordField';
 import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
+import { buttonClass } from '../components/Button';
 
 function ExpiredLink() {
   return (
@@ -15,7 +16,7 @@ function ExpiredLink() {
       </span>
       <h1 className="state-title">This reset link has expired or was already used.</h1>
       <p>Request a new link to choose your password.</p>
-      <Link className="btn btn-primary" to="/forgot-password">
+      <Link className={buttonClass()} to="/forgot-password">
         Request a new link
       </Link>
     </div>
@@ -100,7 +101,11 @@ export function ResetPasswordPage() {
                 autoComplete="new-password"
                 error={errors.confirmPassword}
               />
-              <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+              <button
+                className={buttonClass({ size: 'lg', block: true })}
+                type="submit"
+                disabled={busy}
+              >
                 Save new password
               </button>
             </form>

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { AvailabilityBadge, Badge, ReviewBadge } from '../components/Badge';
+import { AvailabilityBadge, Badge, ReviewBadge, badgeClass } from '../components/Badge';
 import { Button, buttonClass } from '../components/Button';
 import { ChoiceField } from '../components/ChoiceCards';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -355,7 +355,7 @@ export function DesignSystemPage() {
     <main className="page doc" id="main">
       <div className="page-head">
         <div>
-          <span className="badge b-demo">01 · Design system</span>
+          <span className={badgeClass('demo')}>01 · Design system</span>
           <h1 className="t-page ds-title">Design system</h1>
           <p className="muted">Foundations and components every screen is built from.</p>
         </div>
@@ -490,7 +490,7 @@ export function DesignSystemPage() {
           <ReviewBadge status="CHANGES_REQUESTED" />
           <ReviewBadge status="REJECTED" />
           <ReviewBadge status="REMOVED" />
-          <span className="badge b-new">
+          <span className={badgeClass('new')}>
             <span className="dot" aria-hidden="true" />
             New
           </span>

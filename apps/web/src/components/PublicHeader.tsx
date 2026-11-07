@@ -260,7 +260,7 @@ export function PublicHeader() {
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
-            <button className="btn btn-primary" type="submit">
+            <button className={`${buttonClass()} px-5!`} type="submit">
               Search
             </button>
           </form>

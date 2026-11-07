@@ -185,7 +185,7 @@ function Wizard({ form }: { form: ListingForm | null }) {
                   />
                 </>
               ) : (
-                <button type="submit" className="btn btn-primary btn-lg">
+                <button type="submit" className={buttonClass({ size: 'lg' })}>
                   Continue <Icon name="chevR" />
                 </button>
               )}

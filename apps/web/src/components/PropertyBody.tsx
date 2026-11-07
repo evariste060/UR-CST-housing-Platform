@@ -228,7 +228,7 @@ function PricePanel({ property, onReport }: { property: PropertyDetail; onReport
           <div className="row price-row">
             <button
               type="button"
-              className="btn btn-secondary save-btn"
+              className={`${buttonClass({ variant: 'secondary' })} save-btn`}
               aria-pressed={isSaved}
               aria-label={`${isSaved ? 'Saved' : 'Save property'}: ${title}`}
               onClick={() => saved.toggle(id)}

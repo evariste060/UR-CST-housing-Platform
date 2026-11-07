@@ -8,6 +8,7 @@ import { PasswordField } from '../components/PasswordField';
 import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
+import { buttonClass } from '../components/Button';
 
 const DEMO_PASSWORD = 'demo1234';
 
@@ -128,7 +129,11 @@ export function LoginPage() {
             </label>
             <Link to="/forgot-password">Forgot password?</Link>
           </div>
-          <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+          <button
+            className={buttonClass({ size: 'lg', block: true })}
+            type="submit"
+            disabled={busy}
+          >
             Log in
           </button>
         </form>

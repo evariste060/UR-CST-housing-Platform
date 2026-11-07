@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { PropertySummary } from '@urcst/shared';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { AvailabilityBadge } from '../components/Badge';
+import { AvailabilityBadge, badgeClass } from '../components/Badge';
 import { Button, buttonClass } from '../components/Button';
 import { Icon } from '../components/Icon';
 import { ListingCard } from '../components/ListingCard';
@@ -43,7 +43,7 @@ function YesNo({
 }
 
 function Best({ children }: { children: ReactNode }) {
-  return <span className="badge b-available best">{children}</span>;
+  return <span className={`${badgeClass('available')} best`}>{children}</span>;
 }
 
 function rows(properties: PropertySummary[]): Row[] {

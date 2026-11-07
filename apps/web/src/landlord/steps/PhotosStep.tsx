@@ -1,7 +1,7 @@
 import { MAX_PHOTOS } from '@urcst/shared';
 import { useState, type ChangeEvent } from 'react';
 import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
+import { Button, buttonClass } from '../../components/Button';
 import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toast';
 import { ApiError, api } from '../../lib/api';
@@ -81,7 +81,7 @@ export function PhotosStep({ draft, error, onError }: PhotosStepProps) {
           disabled={uploading || photos.length >= MAX_PHOTOS}
           onChange={(event) => void choose(event)}
         />
-        <label className="btn btn-primary" htmlFor="wz-files">
+        <label className={buttonClass()} htmlFor="wz-files">
           <Icon name="image" />
           {uploading ? 'Adding photos…' : 'Choose photos'}
         </label>

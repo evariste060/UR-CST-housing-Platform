@@ -52,7 +52,7 @@ function QuickFindButton() {
   return (
     <button
       type="button"
-      className="btn btn-secondary btn-sm quick-btn"
+      className={`${buttonClass({ variant: 'secondary', size: 'sm' })} quick-btn`}
       aria-keyshortcuts="Control+K"
       aria-label="Quick find Ctrl K"
       onClick={() => setQuickFindOpen(true)}
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="t-support hide-m">{user?.fullName}</span>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className={buttonClass({ variant: 'secondary', size: 'sm' })}
               aria-label="Log out"
               onClick={logOut}
             >

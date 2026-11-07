@@ -1,7 +1,7 @@
 import { EMPTY_FILTERS, ROOM_TYPE_LABELS, type RoomType, type SearchFilters } from '@urcst/shared';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '../components/Button';
+import { Button, buttonClass } from '../components/Button';
 import { HeaderMenu } from '../components/HeaderMenus';
 import { Icon, type IconName } from '../components/Icon';
 import { LandingCard } from '../components/LandingCard';
@@ -223,10 +223,7 @@ function HeroSearch() {
           }}
         />
       </HeroPicker>
-      <button
-        className="btn btn-primary min-w-[132px] rounded-[10px] text-[1.0625rem]"
-        type="submit"
-      >
+      <button className={`${buttonClass()} min-w-[132px] text-[1.0625rem]!`} type="submit">
         <Icon name="search" />
         Search
       </button>

@@ -28,7 +28,7 @@ export function CompareTray() {
       <Link className={buttonClass({ size: 'sm' })} to="/compare">
         {items.length < 2 ? 'Open compare' : 'Compare now'}
       </Link>
-      <Button variant="secondary" size="sm" onClick={compare.clear}>
+      <Button variant="on-dark" size="sm" onClick={compare.clear}>
         Clear
       </Button>
     </div>
