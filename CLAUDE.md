@@ -36,7 +36,7 @@ This is a Human-Centered Design (HCD) university project by NKURUNZIZA Evariste.
 - Money is whole RWF stored as `Int`. Distances are km with one decimal.
 - Keep secrets in `.env` (never commit it). Keep `.env.example` up to date.
 - Small, focused commits with clear messages.
-- Style with Tailwind classes. The older CSS in `apps/web/src/styles` is being replaced page by page: when a page moves to Tailwind, delete its old rules. Do not add new rules to those files. Use theme colours from `styles/index.css`, not Tailwind's default palette, so dark mode and high contrast keep working.
+- Style with Tailwind. Put classes straight on the element for new or refined UI. Shared patterns go in `styles/patterns.css` as `@utility`. The existing component styles in `styles/{components,pages,layout,a11y}.css` use `@apply`; move them onto elements as each page is refined, and do not add plain CSS declarations. Use theme colours from `styles/index.css`, not Tailwind's default palette, so dark mode and high contrast keep working. Keep class names that Read aloud or the tests look for, such as `.notice`, `.badge`, `.pcard` and `.list-item`.
 
 ## Product rules that must never break
 - **Availability and admin approval are different things.** `availability` (AVAILABLE / OCCUPIED) is set by the landlord. `reviewStatus` (PENDING / APPROVED / CHANGES_REQUESTED / REJECTED / REMOVED) is set by an admin. Always show them as two separate badges.

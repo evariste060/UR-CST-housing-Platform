@@ -1,18 +1,17 @@
 /*
- * Layer order matters: Tailwind utilities beat the older CSS, which keeps its own order inside
- * `legacy`. Pages move to Tailwind one at a time, and their old rules are deleted as they go.
- * Tailwind's preflight reset is left out because the older CSS relies on base.css.
+ * Tailwind's layers, lowest first. Utilities win, so a class on an element beats the component
+ * styles. Tailwind's preflight reset is left out because base.css sets the project's own defaults.
  */
-@layer theme, legacy, utilities;
+@layer theme, base, components, utilities;
 
 @import 'tailwindcss/theme.css' layer(theme);
 
-@import './tokens.css' layer(legacy);
-@import './base.css' layer(legacy);
-@import './components.css' layer(legacy);
-@import './pages.css' layer(legacy);
-@import './layout.css' layer(legacy);
-@import './a11y.css' layer(legacy);
+@import './tokens.css' layer(base);
+@import './base.css' layer(base);
+@import './components.css' layer(components);
+@import './pages.css' layer(components);
+@import './layout.css' layer(components);
+@import './a11y.css' layer(components);
 
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import './patterns.css';
