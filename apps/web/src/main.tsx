@@ -5,12 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AppProviders } from './AppProviders';
 import { applyPrefs, loadPrefs } from './display/prefs';
-import './styles/tokens.css';
-import './styles/base.css';
-import './styles/components.css';
-import './styles/pages.css';
-import './styles/layout.css';
-import './styles/a11y.css';
+import './styles/index.css';
 
 // Applied before the first paint, so a saved dark theme never flashes light.
 applyPrefs(loadPrefs());

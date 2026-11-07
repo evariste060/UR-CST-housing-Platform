@@ -146,3 +146,4 @@ Claude: after each phase, add a line here with the date, what was done, and anyt
 - **2026-11-07, UI refinement started (branch `ui-refinement`).** This pass deliberately moves away from the prototype's look. Features stay the same.
   - **Main navigation:** regular-weight text, Find Housing and For Landlords open on mouse hover, and hover gives a stronger background.
   - **"You are here" removed from the whole app, as the user decided.** The rule is gone from `CLAUDE.md`, `docs/01` and `docs/04`. The Back link and the workspace label in that row went with it. The prototype still shows the trail.
+  - **Moving to Tailwind CSS v4, page by page, as the user decided.** `styles/index.css` loads the older CSS in a lower layer, so Tailwind classes win, and points Tailwind's theme at `tokens.css`. Preflight is left out for now. The main navigation is converted and its old rules are deleted.

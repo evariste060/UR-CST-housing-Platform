@@ -32,6 +32,15 @@ function CountPill({ count }: { count?: number }) {
   return count ? <span className="count-pill">{count}</span> : null;
 }
 
+/** One item in the main navigation. The current page gets a blue border. */
+function navItemClass(current: boolean) {
+  const base =
+    'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[10px] border-2 bg-transparent px-3 py-1.5 text-[0.9375rem] font-normal no-underline transition-colors duration-150 hover:bg-blue-100 aria-expanded:bg-blue-100 [&_.ic]:size-5';
+  return current
+    ? `${base} border-blue text-blue hover:text-blue-700 aria-expanded:text-blue-700`
+    : `${base} border-transparent text-ink`;
+}
+
 function NavItem({
   to,
   icon,
@@ -46,7 +55,7 @@ function NavItem({
   count?: number;
 }) {
   return (
-    <NavLink to={to} end={end} className="nl">
+    <NavLink to={to} end={end} className={({ isActive }) => navItemClass(isActive)}>
       <Icon name={icon} />
       {label}
       <CountPill count={count} />
@@ -346,12 +355,15 @@ export function PublicHeader() {
       </header>
       <div className="navrow">
         <div className="in">
-          <nav className="nav2" aria-label="Main">
+          <nav
+            className="flex flex-wrap items-center gap-1.5 max-[900px]:hidden [&_.hmenu]:right-auto [&_.hmenu]:left-0"
+            aria-label="Main"
+          >
             <NavItem to="/" end icon="home" label="Home" />
             <HeaderMenu
               id="find"
               label="Find Housing"
-              buttonClass={findCurrent ? 'nl is-cur' : 'nl'}
+              buttonClass={navItemClass(findCurrent)}
               openOnHover
               button={
                 <>
@@ -380,7 +392,7 @@ export function PublicHeader() {
                   <HeaderMenu
                     id="landlords"
                     label="For landlords"
-                    buttonClass="nl"
+                    buttonClass={navItemClass(false)}
                     openOnHover
                     button={
                       <>

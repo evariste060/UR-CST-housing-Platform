@@ -1,0 +1,60 @@
+/*
+ * Layer order matters: Tailwind utilities beat the older CSS, which keeps its own order inside
+ * `legacy`. Pages move to Tailwind one at a time, and their old rules are deleted as they go.
+ * Tailwind's preflight reset is left out because the older CSS relies on base.css.
+ */
+@layer theme, legacy, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+
+@import './tokens.css' layer(legacy);
+@import './base.css' layer(legacy);
+@import './components.css' layer(legacy);
+@import './pages.css' layer(legacy);
+@import './layout.css' layer(legacy);
+@import './a11y.css' layer(legacy);
+
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/*
+ * Every value points at a variable from tokens.css, so dark mode, high contrast and the display
+ * settings keep working without extra classes. `inline` keeps those variables live.
+ */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-card: var(--white);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-blue: var(--blue);
+  --color-blue-700: var(--blue-700);
+  --color-blue-100: var(--blue-100);
+  --color-blue-50: var(--blue-50);
+  --color-slate-100: var(--slate-100);
+  --color-green: var(--green);
+  --color-green-text: var(--green-text);
+  --color-green-50: var(--green-50);
+  --color-amber-text: var(--amber-text);
+  --color-amber-50: var(--amber-50);
+  --color-amber-border: var(--amber-border);
+  --color-red-text: var(--red-text);
+  --color-red-50: var(--red-50);
+  --color-red-border: var(--red-border);
+
+  --font-sans: var(--font);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r);
+  --radius-lg: var(--r-lg);
+
+  --shadow-soft: var(--shadow);
+  --shadow-raised: var(--shadow-lg);
+}
+
+@custom-variant dark (&:where(html.dark, html.dark *));
+@custom-variant high-contrast (&:where(html.hc, html.hc *));

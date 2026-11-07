@@ -712,10 +712,6 @@ body.ph-page .a11y-dock {
   flex-direction: column;
   gap: 2px;
 }
-.nav2 .hmenu {
-  left: 0;
-  right: auto;
-}
 .hmenu-h {
   font-size: 0.75rem;
   font-weight: 700;
@@ -778,46 +774,6 @@ body.ph-page .a11y-dock {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-.nav2 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.nav2 .nl {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 400;
-  font-size: 0.9375rem;
-  background: transparent;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-.nav2 .nl .ic {
-  width: 20px;
-  height: 20px;
-}
-.nav2 .nl:hover,
-.nav2 .nl[aria-expanded='true'] {
-  background: var(--blue-100);
-}
-.nav2 .nl[aria-current='page'],
-.nav2 .nl.is-cur {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-.nav2 .nl[aria-current='page']:hover,
-.nav2 .nl.is-cur:hover,
-.nav2 .nl.is-cur[aria-expanded='true'] {
-  color: var(--blue-700);
 }
 
 /* Responsive */
@@ -1158,9 +1114,6 @@ body.ph-page .a11y-dock {
   }
 }
 @media (max-width: 900px) {
-  .nav2 {
-    display: none;
-  }
   .hctl .hide-m {
     display: none;
   }

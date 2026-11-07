@@ -14,7 +14,7 @@ This is a Human-Centered Design (HCD) university project by NKURUNZIZA Evariste.
 
 ## Stack
 - Monorepo with npm workspaces
-  - `apps/web`: React 18 + TypeScript + Vite, React Router, TanStack Query, plain CSS with CSS variables (tokens in `apps/web/src/styles/tokens.css`). No UI framework.
+  - `apps/web`: React 18 + TypeScript + Vite, React Router, TanStack Query, Tailwind CSS v4 on top of the CSS variables in `apps/web/src/styles/tokens.css`. No component library.
   - `apps/api`: Node.js 22 + Express + TypeScript, Prisma ORM, PostgreSQL 16
   - `packages/shared`: zod schemas and TypeScript types shared by web and api (filters, DTOs, enums)
 - Auth: email + password (bcrypt), session as a signed JWT in an httpOnly, SameSite=Lax cookie. Roles: STUDENT, LANDLORD, ADMIN.
@@ -36,6 +36,7 @@ This is a Human-Centered Design (HCD) university project by NKURUNZIZA Evariste.
 - Money is whole RWF stored as `Int`. Distances are km with one decimal.
 - Keep secrets in `.env` (never commit it). Keep `.env.example` up to date.
 - Small, focused commits with clear messages.
+- Style with Tailwind classes. The older CSS in `apps/web/src/styles` is being replaced page by page: when a page moves to Tailwind, delete its old rules. Do not add new rules to those files. Use theme colours from `styles/index.css`, not Tailwind's default palette, so dark mode and high contrast keep working.
 
 ## Product rules that must never break
 - **Availability and admin approval are different things.** `availability` (AVAILABLE / OCCUPIED) is set by the landlord. `reviewStatus` (PENDING / APPROVED / CHANGES_REQUESTED / REJECTED / REMOVED) is set by an admin. Always show them as two separate badges.
