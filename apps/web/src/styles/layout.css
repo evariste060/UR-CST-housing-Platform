@@ -1089,23 +1089,6 @@ body.ph-page .a11y-dock {
   }
 }
 @media (max-width: 1100px) {
-  .lgrid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .howband {
-    grid-template-columns: 1fr;
-  }
-  .how-intro {
-    border-right: 0;
-    padding-right: 0;
-  }
-  .trust2 {
-    grid-template-columns: 1fr 1fr;
-    row-gap: 20px;
-  }
-  .trust2 > div:nth-child(3) {
-    border-left: 0;
-  }
   .hsearch {
     display: none;
   }
@@ -1128,60 +1111,8 @@ body.ph-page .a11y-dock {
   body.ph-page {
     --hh: 64px;
   }
-  .hero2-img {
-    position: relative;
-    width: 100%;
-    height: 200px;
-  }
-  .hero2-img::before {
-    background: linear-gradient(0deg, #eef4ff 0%, rgba(238, 244, 255, 0) 40%);
-  }
-  .hero2 .in {
-    padding: 20px 16px 28px;
-    min-height: 0;
-  }
-  .hero2 h1 {
-    font-size: 2.25rem;
-  }
-  .hero-bar {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-  .hfield {
-    width: 100%;
-  }
-  .hf-val {
-    max-width: none;
-  }
-  .hf-menu {
-    width: min(340px, calc(100vw - 48px));
-  }
-  .how-steps {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .how-arrow {
-    display: none;
-  }
-  .howband {
-    padding: 18px;
-  }
 }
 @media (max-width: 640px) {
-  .lgrid {
-    grid-template-columns: 1fr;
-  }
-  .lmedia {
-    aspect-ratio: 16 / 7;
-  }
-  .trust2 {
-    grid-template-columns: 1fr;
-  }
-  .trust2 > div {
-    border-left: 0 !important;
-    padding: 8px 0;
-  }
   .header.ph .logo small {
     display: none;
   }
@@ -1200,9 +1131,5 @@ body.ph-page .a11y-dock {
     width: 40px;
     height: 40px;
     padding: 0;
-  }
-  .feat-head h2,
-  .howband h2 {
-    font-size: 1.625rem;
   }
 }

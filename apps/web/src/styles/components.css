@@ -1061,12 +1061,10 @@ input[type='range'] {
 }
 
 .pcard .media .save-btn,
-.gallery-main .nav-btn,
-.lheart {
+.gallery-main .nav-btn {
   color: #0f172a;
 }
-.pcard .media .save-btn[aria-pressed='true'],
-.lheart[aria-pressed='true'] {
+.pcard .media .save-btn[aria-pressed='true'] {
   color: #b91c1c;
 }
 

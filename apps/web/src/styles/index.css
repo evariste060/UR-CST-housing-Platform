@@ -46,6 +46,12 @@
   --color-red-50: var(--red-50);
   --color-red-border: var(--red-border);
 
+  /* The widths the older CSS used: `max-phone` is 640px and below, `desktop` 1101px and up. */
+  --breakpoint-*: initial;
+  --breakpoint-phone: 641px;
+  --breakpoint-tablet: 901px;
+  --breakpoint-desktop: 1101px;
+
   --font-sans: var(--font);
 
   --radius-sm: var(--r-sm);

@@ -414,50 +414,6 @@ html.dark .b-approved,
 html.dark .b-new {
   border-color: #2a4a86;
 }
-html.dark .hero2 {
-  background: linear-gradient(90deg, #0e1a33 0%, #10203d 100%);
-}
-html.dark .hero2 h1,
-html.dark .hero2 .lead {
-  color: var(--ink);
-}
-html.dark .hero2-img::before {
-  background: linear-gradient(
-    90deg,
-    #10203d 0%,
-    rgba(16, 32, 61, 0.8) 10%,
-    rgba(16, 32, 61, 0) 32%
-  );
-}
-html.dark .hero-bar,
-html.dark .hfield {
-  background: var(--white);
-  border-color: var(--line-strong);
-  color: var(--ink);
-}
-html.dark .hf-val {
-  color: var(--muted);
-}
-html.dark .howband {
-  background: #12213d;
-}
-html.dark .how-intro {
-  border-color: var(--line-strong);
-}
-html.dark .howband h2,
-html.dark .how-steps li:not(.how-arrow),
-html.dark .how-intro p,
-html.dark .how-steps li span span,
-html.dark .how-arrow {
-  color: var(--ink);
-}
-html.dark .how-ic {
-  background: #1b3260;
-}
-html.dark .lbadge.ok {
-  background: #dcfce7;
-  color: #14532d;
-}
 html.dark .map {
   filter: brightness(0.85);
 }

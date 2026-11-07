@@ -26,6 +26,12 @@ const ROOM_TYPES: { value: RoomType; icon: IconName }[] = [
   { value: 'APARTMENT', icon: 'building' },
 ];
 
+const SECTION = 'mx-auto max-w-[1280px] px-6 max-phone:px-4 desktop:max-w-[1440px] desktop:px-16';
+const HEADING = 'text-[2rem] font-extrabold tracking-[-0.02em] max-phone:text-[1.625rem]';
+const FIELD_BUTTON =
+  'flex min-h-14 w-[190px] cursor-pointer items-center gap-2.5 rounded-[10px] border border-[#d5dce6] bg-white px-3 py-1.5 text-left text-[#0f172a] hover:border-blue aria-expanded:border-blue max-tablet:w-full dark:border-line-strong dark:bg-card dark:text-ink dark:hover:border-blue dark:aria-expanded:border-blue [&>.ic:first-child]:size-[22px] [&>.ic:first-child]:text-blue [&>.ic:last-child]:ml-auto [&>.ic:last-child]:size-[18px]';
+const FIELD_MENU = 'right-auto left-0 w-[340px] max-tablet:w-[min(340px,calc(100vw-48px))]';
+
 const HOW_STEPS: { icon: IconName; title: string; text: string }[] = [
   {
     icon: 'search',
@@ -91,20 +97,24 @@ function HeroPicker({
   children,
 }: HeroPickerProps) {
   return (
-    <div className="hf-wrap">
+    <div>
       <HeaderMenu
         id={`hero-${id}`}
         label={`Choose ${label.toLowerCase()}`}
-        buttonClass="hfield"
-        panelClass="hf-menu"
+        buttonClass={FIELD_BUTTON}
+        panelClass={FIELD_MENU}
         open={open}
         onOpenChange={onOpenChange}
         button={
           <>
             <Icon name={icon} />
-            <span className="hf-txt">
-              <b>{label}</b>
-              <span className={picked ? 'hf-val picked-val' : 'hf-val'}>{shown}</span>
+            <span className="flex min-w-0 flex-col leading-[1.25]">
+              <b className="text-sm">{label}</b>
+              <span
+                className={`max-w-[120px] truncate text-[0.8125rem] max-tablet:max-w-none ${picked ? 'font-bold text-blue' : 'text-[#475569] dark:text-muted'}`}
+              >
+                {shown}
+              </span>
             </span>
             <Icon name="chevD" />
           </>
@@ -141,7 +151,11 @@ function HeroSearch() {
   }
 
   return (
-    <form className="hero-bar" aria-label="Search accommodation" onSubmit={submit}>
+    <form
+      className="mt-6 inline-flex flex-wrap items-stretch gap-2.5 rounded-[14px] border border-[#dce3ee] bg-white p-3 shadow-raised max-tablet:grid max-tablet:w-full max-tablet:grid-cols-1 dark:border-line-strong dark:bg-card dark:text-ink"
+      aria-label="Search accommodation"
+      onSubmit={submit}
+    >
       <HeroPicker
         id="location"
         icon="pin"
@@ -209,7 +223,10 @@ function HeroSearch() {
           }}
         />
       </HeroPicker>
-      <button className="btn btn-primary hb-go" type="submit">
+      <button
+        className="btn btn-primary min-w-[132px] rounded-[10px] text-[1.0625rem]"
+        type="submit"
+      >
         <Icon name="search" />
         Search
       </button>
@@ -217,12 +234,14 @@ function HeroSearch() {
   );
 }
 
+const CARD_GRID = 'grid grid-cols-3 gap-7 max-desktop:grid-cols-2 max-phone:grid-cols-1';
+
 function Featured() {
   const { data, isPending, isError, refetch } = useFeatured();
 
   if (isPending) {
     return (
-      <div className="lgrid" role="status" aria-busy="true" aria-label="Loading accommodation">
+      <div className={CARD_GRID} role="status" aria-busy="true" aria-label="Loading accommodation">
         {[0, 1, 2].map((index) => (
           <Skeleton key={index} height={320} />
         ))}
@@ -244,7 +263,7 @@ function Featured() {
     );
   }
   return (
-    <div className="lgrid">
+    <div className={CARD_GRID}>
       {data.map((property) => (
         <LandingCard key={property.id} property={property} />
       ))}
@@ -261,71 +280,104 @@ export function LandingPage() {
 
   return (
     <main id="main">
-      <section className="hero2" aria-labelledby="hero-h">
-        <div className="hero2-img" aria-hidden="true">
-          <img src="/hero.jpg" alt="" />
+      <section
+        className="relative border-b border-line bg-[linear-gradient(90deg,#e8f0fe_0%,#eef4ff_42%,#f3f7ff_100%)] dark:bg-[linear-gradient(90deg,#0e1a33_0%,#10203d_100%)]"
+        aria-labelledby="hero-h"
+      >
+        <div
+          className="absolute inset-y-0 right-0 w-[58%] before:absolute before:inset-0 before:z-1 before:bg-[linear-gradient(90deg,#eef4ff_0%,rgba(238,244,255,0.85)_10%,rgba(238,244,255,0)_32%)] before:content-[''] max-tablet:relative max-tablet:h-[200px] max-tablet:w-full max-tablet:before:bg-[linear-gradient(0deg,#eef4ff_0%,rgba(238,244,255,0)_40%)] dark:before:bg-[linear-gradient(90deg,#10203d_0%,rgba(16,32,61,0.8)_10%,rgba(16,32,61,0)_32%)]"
+          aria-hidden="true"
+        >
+          <img className="size-full object-cover object-[60%_center]" src="/hero.jpg" alt="" />
         </div>
-        <div className="in">
-          <h1 id="hero-h">
-            Find Your Next Home <em>Near UR-CST</em>
+        <div className="relative z-2 mx-auto min-h-[330px] max-w-[1440px] pt-11 pr-6 pb-10 pl-16 max-tablet:min-h-0 max-tablet:px-4 max-tablet:pt-5 max-tablet:pb-7">
+          <h1
+            id="hero-h"
+            className="max-w-[12em] text-[3.25rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-[#0f172a] max-tablet:text-4xl dark:text-ink"
+          >
+            Find Your Next Home <em className="text-blue not-italic">Near UR-CST</em>
           </h1>
-          <p className="lead">
+          <p className="mt-3.5 max-w-[30em] text-[1.1875rem] leading-[1.45] text-[#1e293b] dark:text-ink">
             Discover affordable student accommodation near campus. Compare rooms, explore
             facilities, and connect directly with landlords.
           </p>
           <HeroSearch />
         </div>
       </section>
-      <section className="section feat" aria-labelledby="feat-h">
-        <div className="row-between feat-head">
+      <section className={`${SECTION} py-14 max-phone:py-10`} aria-labelledby="feat-h">
+        <div className="row-between mb-[18px] items-end">
           <div>
-            <h2 id="feat-h">Featured Accommodation</h2>
-            <p>
+            <h2 id="feat-h" className={HEADING}>
+              Featured Accommodation
+            </h2>
+            <p className="mt-1 text-ink">
               Recently added, student-friendly options near UR-CST in Kigali. Saving a room does not
               reserve it.
             </p>
           </div>
-          <Link className="view-all" to="/search">
+          <Link
+            className="inline-flex items-center gap-1.5 text-[1.0625rem] font-bold text-blue no-underline hover:underline"
+            to="/search"
+          >
             View All Listings <Icon name="arrowR" />
           </Link>
         </div>
         <Featured />
       </section>
-      <section className="section how-section" id="how" aria-labelledby="how-h">
-        <div className="howband">
-          <div className="how-intro">
-            <h2 id="how-h">How It Works</h2>
-            <p>Find your student accommodation in 3 simple steps.</p>
+      <section className={`${SECTION} pt-2 pb-6 max-phone:py-10`} id="how" aria-labelledby="how-h">
+        <div className="grid grid-cols-[300px_1fr] items-center gap-6 rounded-lg bg-[#eef3fc] px-8 py-[18px] max-desktop:grid-cols-1 max-tablet:p-[18px] dark:bg-[#12213d]">
+          <div className="border-r border-[#c9d5ea] pr-6 max-desktop:border-r-0 max-desktop:pr-0 dark:border-line-strong">
+            <h2 id="how-h" className={`${HEADING} text-[#0f172a] dark:text-ink`}>
+              How It Works
+            </h2>
+            <p className="mt-1 text-[#1e293b] dark:text-ink">
+              Find your student accommodation in 3 simple steps.
+            </p>
           </div>
-          <ol className="how-steps">
+          <ol className="m-0 flex list-none items-center gap-4 p-0 max-tablet:flex-col max-tablet:items-stretch">
             {HOW_STEPS.flatMap(({ icon, title, text }, index) => [
               index > 0 && (
-                <li className="how-arrow" aria-hidden="true" key={`arrow-${title}`}>
+                <li
+                  className="flex-none text-[#0f172a] max-tablet:hidden dark:text-ink"
+                  aria-hidden="true"
+                  key={`arrow-${title}`}
+                >
                   <Icon name="arrowR" />
                 </li>
               ),
-              <li key={title}>
-                <span className="how-ic">
+              <li
+                key={title}
+                className="flex flex-1 items-start gap-4 text-[#0f172a] dark:text-ink"
+              >
+                <span className="grid size-14 flex-none place-items-center rounded-[14px] bg-[#dce7fb] text-blue dark:bg-[#1b3260] [&_.ic]:size-[30px]">
                   <Icon name={icon} />
                 </span>
                 <span>
-                  <b>{title}</b>
-                  <span>{text}</span>
+                  <b className="block text-[1.0625rem]">{title}</b>
+                  <span className="mt-0.5 block text-[0.9375rem] text-[#1e293b] dark:text-ink">
+                    {text}
+                  </span>
                 </span>
               </li>,
             ])}
           </ol>
         </div>
       </section>
-      <section className="section trust2" aria-label="Why use UR-CST Housing">
+      <section
+        className={`${SECTION} grid grid-cols-4 pt-2 pb-14 max-desktop:grid-cols-2 max-desktop:gap-y-5 max-phone:grid-cols-1 max-phone:pb-10`}
+        aria-label="Why use UR-CST Housing"
+      >
         {TRUST.map(({ icon, title, text }) => (
-          <div key={title}>
-            <span className="t-ic">
+          <div
+            key={title}
+            className="flex items-start gap-[18px] border-line-strong px-7 py-2 not-first:border-l max-desktop:nth-3:border-l-0 max-phone:border-l-0 max-phone:px-0"
+          >
+            <span className="[&_.ic]:size-12 [&_.ic]:stroke-[1.8] [&_.ic]:text-blue">
               <Icon name={icon} />
             </span>
             <span>
-              <b>{title}</b>
-              <span>{text}</span>
+              <b className="block text-[1.0625rem]">{title}</b>
+              <span className="mt-0.5 block text-[0.9375rem] text-ink">{text}</span>
             </span>
           </div>
         ))}

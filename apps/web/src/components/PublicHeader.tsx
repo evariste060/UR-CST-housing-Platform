@@ -356,7 +356,7 @@ export function PublicHeader() {
       <div className="navrow">
         <div className="in">
           <nav
-            className="flex flex-wrap items-center gap-1.5 max-[900px]:hidden [&_.hmenu]:right-auto [&_.hmenu]:left-0"
+            className="flex flex-wrap items-center gap-1.5 max-tablet:hidden [&_.hmenu]:right-auto [&_.hmenu]:left-0"
             aria-label="Main"
           >
             <NavItem to="/" end icon="home" label="Home" />
