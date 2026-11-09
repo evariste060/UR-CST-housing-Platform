@@ -3,6 +3,7 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ROLE_HOME, useAuth } from './useAuth';
 import { buttonClass } from '../components/Button';
+import { t, tNode } from '../i18n';
 
 const ROLE_LABEL: Record<Role, string> = {
   STUDENT: 'a student',
@@ -13,7 +14,7 @@ const ROLE_LABEL: Record<Role, string> = {
 function CheckingAccount() {
   return (
     <main className="page" id="main">
-      <p role="status">Checking your account…</p>
+      <p role="status">{t('Checking your account…')}</p>
     </main>
   );
 }
@@ -32,10 +33,14 @@ export function RequireRole({ allow }: { allow: Role }) {
         <span className="state-ic">
           <Icon name="lock" />
         </span>
-        <h1 className="state-title">Sign in as {label} to open this page</h1>
-        <p>This area is only for {label.replace(/^an? /, '')} accounts.</p>
+        <h1 className="state-title">
+          {t('Sign in as')} {tNode(label)} {t('to open this page')}
+        </h1>
+        <p>
+          {t('This area is only for')} {tNode(label.replace(/^an? /, ''))} {t('accounts.')}
+        </p>
         <Link className={buttonClass()} to="/login">
-          Go to login
+          {t('Go to login')}
         </Link>
       </div>
     </main>

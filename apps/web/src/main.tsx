@@ -5,9 +5,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AppProviders } from './AppProviders';
 import { applyPrefs, loadPrefs } from './display/prefs';
+import { LanguageRoot } from './i18n/LanguageRoot';
 import './styles/index.css';
 
 // Applied before the first paint, so a saved dark theme never flashes light.
+// It also sets the saved language.
 applyPrefs(loadPrefs());
 
 const rootElement = document.getElementById('root');
@@ -16,13 +18,17 @@ if (!rootElement) throw new Error('The #root element is missing from index.html.
 const queryClient = new QueryClient();
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppProviders>
-          <App />
-        </AppProviders>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>,
+  <LanguageRoot
+    render={() => (
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AppProviders>
+              <App />
+            </AppProviders>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </StrictMode>
+    )}
+  />,
 );

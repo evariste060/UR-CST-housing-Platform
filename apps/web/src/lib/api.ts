@@ -1,4 +1,19 @@
 import type {
+  AdminListing,
+  AdminListingDetail,
+  AdminListingList,
+  AdminLocation,
+  AdminReport,
+  AdminReportList,
+  AdminSummary,
+  AdminUser,
+  AdminUserDetail,
+  AccountStatus,
+  LocationInput,
+  ReportStatusFilter,
+  ReviewTab,
+  UserRoleFilter,
+  FilterCounts,
   ApiErrorBody,
   Availability,
   AvailabilityResult,
@@ -6,7 +21,7 @@ import type {
   InquiryFilter,
   InquiryStatus,
   InquiryThread,
-  LandlordFilter,
+  LandlordPropertyQuery,
   LandlordInquiryList,
   LandlordProperty,
   LandlordPropertyList,
@@ -22,6 +37,7 @@ import type {
   LocationDto,
   LoginInput,
   MeResponse,
+  NotificationList,
   Paginated,
   PropertyDetail,
   PropertySummary,
@@ -33,6 +49,9 @@ import type {
   SavedIdsResponse,
   SearchFilters,
   StudentInquiry,
+  StudentInquiryThread,
+  SupportMessageInput,
+  UnreadCount,
   UpdateProfileInput,
 } from '@urcst/shared';
 
@@ -104,9 +123,9 @@ export const api = {
   saveContactPreferences: (prefs: ContactPreferences) =>
     request<ContactPreferences>('/me/contact-preferences', 'PATCH', prefs),
   landlordSummary: () => request<LandlordSummary>('/landlord/summary'),
-  landlordProperties: (filter: LandlordFilter, page: number, pageSize: number) =>
+  landlordProperties: (query: Omit<LandlordPropertyQuery, 'filter'>) =>
     request<LandlordPropertyList>(
-      `/landlord/properties?filter=${filter}&page=${page}&pageSize=${pageSize}`,
+      `/landlord/properties?${new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]))}`,
     ),
   listing: (id: string) => request<ListingForm>(`/landlord/properties/${encodeURIComponent(id)}`),
   createListing: (patch: ListingPatch) =>
@@ -153,9 +172,9 @@ export const api = {
     request<{ ok: true }>(`/landlord/properties/${encodeURIComponent(id)}`, 'DELETE'),
   restoreListing: (id: string) =>
     request<{ ok: true }>(`/landlord/properties/${encodeURIComponent(id)}/restore`, 'POST'),
-  landlordInquiries: (status: InquiryFilter, page: number, pageSize: number) =>
+  landlordInquiries: (status: InquiryFilter, page: number, pageSize: number, q: string) =>
     request<LandlordInquiryList>(
-      `/landlord/inquiries?status=${status}&page=${page}&pageSize=${pageSize}`,
+      `/landlord/inquiries?${new URLSearchParams({ status, page: String(page), pageSize: String(pageSize), q })}`,
     ),
   landlordInquiry: (id: string) =>
     request<InquiryThread>(`/landlord/inquiries/${encodeURIComponent(id)}`),
@@ -173,6 +192,7 @@ export const api = {
     request<{ id: string }>(`/properties/${encodeURIComponent(id)}/inquiries`, 'POST', {
       message,
     }),
+  filterCounts: (query: URLSearchParams) => request<FilterCounts>(`/properties/counts?${query}`),
   locations: () => request<Items<LocationDto>>('/locations'),
   parseSearch: (text: string) =>
     request<{ filters: SearchFilters }>('/search/parse', 'POST', { text }),
@@ -189,4 +209,57 @@ export const api = {
     request<{ ok: true }>('/me/history/restore', 'POST', input),
   recordSearch: (input: RecordSearchInput) => request<unknown>('/me/searches', 'POST', input),
   inquiries: () => request<Paginated<StudentInquiry>>('/me/inquiries?pageSize=50'),
+  inquiry: (id: string) => request<StudentInquiryThread>(`/me/inquiries/${encodeURIComponent(id)}`),
+  sendInquiryMessage: (id: string, input: ReplyInput) =>
+    request<StudentInquiryThread>(
+      `/me/inquiries/${encodeURIComponent(id)}/messages`,
+      'POST',
+      input,
+    ),
+
+  notifications: (page: number, pageSize: number) =>
+    request<NotificationList>(`/notifications?page=${page}&pageSize=${pageSize}`),
+  readNotification: (id: string) =>
+    request<UnreadCount>(`/notifications/${encodeURIComponent(id)}/read`, 'POST'),
+  readAllNotifications: () => request<UnreadCount>('/notifications/read-all', 'POST'),
+  contactSupport: (input: SupportMessageInput) => request<{ ok: true }>('/support', 'POST', input),
+
+  adminSummary: () => request<AdminSummary>('/admin/summary'),
+  adminListings: (status: ReviewTab, page: number, pageSize: number) =>
+    request<AdminListingList>(`/admin/listings?status=${status}&page=${page}&pageSize=${pageSize}`),
+  adminListing: (id: string) =>
+    request<AdminListingDetail>(`/admin/listings/${encodeURIComponent(id)}`),
+  approveListing: (id: string) =>
+    request<AdminListing>(`/admin/listings/${encodeURIComponent(id)}/approve`, 'POST'),
+  requestChanges: (id: string, note: string) =>
+    request<AdminListing>(`/admin/listings/${encodeURIComponent(id)}/request-changes`, 'POST', {
+      note,
+    }),
+  rejectListing: (id: string, note: string) =>
+    request<AdminListing>(`/admin/listings/${encodeURIComponent(id)}/reject`, 'POST', { note }),
+  removeListing: (id: string, note: string, reportId?: string) =>
+    request<AdminListing>(`/admin/listings/${encodeURIComponent(id)}/remove`, 'POST', {
+      note,
+      reportId,
+    }),
+  adminUsers: (role: UserRoleFilter, q: string, page: number, pageSize: number) =>
+    request<Paginated<AdminUser>>(
+      `/admin/users?${new URLSearchParams({ role, q, page: String(page), pageSize: String(pageSize) })}`,
+    ),
+  adminUser: (id: string) => request<AdminUserDetail>(`/admin/users/${encodeURIComponent(id)}`),
+  setUserStatus: (id: string, status: AccountStatus) =>
+    request<AdminUser>(`/admin/users/${encodeURIComponent(id)}/status`, 'PATCH', { status }),
+  adminReports: (status: ReportStatusFilter, page: number, pageSize: number) =>
+    request<AdminReportList>(`/admin/reports?status=${status}&page=${page}&pageSize=${pageSize}`),
+  resolveReport: (id: string, note: string) =>
+    request<AdminReport>(`/admin/reports/${encodeURIComponent(id)}/resolve`, 'POST', { note }),
+  adminLocations: (q: string, page: number, pageSize: number) =>
+    request<Paginated<AdminLocation>>(
+      `/admin/locations?${new URLSearchParams({ q, page: String(page), pageSize: String(pageSize) })}`,
+    ),
+  addLocation: (input: LocationInput) => request<AdminLocation>('/admin/locations', 'POST', input),
+  editLocation: (id: string, input: LocationInput) =>
+    request<AdminLocation>(`/admin/locations/${encodeURIComponent(id)}`, 'PATCH', input),
+  removeLocation: (id: string) =>
+    request<{ ok: true }>(`/admin/locations/${encodeURIComponent(id)}`, 'DELETE'),
 };

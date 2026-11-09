@@ -38,10 +38,6 @@
 }
 @utility choice-text {
   @apply mt-1 block;
-
-  .demo-acc & {
-    @apply mt-0;
-  }
 }
 
 /* Layout */
@@ -96,6 +92,17 @@
 @utility link-btn {
   @apply inline-flex min-h-11 cursor-pointer items-center gap-1 border-0 bg-transparent px-0.5 py-1 font-semibold text-blue underline underline-offset-3;
 }
+/* The icon at the top of a dialog. */
+@utility m-ic {
+  @apply grid size-11 flex-none place-items-center rounded-[12px] bg-blue-50 text-blue;
+
+  &.danger {
+    @apply bg-red-50 text-red-text;
+  }
+  &.ok {
+    @apply bg-green-50 text-green-text;
+  }
+}
 @utility tip {
   @apply flex items-start gap-2.5 rounded-[10px] bg-slate-100 px-3 py-2.5 text-sm text-muted [&_.ic]:mt-px [&_.ic]:text-blue;
 }
@@ -129,9 +136,6 @@
   .field.has-error & {
     @apply border-red-text;
   }
-  .hsearch & {
-    @apply min-h-11 rounded-full text-[0.9375rem];
-  }
 }
 @utility select {
   @apply min-h-12 w-full rounded-[10px] border border-line-strong bg-card px-3.5 py-2.5 text-base text-ink hover:border-[#94a3b8] focus:border-blue focus:shadow-[0_0_0_3px_var(--blue-100)] focus:outline-none high-contrast:border-2;
@@ -149,6 +153,10 @@
 }
 @utility input-wrap {
   @apply relative [&_.icon-btn]:absolute [&_.icon-btn]:top-0.5 [&_.icon-btn]:right-0.5;
+}
+/* A field with its icon on the left. */
+@utility input-icon {
+  @apply relative [&_.input]:pl-11 [&_.select]:pl-11 [&>.ic]:absolute [&>.ic]:top-1/2 [&>.ic]:left-3.5 [&>.ic]:-translate-y-1/2 [&>.ic]:text-subtle;
 }
 @utility err-msg {
   @apply flex items-start gap-1.5 text-sm font-medium text-red-text [&_.ic]:mt-0.5 [&_.ic]:size-4;
@@ -190,7 +198,7 @@
   }
   &[aria-checked='true'],
   &[aria-pressed='true'] {
-    @apply border-blue bg-blue font-bold text-white shadow-[0_2px_8px_rgba(29,78,216,0.28)] dark:border-[#2563eb] dark:bg-[#2563eb] [&_.ic]:text-white;
+    @apply border-blue bg-blue font-bold text-white shadow-[0_2px_8px_rgba(37,99,235,0.28)] dark:border-blue dark:bg-blue [&_.ic]:text-white;
   }
   .pick-group.has-error & {
     @apply border-red-border;
@@ -204,10 +212,10 @@
   }
 }
 @utility ptile {
-  @apply flex min-h-[72px] cursor-pointer flex-col items-start gap-0.5 rounded-md border-[1.5px] border-line-strong bg-card px-3 py-2.5 text-left font-semibold hover:border-blue high-contrast:border-2 [&_.ic]:text-blue [&_.st]:text-xs [&_.st]:font-medium [&_.st]:text-muted;
+  @apply flex min-h-[72px] cursor-pointer flex-col items-start gap-0.5 rounded-md border-[1.5px] border-line-strong bg-card px-3 py-2.5 text-left font-semibold text-sm text-ink hover:border-blue high-contrast:border-2 [&_.ic]:text-blue [&_.st]:text-xs [&_.st]:font-medium [&_.st]:text-muted;
 
   &[aria-pressed='true'] {
-    @apply border-blue bg-blue text-white dark:border-[#2563eb] dark:bg-[#2563eb] [&_.ic]:text-white [&_.st]:text-white;
+    @apply border-blue bg-blue text-white dark:border-blue dark:bg-blue [&_.ic]:text-white [&_.st]:text-white;
   }
 }
 @utility choice-grid {
@@ -222,7 +230,7 @@
   }
   &[aria-pressed='true']::after,
   &[aria-checked='true']::after {
-    @apply absolute -top-[11px] right-3 rounded-full bg-blue px-2 py-0.5 text-[0.6875rem] font-bold text-white content-['Selected'];
+    @apply absolute -top-[11px] right-3 rounded-full bg-blue px-2 py-0.5 text-[0.6875rem] font-bold tracking-[0.03em] text-white uppercase content-['Selected'];
   }
   &.selected {
     @apply border-blue bg-blue-50;

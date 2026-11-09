@@ -1,7 +1,7 @@
 /* Copied from :root in reference/prototype.html. Phase 3 adds the dark theme. */
 :root {
   /* Foundation colours (from the brief) */
-  --blue: #1d4ed8;
+  --blue: #2563eb;
   --blue-700: #1e40af;
   --blue-50: #eff4ff;
   --blue-100: #dbe6fe;
@@ -20,6 +20,15 @@
   --red-border: #f5b5b5;
   /* Neutrals with a slight blue bias */
   --white: #ffffff;
+  /* The landlord sidebar */
+  --sidebar: #eaf2ff;
+  /* The dark-blue sidebar on every dashboard. White text keeps at least 4.5:1 on all three. */
+  --side-from: #0a2463;
+  --side-via: #103a91;
+  --side-to: #1d4ed8;
+  /* The current page in the sidebar. The brief's #6366f1 end gave white text 4.47:1, so it is a step deeper. */
+  --side-active-from: #2563eb;
+  --side-active-to: #4f46e5;
   --muted: #475569;
   --subtle: #64748b;
   --line: #e2e8f0;
@@ -46,6 +55,7 @@
 
 /* High contrast (light theme). The dark theme has its own block below. */
 html.hc:not(.dark) {
+  --blue: #1d4ed8;
   --muted: #1e293b;
   --subtle: #334155;
   --line: #64748b;
@@ -58,6 +68,10 @@ html.hc:not(.dark) {
 html.dark {
   color-scheme: dark;
   --white: #111c30;
+  --sidebar: #0d1a33;
+  --side-from: #06173f;
+  --side-via: #0b2a6b;
+  --side-to: #143f9e;
   --surface: #0a1222;
   --ink: #e6edf7;
   --muted: #a9b7ca;
@@ -65,7 +79,7 @@ html.dark {
   --line: #23324b;
   --line-strong: #34476a;
   --slate-100: #18253c;
-  --blue: #6ea0ff;
+  --blue: #3d6be0;
   --blue-700: #a9c6ff;
   --blue-50: #15274a;
   --blue-100: #22407a;
@@ -81,6 +95,7 @@ html.dark {
 
 /* Not in the prototype: its dark colours overrode high contrast, so the setting did little there. */
 html.dark.hc {
+  --blue: #6ea0ff;
   --ink: #ffffff;
   --muted: #e2e8f0;
   --subtle: #cbd5e1;

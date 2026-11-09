@@ -3,7 +3,9 @@ import { ChoiceField } from '../../components/ChoiceCards';
 import { Field } from '../../components/Field';
 import type { IconName } from '../../components/Icon';
 import { PickGroup } from '../../components/PickGroup';
+import { StepSection, StepSections } from './StepSection';
 import type { StepProps } from './stepProps';
+import { t } from '../../i18n';
 
 const TYPES: { value: RoomType; title: string; icon: IconName; description: string }[] = [
   { value: 'SINGLE', title: 'Single room', icon: 'bed', description: 'One person, own room' },
@@ -22,53 +24,58 @@ const ROOMS = [
 
 export function BasicStep({ values, errors, change }: StepProps) {
   return (
-    <div className="form-grid">
-      <div className="full">
+    <StepSections>
+      <StepSection icon="home" title={t('The property')} intro={t('What students will see first.')}>
         <Field
           id="wz-title"
-          label="Property title"
+          label={t('Property title')}
           value={values.title}
-          placeholder="e.g. Kiyovu Garden Single Room"
+          placeholder={t('e.g. Kiyovu Garden Single Room')}
           required
           maxLength={120}
           error={errors.title}
-          help="Include the neighbourhood and room type."
+          help={t('Include the neighbourhood and room type.')}
           onChange={(title) => change({ title })}
         />
-      </div>
-      <div className="full">
         <ChoiceField
-          label="Accommodation type"
+          label={t('Accommodation type')}
           required
           value={values.type ?? undefined}
           options={TYPES}
           error={errors.type}
           onChoose={(type) => change({ type })}
         />
-      </div>
-      <div className="full">
         <PickGroup
-          label="Number of rooms"
+          label={t('Number of rooms')}
           value={String(Math.min(values.rooms, 5))}
           options={ROOMS}
           error={errors.rooms}
           onChange={(rooms) => change({ rooms: Number(rooms) })}
         />
-      </div>
-      <div className="full">
+      </StepSection>
+      <StepSection
+        icon="doc"
+        title={t('Description')}
+        intro={t('A few honest sentences answer most student questions before they ask.')}
+      >
         <Field
           id="wz-desc"
-          label="Description"
-          rows={5}
+          label={t('Description')}
+          rows={6}
           value={values.description}
-          placeholder="e.g. A bright single room in a quiet compound. Water and electricity included. 10 minutes' walk to campus."
+          placeholder={t(
+            "e.g. A bright single room in a quiet compound. Water and electricity included. 10 minutes' walk to campus.",
+          )}
           required
           maxLength={2000}
           error={errors.description}
-          help="Describe the room, what is included, and any house rules."
+          help={t(
+            'Describe the room, what is included, and any house rules. {length} of at least 30 characters.',
+            { length: values.description.trim().length },
+          )}
           onChange={(description) => change({ description })}
         />
-      </div>
-    </div>
+      </StepSection>
+    </StepSections>
   );
 }

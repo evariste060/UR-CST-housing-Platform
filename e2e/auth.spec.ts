@@ -1,20 +1,21 @@
 import { expect, test } from '@playwright/test';
+import { logIn } from './helpers';
 
 // These tests use the seeded demo accounts. Run npm run db:reset if the data has changed.
 const PASSWORD = 'demo1234';
 
 test.describe('demo accounts land on the right home', () => {
-  for (const [button, heading] of [
-    ['Demo Student', 'Welcome back, Demo Student'],
-    ['Demo Landlord A', /^Good (morning|afternoon|evening), Demo Landlord A$/],
-    ['Demo Administrator', 'Administrator dashboard'],
+  for (const [email, name, heading] of [
+    ['student@demo.ur', 'Demo Student', 'Welcome back, Demo Student'],
+    ['landlord@demo.ur', 'Demo Landlord A', 'Welcome back, Demo Landlord A'],
+    ['admin@demo.ur', 'Demo Administrator', 'Administrator dashboard'],
   ] as const) {
-    test(`${button} opens the ${heading}`, async ({ page }) => {
+    test(`${email} opens the ${heading}`, async ({ page }) => {
       await page.goto('/login');
-      await page.getByRole('button', { name: new RegExp(button) }).click();
+      await logIn(page, email);
 
       await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
-      await expect(page.getByText(`Signed in as ${button}.`)).toBeVisible();
+      await expect(page.getByText(`Signed in as ${name}.`)).toBeVisible();
     });
   }
 
@@ -43,11 +44,14 @@ test('a suspended user sees why they cannot log in', async ({ page }) => {
 
 test('logging out returns to a guest session', async ({ page }) => {
   await page.goto('/login');
-  await page.getByRole('button', { name: /Demo Student/ }).click();
+  await logIn(page, 'student@demo.ur');
   await expect(page).toHaveURL(/\/student$/);
 
   await page.goto('/account');
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await page
+    .getByRole('navigation', { name: 'Student navigation' })
+    .getByRole('button', { name: 'Log out' })
+    .click();
   await expect(page.getByText('You have signed out.')).toBeVisible();
 
   await page.goto('/student');
@@ -58,7 +62,7 @@ test('logging out returns to a guest session', async ({ page }) => {
 
 test('a student cannot open the administrator area', async ({ page }) => {
   await page.goto('/login');
-  await page.getByRole('button', { name: /Demo Student/ }).click();
+  await logIn(page, 'student@demo.ur');
   await expect(page).toHaveURL(/\/student$/);
 
   await page.goto('/admin');

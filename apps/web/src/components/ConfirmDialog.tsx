@@ -2,12 +2,15 @@ import { useRef, useState } from 'react';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { Modal, type ModalTone } from './Modal';
+import { t, tNode } from '../i18n';
 
 interface NoteField {
   label: string;
   placeholder?: string;
   /** Shown when the note is required and left empty. */
   required?: string;
+  /** Starts the note with this text, which can be changed. */
+  initial?: string;
 }
 
 interface ConfirmDialogProps {
@@ -32,7 +35,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(field?.initial ?? '');
   const [error, setError] = useState('');
   const noteInput = useRef<HTMLTextAreaElement>(null);
   const confirmButton = useRef<HTMLButtonElement>(null);
@@ -57,19 +60,19 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button ref={confirmButton} variant={tone} onClick={handleConfirm}>
-            {confirm}
+            {tNode(confirm)}
           </Button>
         </>
       }
     >
-      <p>{body}</p>
+      <p>{tNode(body)}</p>
       {field && (
         <div className={error ? 'field has-error' : 'field'}>
           <label htmlFor="confirm-note">
-            {field.label}
+            {tNode(field.label)}
             {field.required && (
               <>
                 {' '}
@@ -84,7 +87,7 @@ export function ConfirmDialog({
             className="textarea"
             id="confirm-note"
             value={note}
-            placeholder={field.placeholder}
+            placeholder={tNode(field.placeholder)}
             aria-required={field.required ? true : undefined}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'confirm-note-err' : undefined}
@@ -96,7 +99,7 @@ export function ConfirmDialog({
           {error && (
             <p className="err-msg" id="confirm-note-err">
               <Icon name="alert" />
-              {error}
+              {tNode(error)}
             </p>
           )}
         </div>

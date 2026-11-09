@@ -1,3 +1,4 @@
+import { tNode } from '../i18n';
 // Paths copied from the ICONS set in reference/prototype.html.
 const ICONS = {
   alert: (
@@ -422,7 +423,7 @@ export type IconName = keyof typeof ICONS;
 export function Icon({ name }: { name: IconName }) {
   return (
     <svg className="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      {ICONS[name]}
+      {tNode(ICONS[name])}
     </svg>
   );
 }

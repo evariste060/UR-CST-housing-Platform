@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 interface StateProps {
   icon?: IconName;
@@ -21,9 +22,9 @@ function StateBlock({
       <div className="state-ic">
         <Icon name={icon} />
       </div>
-      <h2 className="state-title">{title}</h2>
-      <p>{text}</p>
-      {actions && <div className="row">{actions}</div>}
+      <h2 className="state-title">{tNode(title)}</h2>
+      <p>{tNode(text)}</p>
+      {actions && <div className="row">{tNode(actions)}</div>}
     </div>
   );
 }
@@ -46,18 +47,25 @@ export function Skeleton({ height, width }: { height: number; width?: string }) 
 
 export function SkeletonCards({ count = 3 }: { count?: number }) {
   return (
-    <div className="grid-cards" role="status" aria-busy="true" aria-label="Loading accommodation">
-      {Array.from({ length: count }, (_, index) => (
-        <div className="pcard" key={index}>
-          <div className="media skel" />
-          <div className="body">
-            <Skeleton height={26} width="60%" />
-            <Skeleton height={16} width="45%" />
-            <Skeleton height={16} width="80%" />
-            <Skeleton height={36} />
+    <div
+      className="grid-cards"
+      role="status"
+      aria-busy="true"
+      aria-label={t('Loading accommodation')}
+    >
+      {tNode(
+        Array.from({ length: count }, (_, index) => (
+          <div className="pcard" key={index}>
+            <div className="media skel" />
+            <div className="body">
+              <Skeleton height={26} width="60%" />
+              <Skeleton height={16} width="45%" />
+              <Skeleton height={16} width="80%" />
+              <Skeleton height={36} />
+            </div>
           </div>
-        </div>
-      ))}
+        )),
+      )}
     </div>
   );
 }

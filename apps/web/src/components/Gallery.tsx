@@ -3,6 +3,7 @@ import { useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { Icon } from './Icon';
 import { buttonClass } from './Button';
+import { t, tNode } from '../i18n';
 
 interface LightboxProps {
   photos: PropertyPhotoDto[];
@@ -38,19 +39,22 @@ function Lightbox({ photos, title, index, onMove, onClose }: LightboxProps) {
         className="lightbox"
         role="dialog"
         aria-modal="true"
-        aria-label={`Photo ${index + 1} of ${photos.length}`}
+        aria-label={t('Photo {p0} of {length}', { p0: index + 1, length: photos.length })}
         onKeyDown={onKeyDown}
       >
-        <img src={photo?.url} alt={`${title}, view ${index + 1} of ${photos.length}`} />
+        <img
+          src={photo?.url}
+          alt={t('{title}, view {p1} of {length}', { title, p1: index + 1, length: photos.length })}
+        />
         <div className="bar">
           <span className="num">
-            {index + 1} / {photos.length}
+            {index + 1} / {tNode(photos.length)}
           </span>
           <span className="row">
             <button
               type="button"
               className="icon-btn"
-              aria-label="Previous photo"
+              aria-label={t('Previous photo')}
               onClick={() => onMove(-1)}
             >
               <Icon name="chevL" />
@@ -58,12 +62,12 @@ function Lightbox({ photos, title, index, onMove, onClose }: LightboxProps) {
             <button
               type="button"
               className="icon-btn"
-              aria-label="Next photo"
+              aria-label={t('Next photo')}
               onClick={() => onMove(1)}
             >
               <Icon name="chevR" />
             </button>
-            <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
+            <button type="button" className="icon-btn" aria-label={t('Close')} onClick={onClose}>
               <Icon name="x" />
             </button>
           </span>
@@ -85,7 +89,7 @@ export function Gallery({ photos, title }: { photos: PropertyPhotoDto[]; title: 
     return (
       <div className="gallery-main gallery-empty">
         <Icon name="image" />
-        <p className="muted">No photos yet</p>
+        <p className="muted">{t('No photos yet')}</p>
       </div>
     );
   }
@@ -93,13 +97,16 @@ export function Gallery({ photos, title }: { photos: PropertyPhotoDto[]; title: 
   return (
     <>
       <div className="gallery-main">
-        <img src={photo.url} alt={`${title}, view ${index + 1} of ${count}`} />
+        <img
+          src={photo.url}
+          alt={t('{title}, view {p1} of {count}', { title, p1: index + 1, count })}
+        />
         {count > 1 && (
           <>
             <button
               type="button"
               className="nav-btn prev"
-              aria-label="Previous photo"
+              aria-label={t('Previous photo')}
               onClick={() => move(-1)}
             >
               <Icon name="chevL" />
@@ -107,7 +114,7 @@ export function Gallery({ photos, title }: { photos: PropertyPhotoDto[]; title: 
             <button
               type="button"
               className="nav-btn next"
-              aria-label="Next photo"
+              aria-label={t('Next photo')}
               onClick={() => move(1)}
             >
               <Icon name="chevR" />
@@ -123,16 +130,16 @@ export function Gallery({ photos, title }: { photos: PropertyPhotoDto[]; title: 
           onClick={() => setFullScreen(true)}
         >
           <Icon name="expand" />
-          Full screen
+          {t('Full screen')}
         </button>
       </div>
-      <div className="thumbs" role="group" aria-label="Choose photo">
+      <div className="thumbs" role="group" aria-label={t('Choose photo')}>
         {photos.map(({ id, url }, position) => (
           <button
             key={id}
             type="button"
             aria-current={position === index}
-            aria-label={`Show photo ${position + 1}`}
+            aria-label={t('Show photo {p0}', { p0: position + 1 })}
             onClick={() => setIndex(position)}
           >
             <img src={url} alt="" />

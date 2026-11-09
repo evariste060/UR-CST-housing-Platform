@@ -52,7 +52,7 @@ Listing review tabs (Pending, Changes requested, Approved, Rejected, Removed). D
 ## Required end-to-end journeys (become Playwright tests)
 **A – Student:** home → search → max rent 100,000, single room, within 2 km → results → open a property → view photos and facilities → save → compare with another → contact landlord (in-app message).
 **B – Landlord:** log in → dashboard → Add accommodation → fill all steps with validation → photos → review → preview → submit → listing shows Pending review → mark occupied → Undo.
-**C – Admin:** log in → dashboard → pending listings → open one → approve → status shows Approved by admin and the listing appears in student search → open reports → view and resolve one.
+**C – Admin:** log in → dashboard → pending listings → open one → approve → the listing appears in student search → open reports → view and resolve one.
 
 ## Seed data
 Use the same demonstration data as the prototype: 8 locations, 3 demo landlords, 13 properties (11 approved, 2 pending), 11 users, 4 inquiries, 3 reports, notifications and activity. All people and phone numbers are fictional (`+250 700 000 1xx`). Demo logins: `student@demo.ur`, `landlord@demo.ur`, `admin@demo.ur`, password `demo1234`. The exact values are in the `PROPERTIES_SEED`, `USERS_SEED`, etc. constants inside `reference/prototype.html`.

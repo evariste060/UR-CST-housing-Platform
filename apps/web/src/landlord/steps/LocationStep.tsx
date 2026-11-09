@@ -1,10 +1,13 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { ChoiceField } from '../../components/ChoiceCards';
 import { Field } from '../../components/Field';
+import { Icon } from '../../components/Icon';
 import { areaPin, SchematicMap } from '../../components/SchematicMap';
 import { formatKm } from '../../lib/format';
 import { useLocations } from '../../student/queries';
+import { StepSection, StepSections } from './StepSection';
 import type { StepProps } from './stepProps';
+import { t } from '../../i18n';
 
 const NUDGE = 0.02;
 const NUDGES: Record<string, [number, number]> = {
@@ -40,13 +43,16 @@ export function LocationStep({ values, errors, change }: StepProps) {
   }
 
   return (
-    <div className="form-grid">
-      <div className="full">
+    <StepSections>
+      <StepSection
+        icon="pin"
+        title={t('Neighbourhood')}
+        intro={t('Only areas in the UR-CST pilot are listed.')}
+      >
         <ChoiceField
-          label="Neighbourhood"
+          label={t('Neighbourhood')}
           required
           value={values.locationId ?? undefined}
-          help="Only areas in the UR-CST pilot are listed."
           error={errors.locationId}
           options={locations.map(({ id, name, distanceKm }) => ({
             value: id,
@@ -56,47 +62,64 @@ export function LocationStep({ values, errors, change }: StepProps) {
           }))}
           onChoose={(locationId) => change({ locationId })}
         />
-      </div>
-      <Field
-        id="wz-landmark"
-        label="Nearby landmark"
-        value={values.landmark}
-        placeholder="e.g. Near Kiyovu roundabout"
-        required
-        maxLength={120}
-        error={errors.landmark}
-        onChange={(landmark) => change({ landmark })}
-      />
-      <div className="full">
-        <Field
-          id="wz-address"
-          label="Address or directions (optional)"
-          value={values.address}
-          placeholder="e.g. KN 3 Ave, blue gate after the pharmacy"
-          maxLength={200}
-          onChange={(address) => change({ address })}
-        />
-      </div>
-      <div className="full field">
-        <span className="label">Map pin (optional)</span>
-        <p className="t-help">
-          Tap the map to place the pin where the house is.{' '}
-          {values.pin && (
-            <button type="button" className="link-btn" onClick={() => change({ pin: null })}>
-              Remove pin
-            </button>
-          )}
-        </p>
-        <button
-          type="button"
-          className="map map-pick"
-          aria-label="Place the map pin. Tap the map, or use the arrow keys to move the pin."
-          onClick={placeFromClick}
-          onKeyDown={nudge}
-        >
-          <SchematicMap locations={locations} area={location?.name} pin={values.pin} />
-        </button>
-      </div>
-    </div>
+      </StepSection>
+      <StepSection
+        icon="route"
+        title={t('Finding the house')}
+        intro={t('Directions students can follow on their first visit.')}
+      >
+        <div className="form-grid">
+          <Field
+            id="wz-landmark"
+            label={t('Nearby landmark')}
+            value={values.landmark}
+            placeholder={t('e.g. Near Kiyovu roundabout')}
+            required
+            maxLength={120}
+            error={errors.landmark}
+            onChange={(landmark) => change({ landmark })}
+          />
+          <Field
+            id="wz-address"
+            label={t('Address or directions (optional)')}
+            value={values.address}
+            placeholder={t('e.g. KN 3 Ave, blue gate after the pharmacy')}
+            maxLength={200}
+            onChange={(address) => change({ address })}
+          />
+        </div>
+      </StepSection>
+      <StepSection
+        icon="map"
+        title={t('Map pin (optional)')}
+        intro={t('Tap the map where the house is, or use the arrow keys to move the pin.')}
+      >
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            className="map map-pick overflow-hidden rounded-lg border border-line"
+            aria-label={t('Place the map pin. Tap the map, or use the arrow keys to move the pin.')}
+            onClick={placeFromClick}
+            onKeyDown={nudge}
+          >
+            <SchematicMap locations={locations} area={location?.name} pin={values.pin} />
+          </button>
+          <p className="t-help m-0 flex flex-wrap items-center gap-2">
+            {values.pin ? (
+              <>
+                <span className="inline-flex items-center gap-1 font-semibold text-green-text">
+                  <Icon name="check" /> {t('Pin placed')}
+                </span>
+                <button type="button" className="link-btn" onClick={() => change({ pin: null })}>
+                  {t('Remove pin')}
+                </button>
+              </>
+            ) : (
+              t('No pin yet. Students will see the centre of the neighbourhood.')
+            )}
+          </p>
+        </div>
+      </StepSection>
+    </StepSections>
   );
 }

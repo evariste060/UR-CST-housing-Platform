@@ -1,42 +1,32 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import type { InquiryFilter, LandlordFilter } from '@urcst/shared';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { InquiryFilter, LandlordPropertyQuery } from '@urcst/shared';
 import { api } from '../lib/api';
 
-const PAGE_SIZE = 20;
+/** Inquiries listed beside the conversation. */
+export const INQUIRY_PAGE_SIZE = 8;
 
 /** Everything under this key refreshes after a change to a listing or an inquiry. */
 export const LANDLORD_KEY = ['landlord'];
 export const listingKey = (id: string) => ['listing', id];
 export const threadKey = (id: string) => [...LANDLORD_KEY, 'inquiry', id];
 
-interface Page {
-  page: number;
-  pageSize: number;
-  total: number;
-}
-
-const nextPage = ({ page, pageSize, total }: Page) =>
-  page * pageSize < total ? page + 1 : undefined;
-
 export function useLandlordSummary() {
   return useQuery({ queryKey: [...LANDLORD_KEY, 'summary'], queryFn: api.landlordSummary });
 }
 
-export function useLandlordProperties(filter: LandlordFilter) {
-  return useInfiniteQuery({
-    queryKey: [...LANDLORD_KEY, 'properties', filter],
-    queryFn: ({ pageParam }) => api.landlordProperties(filter, pageParam, PAGE_SIZE),
-    initialPageParam: 1,
-    getNextPageParam: nextPage,
+export function useLandlordProperties(query: Omit<LandlordPropertyQuery, 'filter'>) {
+  return useQuery({
+    queryKey: [...LANDLORD_KEY, 'properties', query],
+    queryFn: () => api.landlordProperties(query),
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useLandlordInquiries(status: InquiryFilter) {
-  return useInfiniteQuery({
-    queryKey: [...LANDLORD_KEY, 'inquiries', status],
-    queryFn: ({ pageParam }) => api.landlordInquiries(status, pageParam, PAGE_SIZE),
-    initialPageParam: 1,
-    getNextPageParam: nextPage,
+export function useLandlordInquiries(status: InquiryFilter, page: number, q: string) {
+  return useQuery({
+    queryKey: [...LANDLORD_KEY, 'inquiries', status, page, q],
+    queryFn: () => api.landlordInquiries(status, page, INQUIRY_PAGE_SIZE, q),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -19,8 +19,9 @@ import {
   toDetail,
   toSummary,
 } from '../lib/propertyDto';
-import { propertyOrder, propertyWhere } from '../lib/propertyFilters';
+import { filterCounts, propertyOrder, propertyWhere } from '../lib/propertyFilters';
 import { currentUser, requireAuth, requireRole } from '../middleware/auth';
+import { notifyAdmins, notifyUsers } from '../lib/notify';
 import { reportLimiter } from '../middleware/rateLimit';
 import { parseQuery, validate } from '../middleware/validate';
 
@@ -55,6 +56,14 @@ export function propertiesRouter() {
 
     const body: Paginated<PropertySummary> = { items: rows.map(toSummary), total, page, pageSize };
     res.json(body);
+  });
+
+  // Comes before /:id, which would otherwise treat "counts" as an id.
+  router.get('/counts', async (req, res) => {
+    const query = parseQuery(propertyQuerySchema, req.query);
+    const locations = await prisma.location.findMany({ select: { name: true } });
+    const names = locations.map(({ name }) => name);
+    res.json(await filterCounts(query, names));
   });
 
   // Comes before /:id, which would otherwise treat "featured" as an id.
@@ -95,23 +104,16 @@ export function propertiesRouter() {
     });
     if (!listing) throw listingNotFound();
 
-    const admins = await prisma.user.findMany({
-      where: { role: 'ADMIN', status: 'ACTIVE' },
-      select: { id: true },
-    });
     const label = REPORT_REASON_LABELS[reason].toLowerCase();
 
     await prisma.$transaction(async (tx) => {
       const report = await tx.report.create({
         data: { propertyId: listing.id, reporterId: reporter?.id, reason, details },
       });
-      await tx.notification.createMany({
-        data: admins.map(({ id }) => ({
-          userId: id,
-          type: 'REPORT_RECEIVED',
-          text: `New report on ${listing.title}: ${label}.`,
-          link: '/admin/reports',
-        })),
+      await notifyAdmins(tx, {
+        type: 'REPORT_RECEIVED',
+        text: `New report on ${listing.title}: ${label}.`,
+        link: '/admin/reports',
       });
       await tx.activityLog.create({
         data: {
@@ -156,13 +158,10 @@ export function propertiesRouter() {
             messages: { create: { senderId: student.id, body: message } },
           },
         });
-        await tx.notification.create({
-          data: {
-            userId: listing.landlordId,
-            type: 'INQUIRY_RECEIVED',
-            text: `${student.fullName} sent an inquiry about ${listing.title}.`,
-            link: '/landlord/inquiries',
-          },
+        await notifyUsers(tx, [listing.landlordId], {
+          type: 'INQUIRY_RECEIVED',
+          text: `${student.fullName} sent an inquiry about ${listing.title}.`,
+          link: `/landlord/inquiries?open=${created.id}`,
         });
         return created;
       });

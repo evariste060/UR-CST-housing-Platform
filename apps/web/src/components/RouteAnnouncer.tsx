@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { pageLabel } from '../lib/routes';
+import { tNode, tr, useLanguage } from '../i18n';
 
 const SITE_NAME = 'UR-CST Student Housing';
 const HEADING_WAIT_MS = 3000;
@@ -18,10 +19,11 @@ export function RouteAnnouncer() {
   const [message, setMessage] = useState('');
   const previous = useRef(pathname);
   const label = pageLabel(pathname, user?.role);
+  const lang = useLanguage();
 
   useEffect(() => {
-    document.title = pathname === '/' ? SITE_NAME : `${label} · ${SITE_NAME}`;
-  }, [pathname, label]);
+    document.title = pathname === '/' ? tr(SITE_NAME) : `${tr(label)} · ${tr(SITE_NAME)}`;
+  }, [pathname, label, lang]);
 
   useEffect(() => {
     if (previous.current === pathname) return;
@@ -59,7 +61,7 @@ export function RouteAnnouncer() {
 
   return (
     <div id="announcer" className="sr-only" aria-live="polite">
-      {message}
+      {tNode(message)}
     </div>
   );
 }

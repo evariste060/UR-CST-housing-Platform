@@ -11,6 +11,7 @@ import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
 import { buttonClass } from '../components/Button';
+import { t, tNode } from '../i18n';
 
 type AccountType = 'STUDENT' | 'LANDLORD';
 
@@ -51,7 +52,7 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
     setBusy(true);
     try {
       const { user } = await api.register(result.data);
-      toast(`Account created. Welcome, ${user.fullName.split(' ')[0]}!`);
+      toast(t('Account created. Welcome, {p0}!', { p0: user.fullName.split(' ')[0] }));
       // GuestOnly sends the user to their home page once this is set.
       setUser(user);
     } catch (error) {
@@ -67,21 +68,21 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
   return (
     <>
       <button type="button" className="link-btn" onClick={onChangeRole}>
-        <Icon name="chevL" /> Change account type
+        <Icon name="chevL" /> {t('Change account type')}
       </button>
       <h1 className="t-page auth-title register-title">
-        {isLandlord ? 'Landlord' : 'Student'} account
+        {isLandlord ? t('Landlord') : t('Student')} {t('account')}
       </h1>
       <p className="muted auth-intro">
         {isLandlord
-          ? 'Students will contact you using the phone number you add here.'
-          : 'Use your student email if you have one.'}
+          ? t('Students will contact you using the phone number you add here.')
+          : t('Use your student email if you have one.')}
       </p>
 
       {formError && (
         <div className="notice err auth-notice" role="alert">
           <Icon name="alert" />
-          <span>{formError}</span>
+          <span>{tNode(formError)}</span>
         </div>
       )}
 
@@ -90,10 +91,10 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
           <div className="full">
             <Field
               id="register-name"
-              label="Full name"
+              label={t('Full name')}
               value={fullName}
               onChange={setFullName}
-              placeholder="e.g. Aline Mukamana"
+              placeholder={t('e.g. Aline Mukamana')}
               autoComplete="name"
               required
               error={errors.fullName}
@@ -101,40 +102,40 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
           </div>
           <Field
             id="register-email"
-            label="Email address"
+            label={t('Email address')}
             type="email"
             value={email}
             onChange={setEmail}
-            placeholder="name@example.com"
+            placeholder={t('name@example.com')}
             autoComplete="email"
             required
             error={errors.email}
           />
           <Field
             id="register-phone"
-            label={isLandlord ? 'Phone number' : 'Phone number (optional)'}
+            label={isLandlord ? t('Phone number') : t('Phone number (optional)')}
             type="tel"
             value={phone}
             onChange={setPhone}
             placeholder="e.g. 0788 000 000"
             autoComplete="tel"
             required={isLandlord}
-            help={isLandlord ? 'Shown to students on your listings.' : undefined}
+            help={isLandlord ? t('Shown to students on your listings.') : undefined}
             error={errors.phone}
           />
           <PasswordField
             id="register-password"
-            label="Password"
+            label={t('Password')}
             value={password}
             onChange={setPassword}
             autoComplete="new-password"
-            help="At least 8 characters."
+            help={t('At least 8 characters.')}
             required
             error={errors.password}
           />
           <PasswordField
             id="register-confirm"
-            label="Confirm password"
+            label={t('Confirm password')}
             value={confirmPassword}
             onChange={setConfirmPassword}
             autoComplete="new-password"
@@ -151,27 +152,27 @@ function RegisterForm({ role, onChangeRole }: { role: AccountType; onChangeRole:
                 onChange={(event) => setTerms(event.target.checked)}
               />
               <span>
-                I agree to the{' '}
+                {t('I agree to the')}{' '}
                 <button type="button" className="link-btn" onClick={() => setInfo('terms')}>
-                  Terms
+                  {t('Terms')}
                 </button>{' '}
-                and{' '}
+                {t('and')}{' '}
                 <button type="button" className="link-btn" onClick={() => setInfo('privacy')}>
-                  Privacy
+                  {t('Privacy')}
                 </button>
               </span>
             </label>
             {errors.terms && (
               <p className="err-msg" id="register-terms-err">
                 <Icon name="alert" />
-                {errors.terms}
+                {tNode(errors.terms)}
               </p>
             )}
             {info && <InfoDialog topic={info} onClose={() => setInfo(null)} />}
           </div>
         </div>
         <button className={buttonClass({ size: 'lg', block: true })} type="submit" disabled={busy}>
-          Create Account
+          {t('Create Account')}
         </button>
       </form>
     </>
@@ -190,8 +191,8 @@ export function RegisterPage() {
           <RegisterForm role={role} onChangeRole={() => setRole(null)} />
         ) : (
           <>
-            <h1 className="t-page auth-title">Create an account</h1>
-            <p className="muted auth-intro">How would you like to use the platform?</p>
+            <h1 className="t-page auth-title">{t('Create an account')}</h1>
+            <p className="muted auth-intro">{t('How would you like to use the platform?')}</p>
             <div className="auth-form">
               <ChoiceCards
                 onChoose={setRole}
@@ -212,14 +213,16 @@ export function RegisterPage() {
               />
             </div>
             <p className="t-help auth-role-help">
-              Administrator accounts are created by the platform team and cannot be registered here.
+              {t(
+                'Administrator accounts are created by the platform team and cannot be registered here.',
+              )}
             </p>
           </>
         )}
         <p className="auth-footer">
-          Already have an account?{' '}
+          {t('Already have an account?')}{' '}
           <Link to="/login" state={state}>
-            Log in
+            {t('Log in')}
           </Link>
         </p>
       </div>

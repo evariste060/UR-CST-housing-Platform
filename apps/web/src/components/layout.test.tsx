@@ -92,12 +92,26 @@ describe('public header', () => {
     const button = await screen.findByRole('button', { name: /Language/ });
 
     await userEvent.click(button);
-    expect(screen.getByRole('button', { name: /Kinyarwanda/ })).toBeDisabled();
-    expect(screen.getByText(/planned for a later version/)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Kinyarwanda' })).not.toBeChecked();
 
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByText(/planned for a later version/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: 'Kinyarwanda' })).not.toBeInTheDocument();
     expect(button).toHaveFocus();
+  });
+
+  it('switches the whole page to Kinyarwanda and remembers it', async () => {
+    stubApi(() => json({}));
+    renderRoute('/design-system');
+    await userEvent.click(await screen.findByRole('button', { name: /Language/ }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Kinyarwanda' }));
+
+    expect((await screen.findAllByRole('link', { name: /Inzu wabitse/ })).length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getByText('Ururimi: Kinyarwanda.')).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe('rw-RW');
+    expect(JSON.parse(localStorage.getItem('urcst-prefs') ?? '{}')).toMatchObject({ lang: 'rw' });
   });
 
   it('applies text settings from the Text menu', async () => {
@@ -137,20 +151,20 @@ describe('public header', () => {
 });
 
 describe('workspace layout', () => {
-  it('shows landlords the sidebar and Add accommodation', async () => {
+  it('shows landlords the sidebar and the add page', async () => {
     stubApi(() => json({}), person('LANDLORD'));
     renderRoute('/landlord/properties/new');
 
     const side = await screen.findByRole('navigation', { name: 'Landlord navigation' });
-    expect(within(side).getByRole('link', { name: 'My properties' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
+    expect(within(side).getByRole('link', { name: 'My Properties' })).toBeInTheDocument();
+    expect(within(side).getByRole('button', { name: 'Log out' })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Add accommodation' }),
     ).toBeInTheDocument();
   });
 
   it('marks only the current sidebar item', async () => {
-    stubApi(() => json({}), person('ADMIN'));
+    stubApi(adminApi, person('ADMIN'));
     renderRoute('/admin/users');
 
     const side = await screen.findByRole('navigation', { name: 'Administrator navigation' });
@@ -164,7 +178,7 @@ describe('workspace layout', () => {
   });
 
   it('has Listen and Display in the dock', async () => {
-    stubApi(() => json({}), person('ADMIN'));
+    stubApi(adminApi, person('ADMIN'));
     renderRoute('/admin');
 
     const dock = await screen.findByRole('complementary', {
@@ -175,6 +189,20 @@ describe('workspace layout', () => {
     expect(screen.getByRole('dialog', { name: 'Display & audio' })).toBeInTheDocument();
   });
 });
+
+/** Empty but well-formed answers for the admin pages. */
+function adminApi(path: string) {
+  if (path.startsWith('/admin/summary')) {
+    return json({
+      counts: { students: 0, landlords: 0, listings: 0, pending: 0, openReports: 0 },
+      pending: [],
+      reports: [],
+      activity: [],
+    });
+  }
+  if (path.startsWith('/admin/')) return json({ items: [], total: 0, page: 1, pageSize: 20 });
+  return json({});
+}
 
 describe('Quick find', () => {
   it('opens with Ctrl+K, filters and goes to the page', async () => {
@@ -302,12 +330,13 @@ describe('Display panel', () => {
 });
 
 describe('Design system page', () => {
-  it('keeps availability and admin approval as separate badges with honest wording', async () => {
+  it('keeps availability and review status as separate badges with honest wording', async () => {
     stubApi(() => json({}));
     renderRoute('/design-system');
     await screen.findByRole('heading', { level: 1, name: 'Design system' });
 
-    expect(screen.getAllByText('Approved by admin').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Pending review').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Approved by admin')).not.toBeInTheDocument();
     expect(screen.queryByText(/verified/i)).not.toBeInTheDocument();
     expect(screen.getAllByText('Available').length).toBeGreaterThan(0);
   });
@@ -326,14 +355,19 @@ describe('Design system page', () => {
   });
 });
 
-describe('pages still to build', () => {
-  it('says so plainly', async () => {
+describe('help and support', () => {
+  it('answers common questions and asks for a topic before sending', async () => {
     stubApi(() => json({}));
     renderRoute('/help');
 
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Help & support' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('This page is being built')).toBeInTheDocument();
+    expect(screen.getByText('Does saving reserve the room?')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send message' }));
+
+    expect(await screen.findByText('Please choose a topic.')).toBeInTheDocument();
+    expect(screen.getByText('Please write your message.')).toBeInTheDocument();
   });
 });

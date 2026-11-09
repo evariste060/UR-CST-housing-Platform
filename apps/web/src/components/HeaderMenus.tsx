@@ -6,9 +6,9 @@ import { FONTS, PREF_LABELS, type FontName } from '../display/prefs';
 import { useRovingRadio } from '../lib/useRovingRadio';
 import { filtersFromParams } from '../student/filters';
 import { useRunSearch } from '../student/useHistory';
-import { Badge } from './Badge';
 import { Icon, type IconName } from './Icon';
 import { useToast } from './Toast';
+import { LANGUAGE_NAMES, LANGUAGE_TAGS, LANGUAGES, t, tNode, type Language } from '../i18n';
 
 interface MenuProps {
   id: string;
@@ -123,14 +123,14 @@ export function HeaderMenu({
         aria-controls={`menu-${id}`}
         onClick={onButtonClick}
       >
-        {button}
+        {tNode(button)}
       </button>
       {open && (
         <div
           className={panelClass ? `hmenu ${panelClass}` : 'hmenu'}
           id={`menu-${id}`}
           role="group"
-          aria-label={label}
+          aria-label={tNode(label)}
         >
           {children}
         </div>
@@ -165,7 +165,7 @@ export function FindMenuItems({ onDone }: { onDone: () => void }) {
       }}
     >
       <Icon name={icon} />
-      <span>{label}</span>
+      <span>{tNode(label)}</span>
     </Link>
   ));
 }
@@ -199,17 +199,17 @@ export function LandlordMenuItems({ onDone }: { onDone: () => void }) {
       >
         <Icon name="plus" />
         <span>
-          <b>List your property</b>
-          <span className="t-support choice-text">Free, guided form in 5 short steps</span>
+          <b>{t('List your property')}</b>
+          <span className="t-support choice-text">{t('Free, guided form in 5 short steps')}</span>
         </span>
       </button>
       <Link className="hmenu-item" to="/login" onClick={onDone}>
         <Icon name="user" />
-        <span>Landlord login</span>
+        <span>{t('Landlord login')}</span>
       </Link>
-      <Link className="hmenu-item" to="/help" onClick={onDone}>
+      <Link className="hmenu-item" to="/help#publishing" onClick={onDone}>
         <Icon name="help" />
-        <span>How publishing works</span>
+        <span>{t('How publishing works')}</span>
       </Link>
     </>
   );
@@ -231,26 +231,26 @@ export function TextMenuItems({ onDone }: { onDone: () => void }) {
   return (
     <>
       <p className="hmenu-h" id="menu-text-size">
-        Text size
+        {t('Text size')}
       </p>
       <div className="chipset" role="radiogroup" aria-labelledby="menu-text-size">
         {sizes.map(([value, label]) => (
           <button key={value} className="pchip sm" {...sizeRadio(value)}>
             {prefs.size === value && <Icon name="check" />}
-            {label}
+            {tNode(label)}
           </button>
         ))}
       </div>
       <p className="hmenu-h" id="menu-text-font">
-        Font style
+        {t('Font style')}
       </p>
       <div role="radiogroup" aria-labelledby="menu-text-font">
         {fonts.map((value) => (
           <button key={value} className="hmenu-item" {...fontRadio(value)}>
             <span className="hmenu-aa" style={{ fontFamily: FONTS[value].family }}>
-              Aa
+              {t('Aa')}
             </span>
-            <span style={{ fontFamily: FONTS[value].family }}>{FONTS[value].label}</span>
+            <span style={{ fontFamily: FONTS[value].family }}>{tNode(FONTS[value].label)}</span>
             {prefs.font === value && <Icon name="check" />}
           </button>
         ))}
@@ -264,7 +264,7 @@ export function TextMenuItems({ onDone }: { onDone: () => void }) {
         }}
       >
         <Icon name="palette" />
-        <span>All display &amp; audio settings</span>
+        <span>{t('All display & audio settings')}</span>
         <Icon name="chevR" />
       </button>
     </>
@@ -272,23 +272,31 @@ export function TextMenuItems({ onDone }: { onDone: () => void }) {
 }
 
 export function LanguageMenuItems({ onDone }: { onDone: () => void }) {
+  const { prefs, setPref } = useDisplay();
+  const radio = useRovingRadio(LANGUAGES, prefs.lang as Language, (value) =>
+    setPref('lang', value),
+  );
+
   return (
     <>
-      <button type="button" className="hmenu-item" aria-current="true" onClick={onDone}>
-        <span>English</span>
-        <Icon name="check" />
-      </button>
-      <button type="button" className="hmenu-item" disabled>
-        <span>Kinyarwanda</span>
-        <Badge tone="demo">Planned</Badge>
-      </button>
-      <button type="button" className="hmenu-item" disabled>
-        <span>Français</span>
-        <Badge tone="demo">Planned</Badge>
-      </button>
-      <p className="t-help hmenu-note">
-        Kinyarwanda and French are planned for a later version. They are not translated yet.
-      </p>
+      <div role="radiogroup" aria-label={t('Language')}>
+        {LANGUAGES.map((value) => (
+          <button
+            key={value}
+            className="hmenu-item"
+            lang={LANGUAGE_TAGS[value]}
+            {...radio(value)}
+            onClick={() => {
+              setPref('lang', value);
+              onDone();
+            }}
+          >
+            <span>{LANGUAGE_NAMES[value]}</span>
+            {prefs.lang === value && <Icon name="check" />}
+          </button>
+        ))}
+      </div>
+      <p className="t-help hmenu-note">{t('Listings and messages stay as people wrote them.')}</p>
     </>
   );
 }

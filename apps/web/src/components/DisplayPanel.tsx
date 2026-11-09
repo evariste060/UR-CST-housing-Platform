@@ -10,6 +10,7 @@ import { useReader } from '../reader/useReader';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { badgeClass } from './Badge';
+import { LANGUAGE_NAMES, LANGUAGES, t, tNode, type Language } from '../i18n';
 
 interface CardOption {
   value: string;
@@ -41,24 +42,24 @@ function PrefGroup({ prefKey, icon, title, help, selected, options }: GroupProps
     <section className="dp-sec" aria-labelledby={headingId}>
       <div className="pick-head">
         <h3 className="t-card" id={headingId}>
-          <Icon name={icon} /> {title}
+          <Icon name={icon} /> {tNode(title)}
         </h3>
         <span className="picked">
-          Selected: <b>{selected}</b>
+          {t('Selected:')} <b>{tNode(selected)}</b>
         </span>
       </div>
-      {help && <p className="t-help dp-help">{help}</p>}
+      {help && <p className="t-help dp-help">{tNode(help)}</p>}
       <div className="dp-grid" role="radiogroup" aria-labelledby={headingId}>
         {options.map(({ value, title: cardTitle, sample, description, style }) => (
           <button key={value} className="choice dcard" {...radio(value)}>
             {sample && (
               <span className="dsample" style={style}>
-                {sample}
+                {tNode(sample)}
               </span>
             )}
             <span>
-              <b style={style}>{cardTitle}</b>
-              {description && <span className="t-support choice-text">{description}</span>}
+              <b style={style}>{tNode(cardTitle)}</b>
+              {description && <span className="t-support choice-text">{tNode(description)}</span>}
             </span>
           </button>
         ))}
@@ -71,10 +72,10 @@ function SubHeading({ id, title, selected }: { id: string; title: string; select
   return (
     <div className="pick-head dp-sub">
       <span className="t-label" id={id}>
-        {title}
+        {tNode(title)}
       </span>
       <span className="picked">
-        Selected: <b>{selected}</b>
+        {t('Selected:')} <b>{tNode(selected)}</b>
       </span>
     </div>
   );
@@ -100,51 +101,51 @@ function ReadAloudSection({ children }: { children: ReactNode }) {
     <section className="dp-sec">
       <div className="pick-head">
         <h3 className="t-card">
-          <Icon name="volume" /> Read aloud
+          <Icon name="volume" /> {t('Read aloud')}
         </h3>
         {!reader.supported && (
-          <span className={badgeClass('pending')}>Not supported in this browser</span>
+          <span className={badgeClass('pending')}>{t('Not supported in this browser')}</span>
         )}
       </div>
       <p className="t-help dp-help">
-        For people who prefer listening. The voice comes from your device.
+        {t('For people who prefer listening. The voice comes from your device.')}
       </p>
       <Button block icon="volume" onClick={() => reader.start(pageLabel(pathname, user?.role))}>
-        Listen to this page
+        {t('Listen to this page')}
       </Button>
 
       <SubHeading
         id="dph-rate"
-        title="Reading speed"
+        title={t('Reading speed')}
         selected={PREF_LABELS.rate[prefs.rate as keyof typeof PREF_LABELS.rate]}
       />
       <div className="chipset" role="radiogroup" aria-labelledby="dph-rate">
         {rates.map(([value, label]) => (
           <button key={value} className="pchip" {...rateRadio(value)}>
             {prefs.rate === value && <Icon name="check" />}
-            {label}
+            {tNode(label)}
           </button>
         ))}
       </div>
 
       <SubHeading
         id="dph-click"
-        title="Read what I tap"
+        title={t('Read what I tap')}
         selected={PREF_LABELS.clickRead[prefs.clickRead as 'off' | 'on']}
       />
       <p className="t-help dp-help">
-        When on, tap any text on the page to hear it. Buttons and links still work.
+        {t('When on, tap any text on the page to hear it. Buttons and links still work.')}
       </p>
       <div className="dp-grid" role="radiogroup" aria-labelledby="dph-click">
         <button className="choice dcard" {...clickRadio('off')}>
           <span>
-            <b>Off</b>
+            <b>{t('Off')}</b>
           </span>
         </button>
         <button className="choice dcard" {...clickRadio('on')}>
           <span>
-            <b>On</b>
-            <span className="t-support choice-text">Tap text to listen</span>
+            <b>{t('On')}</b>
+            <span className="t-support choice-text">{t('Tap text to listen')}</span>
           </span>
         </button>
       </div>
@@ -173,43 +174,54 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
       >
         <div className="row-between">
           <h2 className="t-section" id="dp-title">
-            Display &amp; audio
+            {t('Display & audio')}
           </h2>
           <button
             ref={close}
             type="button"
             className="icon-btn"
-            aria-label="Close display settings"
+            aria-label={t('Close display settings')}
             onClick={onClose}
           >
             <Icon name="x" />
           </button>
         </div>
         <p className="muted dp-intro">
-          Make the platform comfortable for you. Changes apply straight away and are remembered on
-          this device.
+          {t(
+            'Make the platform comfortable for you. Changes apply straight away and are remembered on this device.',
+          )}
         </p>
         <div className="dp-preview" aria-hidden="true">
           <span className={`${badgeClass('available')} dp-preview-badge`}>
             <Icon name="check" />
-            Available
+            {t('Available')}
           </span>
           <p className="t-price num dp-preview-price">
-            85,000 RWF <span className="t-support">/ month</span>
+            {t('85,000 RWF')} <span className="t-support">{t('/ month')}</span>
           </p>
           <p className="dp-preview-distance">
-            <Icon name="pin" /> 0.8 km from UR-CST
+            <Icon name="pin" /> {t('0.8 km from UR-CST')}
           </p>
           <p className="muted">
-            A bright single room in a quiet compound. Water and electricity included.
+            {t('A bright single room in a quiet compound. Water and electricity included.')}
           </p>
         </div>
 
         <PrefGroup
+          prefKey="lang"
+          icon="globe"
+          title={t('Language')}
+          help={t(
+            'Menus, buttons and messages change language. Listings stay as the landlord wrote them.',
+          )}
+          selected={LANGUAGE_NAMES[prefs.lang as Language]}
+          options={LANGUAGES.map((value) => ({ value, title: LANGUAGE_NAMES[value] }))}
+        />
+        <PrefGroup
           prefKey="font"
           icon="text"
-          title="Font style"
-          help="Pick the letters that are easiest for you to read."
+          title={t('Font style')}
+          help={t('Pick the letters that are easiest for you to read.')}
           selected={FONTS[prefs.font as keyof typeof FONTS].label}
           options={Object.entries(FONTS).map(([value, { label, family, description }]) => ({
             value,
@@ -222,8 +234,8 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <PrefGroup
           prefKey="theme"
           icon="moon"
-          title="Light or dark"
-          help="Dark mode is easier on the eyes at night."
+          title={t('Light or dark')}
+          help={t('Dark mode is easier on the eyes at night.')}
           selected={PREF_LABELS.theme[prefs.theme as 'light' | 'dark']}
           options={[
             { value: 'light', title: 'Light', description: 'Dark text on light background' },
@@ -233,9 +245,10 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <PrefGroup
           prefKey="size"
           icon="text"
-          title="Text size"
+          title={t('Text size')}
           selected={PREF_LABELS.size[prefs.size as keyof typeof PREF_LABELS.size]}
           options={[
+            { value: 'small', title: 'Small', sample: 'A', style: { fontSize: '0.875rem' } },
             { value: 'normal', title: 'Normal', sample: 'A', style: { fontSize: '1rem' } },
             { value: 'large', title: 'Large', sample: 'A', style: { fontSize: '1.15rem' } },
             { value: 'xl', title: 'Extra large', sample: 'A', style: { fontSize: '1.3rem' } },
@@ -244,7 +257,7 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <PrefGroup
           prefKey="spacing"
           icon="spacing"
-          title="Line spacing"
+          title={t('Line spacing')}
           selected={PREF_LABELS.spacing[prefs.spacing as 'normal' | 'relaxed']}
           options={[
             { value: 'normal', title: 'Normal', description: 'Standard space between lines' },
@@ -258,7 +271,7 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <PrefGroup
           prefKey="contrast"
           icon="contrast"
-          title="Contrast"
+          title={t('Contrast')}
           selected={PREF_LABELS.contrast[prefs.contrast as 'standard' | 'high']}
           options={[
             { value: 'standard', title: 'Standard', description: 'Soft greys and borders' },
@@ -272,8 +285,8 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <PrefGroup
           prefKey="highlight"
           icon="target"
-          title="Highlight where I am"
-          help="Shows a thick yellow outline around the button, link or card you are on."
+          title={t('Highlight where I am')}
+          help={t('Shows a thick yellow outline around the button, link or card you are on.')}
           selected={PREF_LABELS.highlight[prefs.highlight as 'off' | 'on']}
           options={[
             { value: 'off', title: 'Off' },
@@ -283,9 +296,9 @@ function DisplayDrawer({ onClose }: { onClose: () => void }) {
         <ReadAloudSection>
           <div className="row dp-actions">
             <Button variant="secondary" icon="refresh" onClick={resetPrefs}>
-              Reset to default
+              {t('Reset to default')}
             </Button>
-            <Button onClick={onClose}>Done</Button>
+            <Button onClick={onClose}>{t('Done')}</Button>
           </div>
         </ReadAloudSection>
       </div>

@@ -87,9 +87,6 @@
 .side a .count-pill {
   @apply ml-[auto];
 }
-.side .side-cta {
-  @apply mt-[8px] mx-[0] mb-[16px];
-}
 .shell-main {
   @apply min-w-[0];
 }
@@ -203,9 +200,6 @@ a.tile:hover {
 .mini a.t:hover {
   @apply underline;
 }
-.dash-grid {
-  @apply grid [grid-template-columns:repeat(2,_minmax(0,_1fr))] gap-[24px];
-}
 .auth-wrap {
   @apply [min-height:calc(100vh_-_110px)] grid place-items-center py-[32px] px-[16px];
 }
@@ -215,26 +209,6 @@ a.tile:hover {
 }
 .auth-card.wide {
   @apply [width:min(640px,_100%)];
-}
-.demo-accounts {
-  @apply grid gap-[8px];
-}
-.demo-acc {
-  @apply flex gap-[12px] items-center [border:1px_solid_var(--line)];
-  @apply rounded-[12px] py-[10px] px-[12px] bg-(--surface) cursor-pointer text-left w-[100%] min-h-[56px];
-}
-.demo-acc:hover {
-  @apply [border-color:var(--blue)] bg-(--blue-50);
-}
-.demo-acc .grow {
-  @apply [flex:1];
-}
-.or {
-  @apply flex items-center gap-[12px] text-(--muted) text-[0.875rem] my-[20px] mx-[0];
-}
-.or::before,
-.or::after {
-  @apply [content:''] [flex:1] h-[1px] bg-(--line);
 }
 
 /* Active place in navigation */
@@ -272,7 +246,7 @@ body.ph-page .a11y-dock {
   @apply font-[500] text-(--ink) tracking-[0];
 }
 .hsearch {
-  @apply [flex:1] flex gap-[8px] max-w-[600px] min-w-[260px];
+  @apply [flex:1] flex max-w-[720px] min-w-[220px];
 }
 .hctl {
   @apply flex items-center gap-[8px] ml-[auto];
@@ -329,7 +303,11 @@ body.ph-page .a11y-dock {
 }
 .hmenu-item:hover:not([disabled]),
 .hmenu-item:focus-visible {
-  @apply bg-(--blue-50);
+  @apply bg-(--blue) text-white!;
+}
+.hmenu-item:hover:not([disabled]) :not(.badge, .badge *),
+.hmenu-item:focus-visible :not(.badge, .badge *) {
+  @apply text-white!;
 }
 .hmenu-item[aria-checked='true'] {
   @apply font-[700] text-(--blue-700);
@@ -385,19 +363,13 @@ body.ph-page .a11y-dock {
     @apply [grid-template-columns:minmax(0,_1fr)];
   }
   .filters {
-    @apply fixed [inset:0_0_0_auto] [width:min(400px,_100%)] max-h-[none] h-[100%] z-[75] rounded-[0] [transform:translateX(105%)] [transition:transform_0.2s] pb-[96px];
+    @apply fixed [inset:0_0_0_auto] [width:min(400px,_100%)] max-h-[none] h-[100%] z-[75] rounded-[0] [transform:translateX(105%)] [transition:transform_0.2s];
   }
   .filters.open {
     @apply [transform:none] [box-shadow:var(--shadow-lg)];
   }
   .filter-backdrop {
     @apply fixed [inset:0] [background:rgba(15,_23,_42,_0.5)] z-[74];
-  }
-  .filter-drawer-foot {
-    @apply flex fixed bottom-[0] right-[0] [width:min(400px,_100%)] bg-(--white) [border-top:1px_solid_var(--line)] py-[12px] px-[16px] gap-[12px] z-[76];
-  }
-  .filter-drawer-foot .btn {
-    @apply [flex:1];
   }
   .mobile-filter-btn,
   .icon-btn.mobile-filter-btn {
@@ -411,7 +383,6 @@ body.ph-page .a11y-dock {
     @apply [border-bottom:1px_solid_var(--line)];
   }
   .side .role-tag,
-  .side .side-cta,
   .side hr {
     @apply hidden;
   }
@@ -430,14 +401,23 @@ body.ph-page .a11y-dock {
   .split:not(.has-open) .right {
     @apply hidden;
   }
-  .dash-grid {
-    @apply [grid-template-columns:1fr];
-  }
   .sticky-contact {
     @apply flex fixed left-[0] right-[0] bottom-[0] z-[44] bg-(--white) [border-top:1px_solid_var(--line)] py-[12px] px-[16px] gap-[12px] items-center justify-between [box-shadow:0_-4px_16px_rgba(15,_23,_42,_0.08)];
   }
   .has-sticky .compare-tray {
     @apply bottom-[88px];
+  }
+  body:has(.side-toolbar) {
+    @apply pb-[64px];
+  }
+  body:has(.side-toolbar) .compare-tray {
+    @apply bottom-[64px];
+  }
+  body:has(.side-toolbar) #toasts {
+    @apply bottom-[76px];
+  }
+  body:has(.side-toolbar) .reader {
+    @apply bottom-[72px];
   }
 }
 @media (max-width: 640px) {
@@ -477,9 +457,6 @@ body.ph-page .a11y-dock {
   .compare-tray .thumbs-mini {
     @apply hidden;
   }
-  .progress .lbl span.t {
-    @apply hidden;
-  }
   #toasts {
     @apply left-[8px] right-[8px] items-stretch bottom-[80px];
   }
@@ -499,7 +476,9 @@ body.ph-page .a11y-dock {
     @apply min-w-[44px] h-[44px];
   }
 }
-@media (max-width: 1100px) {
+/* The bar has no room beside the logo and controls on phones, or from 901px to 1100px
+   where the full set of controls still shows. */
+@media (max-width: 640px), (min-width: 901px) and (max-width: 1100px) {
   .hsearch {
     @apply hidden;
   }

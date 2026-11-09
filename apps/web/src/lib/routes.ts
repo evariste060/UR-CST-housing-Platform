@@ -29,8 +29,14 @@ const STATIC_TRAILS: Record<string, Crumb[]> = {
   '/compare': [HOME, { label: 'Find Housing', to: '/search' }, { label: 'Compare' }],
   '/history': [HOME, { label: 'Recently viewed' }],
   '/student': [HOME, { label: 'My dashboard' }],
+  '/student/inquiries': [
+    HOME,
+    { label: 'My dashboard', to: '/student' },
+    { label: 'My inquiries' },
+  ],
   '/account': [HOME, { label: 'My dashboard', to: '/student' }, { label: 'Account & preferences' }],
   '/design-system': [HOME, { label: 'Design system' }],
+  '/states': [HOME, { label: 'System states' }],
   '/landlord': [LANDLORD, { label: 'Dashboard' }],
   '/landlord/properties': [LANDLORD, { label: 'My properties' }],
   '/landlord/inquiries': [LANDLORD, { label: 'Student inquiries' }],
@@ -59,6 +65,9 @@ export function crumbsFor(pathname: string, role?: Role, title = 'Property'): Cr
   if (wizardPage) {
     return [LANDLORD, PROPERTIES, { label: wizardPage[1] === 'preview' ? 'Preview' : 'Submitted' }];
   }
+  if (/^\/admin\/review\/[^/]+$/.test(path)) {
+    return [ADMIN, { label: 'Listing review', to: '/admin/review' }, { label: title }];
+  }
   if (path === '/landlord/properties/new')
     return [LANDLORD, PROPERTIES, { label: 'Add accommodation' }];
   if (/^\/landlord\/properties\/[^/]+\/edit$/.test(path)) {
@@ -82,6 +91,28 @@ export function usesWorkspaceLayout(pathname: string, role?: Role): boolean {
   }
   if (role === 'ADMIN') return /^\/admin(\/|$)/.test(pathname) || isSharedWorkspacePage(pathname);
   return false;
+}
+
+export const STUDENT_ITEMS: { to: string; label: string; icon: IconName }[] = [
+  { to: '/student', label: 'Dashboard', icon: 'dash' },
+  { to: '/account', label: 'Profile', icon: 'user' },
+  { to: '/notifications', label: 'Notifications', icon: 'bell' },
+  { to: '/student/inquiries', label: 'My inquiries', icon: 'message' },
+  { to: '/saved', label: 'Saved properties', icon: 'heart' },
+];
+
+export const LANDLORD_ITEMS: { to: string; label: string; icon: IconName }[] = [
+  { to: '/landlord', label: 'Dashboard', icon: 'dash' },
+  { to: '/landlord/properties', label: 'My Properties', icon: 'building' },
+  { to: '/landlord/properties/new', label: 'Add Property', icon: 'plus' },
+  { to: '/landlord/inquiries', label: 'Student Inquiries', icon: 'message' },
+  { to: '/notifications', label: 'Notifications', icon: 'bell' },
+  { to: '/landlord/account', label: 'Account & Settings', icon: 'user' },
+];
+
+/** A signed-in student's own pages show the student sidebar. */
+export function usesStudentSidebar(pathname: string, role?: Role): boolean {
+  return role === 'STUDENT' && STUDENT_ITEMS.some(({ to }) => to === pathname);
 }
 
 const AUTH_PAGES = ['/login', '/register', '/forgot-password', '/reset-password'];
@@ -121,6 +152,7 @@ export const QUICK_FIND_PAGES: QuickFindPage[] = [
   page('Compare properties', '/compare', 'compare', ALL, 'side by side'),
   page('Recently viewed & search history', '/history', 'clock', ALL, 'previous last'),
   page('My dashboard', '/student', 'dash', ['STUDENT'], 'inquiries messages'),
+  page('My inquiries', '/student/inquiries', 'message', ['STUDENT'], 'messages landlord replies'),
   page('Account & preferences', '/account', 'user', ['STUDENT'], 'password profile settings'),
   page('Landlord dashboard', '/landlord', 'dash', ['LANDLORD'], 'summary'),
   page(
@@ -158,6 +190,7 @@ export const QUICK_FIND_PAGES: QuickFindPage[] = [
     'alerts updates',
   ),
   page('Help & FAQ', '/help', 'help', ALL, 'support questions contact'),
+  page('System states', '/states', 'layers', ALL, 'empty error loading toast examples'),
   page('Log in', '/login', 'user', ['GUEST'], 'sign in'),
   page('Create account', '/register', 'plus', ['GUEST'], 'sign up register'),
   page(

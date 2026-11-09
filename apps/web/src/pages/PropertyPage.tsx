@@ -7,16 +7,17 @@ import { EmptyState, ErrorState, Skeleton } from '../components/StateBlocks';
 import { ApiError } from '../lib/api';
 import { useProperty } from '../student/queries';
 import { rememberView } from '../student/useHistory';
+import { t, tr } from '../i18n';
 
 export function ListingUnavailable() {
   return (
     <EmptyState
       icon="home"
-      title="This listing is not available"
-      text="It may have been removed or is still waiting for review."
+      title={t('This listing is not available')}
+      text={t('It may have been removed or is still waiting for review.')}
       actions={
         <Link className={buttonClass()} to="/search">
-          Back to search
+          {t('Back to search')}
         </Link>
       }
     />
@@ -25,7 +26,7 @@ export function ListingUnavailable() {
 
 export function PropertyLoading() {
   return (
-    <div className="stack" role="status" aria-busy="true" aria-label="Loading this listing">
+    <div className="stack" role="status" aria-busy="true" aria-label={t('Loading this listing')}>
       <Skeleton height={36} width="60%" />
       <Skeleton height={320} />
       <Skeleton height={160} />
@@ -45,7 +46,7 @@ export function PropertyPage() {
   }, [approved, id, user?.role]);
 
   useEffect(() => {
-    if (property) document.title = `${property.title} · UR-CST Student Housing`;
+    if (property) document.title = `${property.title} · ${tr('UR-CST Student Housing')}`;
   }, [property]);
 
   function content() {
@@ -55,11 +56,11 @@ export function PropertyPage() {
       return (
         <ErrorState
           icon="wifi"
-          title="Unable to load this listing. Please try again."
-          text="Check your internet connection, then try again."
+          title={t('Unable to load this listing. Please try again.')}
+          text={t('Check your internet connection, then try again.')}
           actions={
             <Button icon="refresh" onClick={() => void refetch()}>
-              Try again
+              {t('Try again')}
             </Button>
           }
         />
@@ -71,7 +72,7 @@ export function PropertyPage() {
   return (
     <main className={approved ? 'page has-sticky' : 'page'} id="main">
       {/* Gives focus a page title to land on while the listing loads. */}
-      {(isPending || isError) && <h1 className="sr-only">Property details</h1>}
+      {(isPending || isError) && <h1 className="sr-only">{t('Property details')}</h1>}
       {content()}
     </main>
   );

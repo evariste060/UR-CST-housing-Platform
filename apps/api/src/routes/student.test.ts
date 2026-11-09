@@ -27,6 +27,8 @@ describe('student routes', () => {
     ['post', '/api/me/history/restore'],
     ['post', '/api/me/searches'],
     ['get', '/api/me/inquiries'],
+    ['get', '/api/me/inquiries/some-id'],
+    ['post', '/api/me/inquiries/some-id/messages'],
   ] as const)('%s %s needs a login', async (method, path) => {
     const { app } = createTestApp();
 
@@ -274,5 +276,128 @@ describe('GET /api/me/inquiries', () => {
       replied: true,
       lastMessage: { body: 'Yes, come and visit.', fromLandlord: true },
     });
+  });
+});
+
+describe('GET /api/me/inquiries/:id', () => {
+  it('shows the whole conversation in order, with the landlord named', async () => {
+    const { agent, owner, student } = await setUp();
+    const listing = await createListing(owner.id, { title: 'Nice Room' });
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        propertyId: listing.id,
+        studentId: student.id,
+        messages: { create: { senderId: student.id, body: 'Is it available?' } },
+      },
+    });
+    await prisma.inquiryMessage.create({
+      data: { inquiryId: inquiry.id, senderId: owner.id, body: 'Yes, come and visit.' },
+    });
+
+    const { status, body } = await agent.get(`/api/me/inquiries/${inquiry.id}`);
+
+    expect(status).toBe(200);
+    expect(body).toMatchObject({
+      landlord: owner.fullName,
+      replied: true,
+      property: { id: listing.id, title: 'Nice Room' },
+      messages: [
+        { body: 'Is it available?', fromLandlord: false },
+        { body: 'Yes, come and visit.', fromLandlord: true },
+      ],
+    });
+  });
+
+  it("does not show another student's conversation", async () => {
+    const { agent, owner } = await setUp();
+    const other = await createUser({ email: 'other@example.com' });
+    const listing = await createListing(owner.id);
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        propertyId: listing.id,
+        studentId: other.id,
+        messages: { create: { senderId: other.id, body: 'Not yours to see.' } },
+      },
+    });
+
+    const { status, body } = await agent.get(`/api/me/inquiries/${inquiry.id}`);
+
+    expect(status).toBe(404);
+    expect(JSON.stringify(body)).not.toContain('Not yours to see.');
+  });
+});
+
+describe('POST /api/me/inquiries/:id/messages', () => {
+  async function conversation() {
+    const setup = await setUp();
+    const listing = await createListing(setup.owner.id, { title: 'Nice Room' });
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        propertyId: listing.id,
+        studentId: setup.student.id,
+        status: 'HANDLED',
+        messages: { create: { senderId: setup.student.id, body: 'Is it available?' } },
+      },
+    });
+    return { ...setup, listing, inquiry };
+  }
+
+  it('adds the message, marks the inquiry new again and tells the landlord', async () => {
+    const { agent, owner, inquiry } = await conversation();
+
+    const { status, body } = await agent
+      .post(`/api/me/inquiries/${inquiry.id}/messages`)
+      .send({ message: '  Can I visit on Saturday?  ' });
+
+    expect(status).toBe(201);
+    expect(body.messages.at(-1)).toMatchObject({
+      body: 'Can I visit on Saturday?',
+      fromLandlord: false,
+    });
+    expect((await prisma.inquiry.findUniqueOrThrow({ where: { id: inquiry.id } })).status).toBe(
+      'NEW',
+    );
+    const note = await prisma.notification.findFirstOrThrow({ where: { userId: owner.id } });
+    expect(note).toMatchObject({
+      type: 'INQUIRY_RECEIVED',
+      link: `/landlord/inquiries?open=${inquiry.id}`,
+    });
+    expect(note.text).toContain('sent a new message about Nice Room.');
+  });
+
+  it('refuses an empty message', async () => {
+    const { agent, inquiry } = await conversation();
+
+    const { status } = await agent
+      .post(`/api/me/inquiries/${inquiry.id}/messages`)
+      .send({ message: '   ' });
+
+    expect(status).toBe(400);
+  });
+
+  it("does not let a student write in another student's conversation", async () => {
+    const { app, inquiry } = await conversation();
+    const other = await createUser({ email: 'other@example.com' });
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({ email: other.email, password: PASSWORD });
+
+    const { status } = await agent
+      .post(`/api/me/inquiries/${inquiry.id}/messages`)
+      .send({ message: 'Hello there' });
+
+    expect(status).toBe(404);
+    expect(await prisma.inquiryMessage.count()).toBe(1);
+  });
+
+  it('refuses new messages once the listing is removed', async () => {
+    const { agent, listing, inquiry } = await conversation();
+    await prisma.property.update({ where: { id: listing.id }, data: { deletedAt: new Date() } });
+
+    const { status, body } = await agent
+      .post(`/api/me/inquiries/${inquiry.id}/messages`)
+      .send({ message: 'Still there?' });
+
+    expect(status).toBe(409);
+    expect(body.error.code).toBe('LISTING_REMOVED');
   });
 });

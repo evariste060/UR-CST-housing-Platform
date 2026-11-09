@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { App } from '../App';
 import { AppProviders } from '../AppProviders';
+import { LanguageRoot } from '../i18n/LanguageRoot';
 
 export const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
@@ -22,14 +23,19 @@ export function stubApi(handler: Handler, user: AuthUser | null = null) {
 }
 
 export function renderRoute(route: string) {
+  const queryClient = new QueryClient();
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[route]}>
-        <AppProviders>
-          <App />
-        </AppProviders>
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <LanguageRoot
+      render={() => (
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[route]}>
+            <AppProviders>
+              <App />
+            </AppProviders>
+          </MemoryRouter>
+        </QueryClientProvider>
+      )}
+    />,
   );
 }
 

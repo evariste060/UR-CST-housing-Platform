@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { Icon, type IconName } from './Icon';
 
 const VARIANTS = {
-  primary: 'bg-blue text-white hover:bg-blue-700 dark:bg-[#2563eb] dark:hover:bg-[#1d4ed8]',
+  primary: 'bg-blue text-white hover:bg-blue-700 dark:bg-blue dark:hover:bg-blue/85',
   secondary: 'border-line-strong bg-card text-ink hover:bg-slate-100 high-contrast:border-ink',
   outline: 'border-[1.5px]! border-blue bg-card text-blue hover:bg-blue-50',
   ghost: 'border-transparent bg-transparent text-blue hover:bg-blue-50',
@@ -50,11 +50,16 @@ interface ButtonProps extends ButtonStyle, ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, size, block, icon, children, ...rest },
+  { variant, size, block, icon, children, className, ...rest },
   ref,
 ) {
   return (
-    <button ref={ref} type="button" className={buttonClass({ variant, size, block })} {...rest}>
+    <button
+      ref={ref}
+      type="button"
+      className={[buttonClass({ variant, size, block }), className].filter(Boolean).join(' ')}
+      {...rest}
+    >
       {icon && <Icon name={icon} />}
       {children}
     </button>

@@ -50,6 +50,7 @@ describe('GET /api/properties', () => {
 
     expect(res.body.items[0].distanceKm).toBe(1.2);
     expect(res.body.items[0].coverUrl).toMatch(/^\/uploads\/demo\//);
+    expect(res.body.items[0].photoUrls[0]).toBe(res.body.items[0].coverUrl);
     expect(res.body.items[0].area).toBe('Kiyovu');
   });
 
@@ -140,6 +141,24 @@ describe('GET /api/properties', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error.fields.maxRent).toBe('Enter the maximum rent as a whole number.');
+  });
+});
+
+describe('GET /api/properties/counts', () => {
+  it('counts each option alongside the other filters', async () => {
+    const owner = await landlord();
+    await createListing(owner.id, { type: 'SINGLE', rentRwf: 60000, water: true });
+    await createListing(owner.id, { type: 'SINGLE', rentRwf: 90000, water: false });
+    await createListing(owner.id, { type: 'STUDIO', rentRwf: 90000, water: true });
+    await createListing(owner.id, { type: 'STUDIO', rentRwf: 90000, reviewStatus: 'PENDING' });
+    const { app } = createTestApp();
+
+    const res = await request(app).get('/api/properties/counts?types=SINGLE');
+
+    expect(res.status).toBe(200);
+    expect(res.body.types).toMatchObject({ SINGLE: 2, STUDIO: 1, SHARED: 0 });
+    expect(res.body.budgets).toMatchObject({ any: 2, 75000: 1, 100000: 2 });
+    expect(res.body.facilities.water).toBe(1);
   });
 });
 

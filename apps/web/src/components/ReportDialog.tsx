@@ -11,6 +11,7 @@ import { Icon } from './Icon';
 import { Modal } from './Modal';
 import { PickGroup } from './PickGroup';
 import { useToast } from './Toast';
+import { t, tNode } from '../i18n';
 
 const REASONS = reportReasonSchema.options.map((value) => ({
   value,
@@ -49,26 +50,28 @@ export function ReportDialog({
   return (
     <Modal
       alert
-      title={`Report a problem with "${property.title}"`}
+      title={t('Report a problem with "{title}"', { title: property.title })}
       icon="flag"
       onClose={onClose}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button disabled={busy} onClick={() => void send()}>
-            Send report
+            {t('Send report')}
           </Button>
         </>
       }
     >
-      <p>Administrators will check the listing. Your name is shared with administrators only.</p>
+      <p>
+        {t('Administrators will check the listing. Your name is shared with administrators only.')}
+      </p>
       <PickGroup
-        label="What is wrong?"
+        label={t('What is wrong?')}
         value={reason}
         options={REASONS}
-        none="Nothing yet"
+        none={t('Nothing yet')}
         compact
         onChange={(value) => {
           setReason(value);
@@ -76,19 +79,19 @@ export function ReportDialog({
         }}
       />
       <div className="field">
-        <label htmlFor="report-details">Details (optional)</label>
+        <label htmlFor="report-details">{t('Details (optional)')}</label>
         <textarea
           className="textarea"
           id="report-details"
           value={details}
-          placeholder="Tell us what you noticed."
+          placeholder={t('Tell us what you noticed.')}
           onChange={(event) => setDetails(event.target.value)}
         />
       </div>
       {error && (
         <p className="err-msg" role="alert">
           <Icon name="alert" />
-          {error}
+          {tNode(error)}
         </p>
       )}
     </Modal>

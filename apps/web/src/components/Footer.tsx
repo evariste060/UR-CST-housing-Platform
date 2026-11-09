@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 import { InfoDialog, type InfoTopic } from './Modal';
+import { t } from '../i18n';
 
 export function Footer() {
   const [topic, setTopic] = useState<InfoTopic | null>(null);
@@ -14,39 +15,41 @@ export function Footer() {
             <span className="logo-mark">
               <Icon name="home" />
             </span>
-            <span>UR-CST Housing</span>
+            <span>{t('UR-CST Housing')}</span>
           </div>
           <p className="footer-about">
-            A pilot platform that helps University of Rwanda, College of Science and Technology
-            students find accommodation near campus.
+            {t(
+              'A pilot platform that helps University of Rwanda, College of Science and Technology students find accommodation near campus.',
+            )}
           </p>
         </div>
         <div>
-          <h2 className="footer-h">Platform</h2>
+          <h2 className="footer-h">{t('Platform')}</h2>
           <button type="button" onClick={() => setTopic('about')}>
-            About the platform
+            {t('About the platform')}
           </button>
-          <Link to="/how-it-works">How it works</Link>
-          <Link to="/search">Find housing</Link>
+          <Link to="/how-it-works">{t('How it works')}</Link>
+          <Link to="/search">{t('Find housing')}</Link>
         </div>
         <div>
-          <h2 className="footer-h">Support</h2>
-          <Link to="/help">Help &amp; FAQ</Link>
-          <Link to="/help">Contact support</Link>
+          <h2 className="footer-h">{t('Support')}</h2>
+          <Link to="/help">{t('Help & FAQ')}</Link>
+          <Link to="/help">{t('Contact support')}</Link>
         </div>
         <div>
-          <h2 className="footer-h">Legal</h2>
+          <h2 className="footer-h">{t('Legal')}</h2>
           <button type="button" onClick={() => setTopic('privacy')}>
-            Privacy
+            {t('Privacy')}
           </button>
           <button type="button" onClick={() => setTopic('terms')}>
-            Terms
+            {t('Terms')}
           </button>
         </div>
       </div>
       <div className="bottom">
-        Human-Centered Design pilot prototype · UR-CST, Kigali · All listings are demonstration data
-        and are not real offers.
+        {t(
+          'Human-Centered Design pilot prototype · UR-CST, Kigali · All listings are demonstration data and are not real offers.',
+        )}
       </div>
       {topic && <InfoDialog topic={topic} onClose={() => setTopic(null)} />}
     </footer>

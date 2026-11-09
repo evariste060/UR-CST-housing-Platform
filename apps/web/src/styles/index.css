@@ -25,6 +25,12 @@
   --color-transparent: transparent;
   --color-white: #ffffff;
   --color-card: var(--white);
+  --color-sidebar: var(--sidebar);
+  --color-side-from: var(--side-from);
+  --color-side-via: var(--side-via);
+  --color-side-to: var(--side-to);
+  --color-side-active-from: var(--side-active-from);
+  --color-side-active-to: var(--side-active-to);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-muted: var(--muted);

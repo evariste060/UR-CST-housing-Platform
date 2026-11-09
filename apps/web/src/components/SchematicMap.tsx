@@ -1,4 +1,5 @@
 import type { LocationDto } from '@urcst/shared';
+import { t, tNode } from '../i18n';
 
 const WIDTH = 640;
 const HEIGHT = 340;
@@ -42,7 +43,9 @@ export function SchematicMap({ locations, area, pin }: SchematicMapProps) {
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={`Schematic map around UR-CST${area ? `, showing ${area}` : ''}. Not to scale.`}
+      aria-label={t('Schematic map around UR-CST{p0}. Not to scale.', {
+        p0: area ? `, showing ${area}` : '',
+      })}
     >
       <rect width={WIDTH} height={HEIGHT} fill="#EEF3EE" />
       <path
@@ -91,7 +94,7 @@ export function SchematicMap({ locations, area, pin }: SchematicMapProps) {
           <g key={item.id}>
             <circle cx={x} cy={y} r="4" fill="#94A3B8" />
             <text x={x + 8} y={y - 6} fontSize="13" fontFamily={FONT} fill="#334155">
-              {item.name}
+              {tNode(item.name)}
             </text>
           </g>
         );
@@ -114,7 +117,7 @@ export function SchematicMap({ locations, area, pin }: SchematicMapProps) {
         <g transform={`translate(${pinAt[0]},${pinAt[1]})`}>
           <path
             d="M0 0c-9-12-14-18-14-25a14 14 0 0 1 28 0c0 7-5 13-14 25z"
-            fill="#1D4ED8"
+            fill="#2563eb"
             stroke="#fff"
             strokeWidth="2.5"
           />

@@ -6,10 +6,10 @@ import {
   updateProfileSchema,
   type ContactPreferences,
 } from '@urcst/shared';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { useLogout } from '../auth/useLogout';
-import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
 import { Icon, type IconName } from '../components/Icon';
@@ -19,9 +19,44 @@ import { useToast } from '../components/Toast';
 import { useDisplay } from '../display/DisplayProvider';
 import { PREF_LABELS } from '../display/prefs';
 import { ApiError, api } from '../lib/api';
+import { initials } from '../lib/format';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
+import { LANGUAGE_NAMES, LANGUAGES, t, tNode } from '../i18n';
+
+/** One settings section: an icon, a title and a sentence, then its controls. */
+function SettingsCard({
+  id,
+  icon,
+  title,
+  intro,
+  children,
+}: {
+  id: string;
+  icon: IconName;
+  title: string;
+  intro: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-line bg-card" aria-labelledby={id}>
+      <div className="flex items-start gap-3 border-b border-line px-6 py-4 max-phone:px-4">
+        <span className="grid size-10 flex-none place-items-center rounded-md bg-blue-50 text-blue-700">
+          <Icon name={icon} />
+        </span>
+        <div>
+          <h2 className="m-0 scroll-mt-24 text-[1.125rem] font-semibold" id={id}>
+            {tNode(title)}
+          </h2>
+          <p className="t-help m-0">{tNode(intro)}</p>
+        </div>
+      </div>
+      <div className="px-6 py-5 max-phone:px-4">{children}</div>
+    </section>
+  );
+}
 
 const CONTACT_KEY = ['contact-preferences'];
+const LANGUAGE_OPTIONS = LANGUAGES.map((value) => ({ value, label: LANGUAGE_NAMES[value] }));
 const SIZE_OPTIONS = Object.entries(PREF_LABELS.size).map(([value, label]) => ({ value, label }));
 
 function ProfileForm() {
@@ -70,7 +105,7 @@ function ProfileForm() {
     >
       <Field
         id="ac-name"
-        label="Full name"
+        label={t('Full name')}
         value={fullName}
         onChange={setFullName}
         autoComplete="name"
@@ -79,7 +114,7 @@ function ProfileForm() {
       />
       <Field
         id="ac-email"
-        label="Email address"
+        label={t('Email address')}
         type="email"
         value={email}
         onChange={setEmail}
@@ -89,7 +124,7 @@ function ProfileForm() {
       />
       <Field
         id="ac-phone"
-        label={isLandlord ? 'Phone number (shown to students)' : 'Phone number (optional)'}
+        label={isLandlord ? t('Phone number (shown to students)') : t('Phone number (optional)')}
         type="tel"
         value={phone}
         onChange={setPhone}
@@ -99,7 +134,7 @@ function ProfileForm() {
       />
       <div className="full">
         <Button type="submit" disabled={busy}>
-          Save changes
+          {t('Save changes')}
         </Button>
       </div>
     </form>
@@ -153,7 +188,7 @@ function PasswordForm() {
       <div className="full">
         <PasswordField
           id="pw-cur"
-          label="Current password"
+          label={t('Current password')}
           value={currentPassword}
           onChange={setCurrentPassword}
           autoComplete="current-password"
@@ -162,16 +197,16 @@ function PasswordForm() {
       </div>
       <PasswordField
         id="pw-new"
-        label="New password"
+        label={t('New password')}
         value={newPassword}
         onChange={setNewPassword}
         autoComplete="new-password"
-        help="At least 8 characters."
+        help={t('At least 8 characters.')}
         error={errors.newPassword}
       />
       <PasswordField
         id="pw-new2"
-        label="Confirm new password"
+        label={t('Confirm new password')}
         value={repeat}
         onChange={setRepeat}
         autoComplete="new-password"
@@ -179,7 +214,7 @@ function PasswordForm() {
       />
       <div className="full">
         <Button type="submit" disabled={busy}>
-          Update password
+          {t('Update password')}
         </Button>
       </div>
     </form>
@@ -190,42 +225,44 @@ function DisplaySection() {
   const { prefs, setPref, setPanelOpen } = useDisplay();
 
   return (
-    <section className="panel" aria-labelledby="ax-h">
-      <h2 className="t-section" id="ax-h">
-        Display &amp; language
-      </h2>
+    <SettingsCard
+      id="ax-h"
+      icon="text"
+      title={t('Display & language')}
+      intro={t('Make the platform easier to read and hear.')}
+    >
       <PickGroup
-        label="Text size"
+        label={t('Text size')}
         value={prefs.size}
         options={SIZE_OPTIONS}
         onChange={(value) => setPref('size', value)}
       />
       <div className="row account-more">
-        <Button variant="secondary" icon="palette" onClick={() => setPanelOpen(true)}>
-          More display &amp; audio options
+        <Button
+          variant="secondary"
+          icon="palette"
+          className="text-left whitespace-normal!"
+          onClick={() => setPanelOpen(true)}
+        >
+          {t('More display & audio options')}
         </Button>
         <span className="t-help">
-          Font style, line spacing, contrast, highlighting and read-aloud.
+          {t('Font style, line spacing, contrast, highlighting and read-aloud.')}
         </span>
       </div>
       <hr className="divider" />
-      <fieldset className="account-lang">
-        <legend className="t-label">
-          <Icon name="globe" /> Language
-        </legend>
-        <label className="check">
-          <input type="radio" name="lang" defaultChecked /> English
-        </label>
-        <label className="check muted">
-          <input type="radio" name="lang" disabled /> Kinyarwanda{' '}
-          <Badge tone="demo">Planned. Not translated yet</Badge>
-        </label>
-        <label className="check muted">
-          <input type="radio" name="lang" disabled /> Français{' '}
-          <Badge tone="demo">Planned. Not translated yet</Badge>
-        </label>
-      </fieldset>
-    </section>
+      <PickGroup
+        label={t('Language')}
+        value={prefs.lang}
+        options={LANGUAGE_OPTIONS}
+        onChange={(value) => setPref('lang', value)}
+      />
+      <p className="t-help m-0">
+        {t(
+          'Menus, buttons and messages change language. Listings stay as the landlord wrote them.',
+        )}
+      </p>
+    </SettingsCard>
   );
 }
 
@@ -260,16 +297,17 @@ function ContactMethods() {
   }
 
   return (
-    <section className="panel" aria-labelledby="cp-h">
-      <h2 className="t-section" id="cp-h">
-        How students can contact you
-      </h2>
-      <p className="t-help">Only the methods you turn on are shown on your listings.</p>
-      <div className="account-switches">
+    <SettingsCard
+      id="cp-h"
+      icon="phone"
+      title={t('How students can contact you')}
+      intro={t('Only the methods you turn on are shown on your listings.')}
+    >
+      <div className="flex flex-col divide-y divide-line [&_.switch]:py-3">
         {CONTACT_METHODS.map(({ key, icon, label }) => (
           <label className="switch" key={key}>
             <span>
-              <Icon name={icon} /> {label}
+              <Icon name={icon} /> {tNode(label)}
             </span>
             <input
               type="checkbox"
@@ -281,46 +319,99 @@ function ContactMethods() {
           </label>
         ))}
       </div>
-    </section>
+    </SettingsCard>
   );
 }
+
+const SECTION_LINKS: { id: string; label: string; icon: IconName; landlordOnly?: boolean }[] = [
+  { id: 'pi-h', label: 'Personal information', icon: 'user' },
+  { id: 'cp-h', label: 'Contact methods', icon: 'phone', landlordOnly: true },
+  { id: 'pw-h', label: 'Password', icon: 'lock' },
+  { id: 'ax-h', label: 'Display & language', icon: 'text' },
+];
 
 export function AccountPage() {
   const { user } = useAuth();
   const logOut = useLogout();
+  const { hash } = useLocation();
+  const isLandlord = user?.role === 'LANDLORD';
+  const name = user?.fullName ?? 'Your account';
+
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash]);
 
   return (
     <main className="page" id="main">
       <div className="page-head">
         <div>
-          <h1 className="t-page">Account &amp; preferences</h1>
-          <p className="muted">Manage your details, password, accessibility and display.</p>
+          <h1 className="t-page">{t('Account & preferences')}</h1>
+          <p className="muted m-0">
+            {t('Manage your details, password, accessibility and display.')}
+          </p>
         </div>
       </div>
-      <div className="stack account-stack">
-        <section className="panel" aria-labelledby="pi-h">
-          <h2 className="t-section" id="pi-h">
-            Personal information
-          </h2>
-          <ProfileForm />
-        </section>
-        {user?.role === 'LANDLORD' && <ContactMethods />}
-        <section className="panel" aria-labelledby="pw-h">
-          <h2 className="t-section" id="pw-h">
-            Change password
-          </h2>
-          <PasswordForm />
-        </section>
-        <DisplaySection />
-        <section className="panel row-between">
-          <div>
-            <h2 className="t-card">Log out</h2>
-            <p className="t-help">You can log back in at any time.</p>
+      <div className="grid grid-cols-1 items-start gap-6 desktop:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="flex flex-col gap-4 desktop:sticky desktop:top-24">
+          <div className="flex items-center gap-3 rounded-lg border border-line bg-card p-4 desktop:flex-col desktop:p-6 desktop:text-center">
+            <span className="grid size-14 flex-none place-items-center rounded-full bg-blue text-lg font-semibold text-white desktop:size-20 desktop:text-2xl">
+              {initials(name)}
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <b className="truncate">{tNode(name)}</b>
+              <span className="truncate text-sm text-muted">{user?.email}</span>
+              <span className="mt-2 inline-flex self-start rounded-full bg-blue-50 px-3 py-0.5 text-sm font-semibold text-blue-700 desktop:self-center">
+                {isLandlord ? t('Landlord') : t('Student')}
+              </span>
+            </span>
           </div>
-          <Button variant="danger-outline" icon="logout" onClick={() => void logOut()}>
-            Log out
-          </Button>
-        </section>
+          <nav
+            className="hidden flex-col gap-1 rounded-lg border border-line bg-card p-2 desktop:flex"
+            aria-label={t('Account sections')}
+          >
+            {SECTION_LINKS.filter(({ landlordOnly }) => isLandlord || !landlordOnly).map(
+              ({ id, label, icon }) => (
+                <a
+                  key={id}
+                  className="flex min-h-11 items-center gap-3 rounded-md px-3 font-medium text-ink no-underline transition-colors hover:bg-blue-50 hover:text-blue-700"
+                  href={`#${id}`}
+                >
+                  <Icon name={icon} />
+                  {tNode(label)}
+                </a>
+              ),
+            )}
+          </nav>
+        </aside>
+        <div className="flex min-w-0 flex-col gap-6">
+          <SettingsCard
+            id="pi-h"
+            icon="user"
+            title={t('Personal information')}
+            intro={t('Your name and how to reach you.')}
+          >
+            <ProfileForm />
+          </SettingsCard>
+          {isLandlord && <ContactMethods />}
+          <SettingsCard
+            id="pw-h"
+            icon="lock"
+            title={t('Change password')}
+            intro={t('Use at least 8 characters. Do not reuse a password from another site.')}
+          >
+            <PasswordForm />
+          </SettingsCard>
+          <DisplaySection />
+          <section className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-red-border bg-card px-6 py-5 max-phone:px-4">
+            <div>
+              <h2 className="m-0 text-[1.125rem] font-semibold">{t('Log out')}</h2>
+              <p className="t-help m-0">{t('You can log back in at any time.')}</p>
+            </div>
+            <Button variant="danger-outline" icon="logout" onClick={() => void logOut()}>
+              {t('Log out')}
+            </Button>
+          </section>
+        </div>
       </div>
     </main>
   );

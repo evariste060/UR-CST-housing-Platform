@@ -20,12 +20,26 @@ const room = {
   bathroom: 'PRIVATE',
   security: true,
   coverUrl: null,
+  photoUrls: [],
 };
 
 /** Answers like the API: nothing matches a budget under 100,000. */
 function stubSearch() {
   return stubApi((path) => {
     if (path.startsWith('/locations')) return json({ items: [] });
+    if (path.startsWith('/properties/counts')) {
+      const empty = {};
+      return json({
+        areas: empty,
+        budgets: empty,
+        distances: empty,
+        types: { SINGLE: 1 },
+        layouts: empty,
+        facilities: empty,
+        rooms: empty,
+        availability: empty,
+      });
+    }
     const params = new URLSearchParams(path.split('?')[1]);
     const items = Number(params.get('maxRent') ?? Infinity) < 100_000 ? [] : [room];
     return json({ items, total: items.length, page: 1, pageSize: 20 });

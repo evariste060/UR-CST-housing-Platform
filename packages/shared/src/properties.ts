@@ -29,6 +29,22 @@ export type PropertySort = z.infer<typeof sortSchema>;
 export const RENT_SLIDER = { min: 30_000, max: 250_000, step: 5_000 };
 export const DISTANCE_SLIDER = { min: 0.5, max: 5, step: 0.5 };
 
+/** The set budgets and distances offered in the filters, in RWF and km. */
+export const FILTER_BUDGETS = [50_000, 75_000, 100_000, 150_000];
+export const FILTER_DISTANCES = [1, 2, 3];
+
+/** How many listings each filter option would show, keyed by the option's value. */
+export interface FilterCounts {
+  areas: Record<string, number>;
+  budgets: Record<string, number>;
+  distances: Record<string, number>;
+  types: Record<string, number>;
+  layouts: Record<string, number>;
+  facilities: Record<string, number>;
+  rooms: Record<string, number>;
+  availability: Record<string, number>;
+}
+
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 50;
 
@@ -130,6 +146,8 @@ export interface PropertySummary {
   selfContained: boolean;
   availability: Availability;
   coverUrl: string | null;
+  /** Every public photo, cover first, for the arrows on a card. */
+  photoUrls: string[];
 }
 
 export interface PropertyPhotoDto {

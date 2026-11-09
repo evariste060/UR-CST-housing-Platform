@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { locale } from '../i18n';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { useDisplay } from '../display/DisplayProvider';
@@ -113,7 +114,7 @@ export function ReaderProvider({ children }: { children: ReactNode }) {
 
       const utterance = new SpeechSynthesisUtterance(speakable(chunk.text));
       utterance.rate = Number(rate.current);
-      utterance.lang = 'en-GB';
+      utterance.lang = locale();
       utterance.onend = () => {
         if (current !== token.current) return;
         if (index.current < chunks.current.length - 1) {

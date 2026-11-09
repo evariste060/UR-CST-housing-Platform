@@ -1,3 +1,5 @@
+import { isLanguage, LANGUAGE_NAMES, LANGUAGES, setLanguage, type Language } from '../i18n';
+
 export const PREFS_KEY = 'urcst-prefs';
 
 export const PREF_DEFAULT = {
@@ -9,6 +11,7 @@ export const PREF_DEFAULT = {
   theme: 'light',
   rate: '1',
   clickRead: 'off',
+  lang: 'en',
 };
 
 export type Prefs = typeof PREF_DEFAULT;
@@ -45,7 +48,7 @@ export const FONTS = {
 export type FontName = keyof typeof FONTS;
 
 export const PREF_LABELS = {
-  size: { normal: 'Normal', large: 'Large', xl: 'Extra large' },
+  size: { small: 'Small', normal: 'Normal', large: 'Large', xl: 'Extra large' },
   spacing: { normal: 'Normal', relaxed: 'Relaxed' },
   contrast: { standard: 'Standard', high: 'High contrast' },
   highlight: { off: 'Off', on: 'On' },
@@ -63,6 +66,7 @@ const ALLOWED: Record<PrefKey, readonly string[]> = {
   theme: Object.keys(PREF_LABELS.theme),
   rate: Object.keys(PREF_LABELS.rate),
   clickRead: Object.keys(PREF_LABELS.clickRead),
+  lang: LANGUAGES,
 };
 
 /** Reads saved settings. Anything missing or no longer valid falls back to the default. */
@@ -99,12 +103,14 @@ export function clearPrefs() {
 
 export function applyPrefs(prefs: Prefs, root: HTMLElement = document.documentElement) {
   root.dataset.font = prefs.font;
+  root.classList.toggle('small-text', prefs.size === 'small');
   root.classList.toggle('large-text', prefs.size === 'large');
   root.classList.toggle('xl-text', prefs.size === 'xl');
   root.classList.toggle('relaxed', prefs.spacing === 'relaxed');
   root.classList.toggle('hc', prefs.contrast === 'high');
   root.classList.toggle('hl', prefs.highlight === 'on');
   root.classList.toggle('dark', prefs.theme === 'dark');
+  if (isLanguage(prefs.lang)) setLanguage(prefs.lang);
 }
 
 function labelOf(group: Record<string, string>, value: string) {
@@ -128,6 +134,8 @@ export function prefMessage(key: PrefKey, value: string): string {
       return `Reading speed: ${labelOf(PREF_LABELS.rate, value)}.`;
     case 'theme':
       return `${value === 'dark' ? 'Dark' : 'Light'} mode is on.`;
+    case 'lang':
+      return `Language: ${LANGUAGE_NAMES[value as Language] ?? value}.`;
     case 'clickRead':
       return value === 'on'
         ? 'Read what I tap: on. Tap any text to hear it.'

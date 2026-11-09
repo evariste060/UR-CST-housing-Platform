@@ -7,7 +7,6 @@ import { Gallery } from './Gallery';
 import { Icon, type IconName } from './Icon';
 import { OnThisPage, type OnThisPageItem } from './OnThisPage';
 import { ReportDialog } from './ReportDialog';
-import { SchematicMap } from './SchematicMap';
 import {
   formatRwf,
   initials,
@@ -19,7 +18,7 @@ import {
 import { useReader } from '../reader/useReader';
 import { useCompare } from '../student/CompareProvider';
 import { useSaved } from '../student/SavedProvider';
-import { useLocations } from '../student/queries';
+import { t, tNode } from '../i18n';
 
 const LONG_DESCRIPTION = 180;
 
@@ -49,10 +48,10 @@ function Facility({
         <Icon name={icon} />
       </span>
       <span>
-        <b>{label}</b>
+        <b>{tNode(label)}</b>
         <span className="st">
           <Icon name={included ? 'check' : 'x'} />
-          {status}
+          {tNode(status)}
         </span>
       </span>
     </div>
@@ -65,37 +64,37 @@ function Facilities({ property }: { property: PropertyDetail }) {
   return (
     <section className="panel" aria-labelledby="fac-h" id="sec-fac">
       <h2 className="t-section" id="fac-h">
-        Facilities
+        {t('Facilities')}
       </h2>
       <div className="facility-grid">
         <Facility
           included={water}
           icon="water"
-          label="Water"
+          label={t('Water')}
           status={water ? 'Included' : 'Not included'}
         />
         <Facility
           included={electricity}
           icon="bolt"
-          label="Electricity"
+          label={t('Electricity')}
           status={electricity ? 'Included' : 'Not included (prepaid by tenant)'}
         />
         <Facility
           included
           icon="bath"
-          label="Bathroom"
+          label={t('Bathroom')}
           status={bathroom === 'PRIVATE' ? 'Private bathroom' : 'Shared with other tenants'}
         />
         <Facility
           included={security}
           icon="shield"
-          label="Security"
+          label={t('Security')}
           status={security ? 'Guard or locked gate' : 'No guard'}
         />
         <Facility
           included
           icon="home"
-          label="Layout"
+          label={t('Layout')}
           status={
             selfContained
               ? 'Self-contained (private kitchen/bath)'
@@ -113,10 +112,10 @@ function About({ description }: { description: string }) {
   return (
     <section className="panel" aria-labelledby="desc-h" id="sec-about">
       <h2 className="t-section" id="desc-h">
-        About this place
+        {t('About this place')}
       </h2>
       <p className={open ? 'desc' : 'desc clamp'} id="desc-text">
-        {description}
+        {tNode(description)}
       </p>
       {description.length > LONG_DESCRIPTION && (
         <button
@@ -126,7 +125,7 @@ function About({ description }: { description: string }) {
           aria-controls="desc-text"
           onClick={() => setOpen(!open)}
         >
-          {open ? 'Show less' : 'Show more'}
+          {open ? t('Show less') : t('Show more')}
         </button>
       )}
     </section>
@@ -134,32 +133,35 @@ function About({ description }: { description: string }) {
 }
 
 function Location({ property }: { property: PropertyDetail }) {
-  const { data: locations = [] } = useLocations();
-  const { area, landmark, distanceKm, areaDistanceKm, pin } = property;
+  const { area, landmark, distanceKm, areaDistanceKm } = property;
 
   return (
     <section className="panel" aria-labelledby="loc-h" id="sec-loc">
       <h2 className="t-section" id="loc-h">
-        Location
+        {t('Location')}
       </h2>
       <p className="muted">
-        <Icon name="pin" /> {area} · {landmark}
+        <Icon name="pin" /> {tNode(area)} · {tNode(landmark)}
       </p>
-      <div className="map">
-        <SchematicMap locations={locations} area={area} pin={pin} />
-      </div>
+      {/* The schematic map is hidden for now; a real map will replace it. */}
       <ul className="landmarks">
         <li>
-          <span>UR-CST campus gate</span>
+          <span>{t('UR-CST campus gate')}</span>
           <b className="num">{formatKm(distanceKm)}</b>
         </li>
         <li>
-          <span>Nearest landmark: {landmark}</span>
-          <b>Nearby</b>
+          <span>
+            {t('Nearest landmark:')} {tNode(landmark)}
+          </span>
+          <b>{t('Nearby')}</b>
         </li>
         <li>
-          <span>Neighbourhood centre: {area}</span>
-          <b className="num">{formatKm(areaDistanceKm)} from campus</b>
+          <span>
+            {t('Neighbourhood centre:')} {tNode(area)}
+          </span>
+          <b className="num">
+            {formatKm(areaDistanceKm)} {t('from campus')}
+          </b>
         </li>
       </ul>
     </section>
@@ -184,37 +186,41 @@ function PricePanel({ property, onReport }: { property: PropertyDetail; onReport
       </div>
       <p className="price-big">
         <span className="t-page num">{formatRwf(rentRwf)}</span>{' '}
-        <span className="muted">/ month</span>
+        <span className="muted">{t('/ month')}</span>
       </p>
       <p className="row price-distance">
         <Icon name="pin" />
-        <span className="num">{formatKm(distanceKm)} from UR-CST</span>
+        <span className="num">
+          {formatKm(distanceKm)} {t('from UR-CST')}
+        </span>
       </p>
       <hr className="divider" />
       <dl className="kv">
-        <dt>Room type</dt>
-        <dd>{ROOM_TYPE_LABELS[type]}</dd>
-        <dt>Number of rooms</dt>
-        <dd className="num">{rooms}</dd>
-        <dt>Facilities</dt>
-        <dd>{layoutLabel(property)}</dd>
-        <dt>Neighbourhood</dt>
-        <dd>{area}</dd>
+        <dt>{t('Room type')}</dt>
+        <dd>{tNode(ROOM_TYPE_LABELS[type])}</dd>
+        <dt>{t('Number of rooms')}</dt>
+        <dd className="num">{tNode(rooms)}</dd>
+        <dt>{t('Facilities')}</dt>
+        <dd>{tNode(layoutLabel(property))}</dd>
+        <dt>{t('Neighbourhood')}</dt>
+        <dd>{tNode(area)}</dd>
       </dl>
       {occupied && (
         <div className="notice warn price-notice">
           <Icon name="door" />
           <span>
-            <b>Currently occupied.</b> You can still save it or ask the landlord when it will be
-            free.
+            <b>{t('Currently occupied.')}</b>{' '}
+            {t('You can still save it or ask the landlord when it will be free.')}
           </span>
         </div>
       )}
       <p className="t-help price-help">
         <Icon name="info" />{' '}
         {approved
-          ? '"Approved by admin" means the listing details were checked. It does not confirm today\'s availability. Ask the landlord.'
-          : 'This listing has not been approved yet. Students cannot see it.'}
+          ? t(
+              'The landlord sets the availability shown here. Ask them to confirm it before you visit.',
+            )
+          : t('This listing has not been approved yet. Students cannot see it.')}
       </p>
       {approved && (
         <div className="stack-sm price-actions">
@@ -223,18 +229,18 @@ function PricePanel({ property, onReport }: { property: PropertyDetail; onReport
             to={`/properties/${id}/contact`}
           >
             <Icon name="message" />
-            {occupied ? 'Ask about future availability' : 'Contact landlord'}
+            {occupied ? t('Ask about future availability') : t('Contact landlord')}
           </Link>
           <div className="row price-row">
             <button
               type="button"
               className={`${buttonClass({ variant: 'secondary' })} save-btn`}
               aria-pressed={isSaved}
-              aria-label={`${isSaved ? 'Saved' : 'Save property'}: ${title}`}
+              aria-label={`${isSaved ? t('Saved') : t('Save property')}: ${title}`}
               onClick={() => saved.toggle(id)}
             >
               <Icon name="heart" />
-              {isSaved ? 'Saved' : 'Save property'}
+              {isSaved ? t('Saved') : t('Save property')}
             </button>
             <Button
               variant="secondary"
@@ -242,11 +248,11 @@ function PricePanel({ property, onReport }: { property: PropertyDetail; onReport
               aria-pressed={comparing}
               onClick={() => compare.toggle(id)}
             >
-              {comparing ? 'In compare' : 'Add to compare'}
+              {comparing ? t('In compare') : t('Add to compare')}
             </Button>
           </div>
           <button type="button" className="link-btn report-link" onClick={onReport}>
-            <Icon name="flag" /> Report a problem with this listing
+            <Icon name="flag" /> {t('Report a problem with this listing')}
           </button>
         </div>
       )}
@@ -264,10 +270,10 @@ function LandlordPanel({ property }: { property: PropertyDetail }) {
 
   return (
     <div className="panel" id="sec-landlord">
-      <h2 className="t-card">Landlord</h2>
+      <h2 className="t-card">{t('Landlord')}</h2>
       <div className="row">
         <span className="avatar">{initials(landlord.name)}</span>
-        <b>{landlord.name}</b>
+        <b>{tNode(landlord.name)}</b>
       </div>
       {reviewStatus === 'APPROVED' && (
         <div className="stack-sm landlord-methods">
@@ -280,7 +286,7 @@ function LandlordPanel({ property }: { property: PropertyDetail }) {
                 to={`/properties/${id}/contact?method=${key}`}
               >
                 <Icon name={icon} />
-                {label}
+                {tNode(label)}
               </Link>
             ))}
         </div>
@@ -308,10 +314,11 @@ export function PropertyBody({ property, actions }: PropertyBodyProps) {
       <div className="page-head">
         <div>
           <h1 className="t-page" ref={heading}>
-            {title}
+            {tNode(title)}
           </h1>
           <p className="muted">
-            {typeLabel(property)} · {area}, Kigali
+            {tNode(typeLabel(property))} · {tNode(area)}
+            {t(', Kigali')}
           </p>
         </div>
         <div className="row">
@@ -324,22 +331,22 @@ export function PropertyBody({ property, actions }: PropertyBodyProps) {
               ])
             }
           >
-            Listen to this property
+            {t('Listen to this property')}
           </Button>
-          {actions}
+          {tNode(actions)}
         </div>
       </div>
       <OnThisPage items={SECTIONS} />
       <div className="two-col">
         <div className="stack detail-main">
-          <section aria-label="Photos" id="sec-photos">
+          <section aria-label={t('Photos')} id="sec-photos">
             <Gallery photos={photos} title={title} />
           </section>
           <Facilities property={property} />
           <About description={description} />
           <Location property={property} />
         </div>
-        <aside className="stack sticky" aria-label="Price and contact">
+        <aside className="stack sticky" aria-label={t('Price and contact')}>
           <PricePanel property={property} onReport={() => setReporting(true)} />
           <LandlordPanel property={property} />
         </aside>
@@ -349,7 +356,8 @@ export function PropertyBody({ property, actions }: PropertyBodyProps) {
           <span>
             <b className="num">{formatRwf(rentRwf)}</b>
             <span className="t-support choice-text">
-              {formatKm(distanceKm)} · {availability === 'AVAILABLE' ? 'Available' : 'Occupied'}
+              {formatKm(distanceKm)} ·{' '}
+              {availability === 'AVAILABLE' ? t('Available') : t('Occupied')}
             </span>
           </span>
           <span className="row sticky-actions">
@@ -357,14 +365,14 @@ export function PropertyBody({ property, actions }: PropertyBodyProps) {
               type="button"
               className="icon-btn save-btn"
               aria-pressed={isSaved}
-              aria-label={`${isSaved ? 'Remove from saved' : 'Save'} ${title}`}
+              aria-label={`${isSaved ? t('Remove from saved') : t('Save')} ${title}`}
               onClick={() => saved.toggle(id)}
             >
               <Icon name="heart" />
             </button>
             <Link className={buttonClass()} to={`/properties/${id}/contact`}>
               <Icon name="message" />
-              Contact
+              {t('Contact')}
             </Link>
           </span>
         </div>

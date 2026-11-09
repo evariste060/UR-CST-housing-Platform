@@ -2,7 +2,15 @@ import { Link, Route, Routes } from 'react-router-dom';
 import { GuestOnly, RequireRole } from './auth/RequireRole';
 import { AppLayout } from './components/AppLayout';
 import { Icon } from './components/Icon';
-import { ComingSoonPage } from './pages/ComingSoonPage';
+import { AdminDashboardPage } from './pages/admin/DashboardPage';
+import { AdminListingDetailPage } from './pages/admin/ListingDetailPage';
+import { AdminLocationsPage } from './pages/admin/LocationsPage';
+import { AdminReportsPage } from './pages/admin/ReportsPage';
+import { AdminReviewPage } from './pages/admin/ReviewPage';
+import { AdminUsersPage } from './pages/admin/UsersPage';
+import { HelpPage } from './pages/HelpPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { StatesPage } from './pages/StatesPage';
 import { AccountPage } from './pages/AccountPage';
 import { ComparePage } from './pages/ComparePage';
 import { ContactPage } from './pages/ContactPage';
@@ -20,20 +28,12 @@ import { LoginPage } from './pages/LoginPage';
 import { PropertyPage } from './pages/PropertyPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { RoleHomePage } from './pages/RoleHomePage';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
 import { StudentDashboardPage } from './pages/StudentDashboardPage';
+import { StudentInquiriesPage } from './pages/StudentInquiriesPage';
 import { buttonClass } from './components/Button';
-
-// Pages that later phases build. Each stands in with ComingSoonPage until then.
-const PUBLIC_PAGES_TO_BUILD = ['/help', '/notifications'];
-const ADMIN_PAGES_TO_BUILD = [
-  '/admin/review',
-  '/admin/users',
-  '/admin/reports',
-  '/admin/locations',
-];
+import { t } from './i18n';
 
 function NotFoundPage() {
   return (
@@ -42,10 +42,10 @@ function NotFoundPage() {
         <span className="state-ic">
           <Icon name="alert" />
         </span>
-        <h1 className="state-title">Page not found</h1>
-        <p>This page does not exist. Check the address or go back to the home page.</p>
+        <h1 className="state-title">{t('Page not found')}</h1>
+        <p>{t('This page does not exist. Check the address or go back to the home page.')}</p>
         <Link className={buttonClass()} to="/">
-          Go to home
+          {t('Go to home')}
         </Link>
       </div>
     </main>
@@ -65,9 +65,9 @@ export function App() {
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/design-system" element={<DesignSystemPage />} />
-        {PUBLIC_PAGES_TO_BUILD.map((path) => (
-          <Route key={path} path={path} element={<ComingSoonPage />} />
-        ))}
+        <Route path="/states" element={<StatesPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
 
         <Route element={<GuestOnly />}>
           <Route path="/login" element={<LoginPage />} />
@@ -78,6 +78,7 @@ export function App() {
 
         <Route element={<RequireRole allow="STUDENT" />}>
           <Route path="/student" element={<StudentDashboardPage />} />
+          <Route path="/student/inquiries" element={<StudentInquiriesPage />} />
           <Route path="/account" element={<AccountPage />} />
         </Route>
         <Route element={<RequireRole allow="LANDLORD" />}>
@@ -91,10 +92,12 @@ export function App() {
           <Route path="/landlord/account" element={<AccountPage />} />
         </Route>
         <Route element={<RequireRole allow="ADMIN" />}>
-          <Route path="/admin" element={<RoleHomePage title="Administrator dashboard" />} />
-          {ADMIN_PAGES_TO_BUILD.map((path) => (
-            <Route key={path} path={path} element={<ComingSoonPage />} />
-          ))}
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/review" element={<AdminReviewPage />} />
+          <Route path="/admin/review/:id" element={<AdminListingDetailPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
+          <Route path="/admin/locations" element={<AdminLocationsPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

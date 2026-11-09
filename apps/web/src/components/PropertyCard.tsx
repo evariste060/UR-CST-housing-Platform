@@ -1,9 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useReader } from '../reader/useReader';
 import { AvailabilityBadge, type Availability } from './Badge';
 import { Button, buttonClass } from './Button';
 import { Icon, type IconName } from './Icon';
+import { PhotoArrows } from './PhotoArrows';
+import { t, tNode } from '../i18n';
 
 export interface PropertyCardData {
   id: string;
@@ -16,7 +18,7 @@ export interface PropertyCardData {
   /** For example "Self-contained". */
   layoutLabel: string;
   area: string;
-  photo: string;
+  photos: string[];
   facilities: { label: string; icon: IconName }[];
   /** What Listen reads for this card. */
   spokenSummary: string;
@@ -39,24 +41,45 @@ export function PropertyCard({
   onToggleSave,
   onToggleCompare,
 }: PropertyCardProps) {
-  const { title, rent, distanceKm, availability, photo } = property;
+  const { title, rent, distanceKm, availability, photos } = property;
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const photo = photos[photoIndex % photos.length];
   const card = useRef<HTMLElement>(null);
   const reader = useReader();
   const href = `/properties/${property.id}`;
 
   return (
-    <article ref={card} className="pcard" aria-label={title} data-speak={property.spokenSummary}>
-      <div className="media">
+    <article
+      ref={card}
+      className="pcard group transition-[box-shadow,translate] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-raised"
+      aria-label={tNode(title)}
+      data-speak={property.spokenSummary}
+    >
+      <div className="media overflow-hidden">
         <Link className="media-link" to={href} tabIndex={-1} aria-hidden="true">
-          <img src={photo} alt="" loading="lazy" />
+          {photo && (
+            <img
+              className="transition-transform duration-300 ease-out group-hover:scale-105"
+              src={photo}
+              alt=""
+              loading="lazy"
+            />
+          )}
         </Link>
         <AvailabilityBadge availability={availability} />
+        <PhotoArrows
+          title={title}
+          count={photos.length}
+          index={photoIndex % photos.length}
+          onChange={setPhotoIndex}
+          placement="top-1/2 -translate-y-1/2"
+        />
         <button
           type="button"
           className="icon-btn save-btn"
           aria-pressed={saved}
-          aria-label={`${saved ? 'Remove from saved' : 'Save'} ${title}`}
-          title={saved ? 'Saved' : 'Save'}
+          aria-label={`${saved ? t('Remove from saved') : t('Save')} ${title}`}
+          title={saved ? t('Saved') : t('Save')}
           onClick={onToggleSave}
         >
           <Icon name="heart" />
@@ -65,22 +88,24 @@ export function PropertyCard({
       <div className="body">
         <div className="price-line">
           <span className="t-price num">{formatRwf(rent)}</span>
-          <span>/ month</span>
+          <span>{t('/ month')}</span>
         </div>
         <div className="meta">
           <Icon name="pin" />
-          <span className="num">{distanceKm.toFixed(1)} km</span>
-          <span className="meta-from">from UR-CST</span>
+          <span className="num">
+            {distanceKm.toFixed(1)} {t('km')}
+          </span>
+          <span className="meta-from">{t('from UR-CST')}</span>
         </div>
         <div className="row-between pcard-title-row">
-          <Link className="title" to={href}>
-            {title}
+          <Link className="title transition-colors duration-300 group-hover:text-blue" to={href}>
+            {tNode(title)}
           </Link>
           <button
             type="button"
             className="icon-btn listen-btn"
-            aria-label={`Listen to details of ${title}`}
-            title="Listen"
+            aria-label={t('Listen to details of {title}', { title })}
+            title={t('Listen')}
             onClick={() =>
               reader.start(title, [{ element: card.current, text: property.spokenSummary }])
             }
@@ -89,19 +114,19 @@ export function PropertyCard({
           </button>
         </div>
         <div className="sub">
-          {property.typeLabel} · {property.layoutLabel} · {property.area}
+          {tNode(property.typeLabel)} · {tNode(property.layoutLabel)} · {tNode(property.area)}
         </div>
         <div className="facs">
           {property.facilities.slice(0, 3).map(({ label, icon }) => (
             <span className="fchip" key={label}>
               <Icon name={icon} />
-              {label}
+              {tNode(label)}
             </span>
           ))}
         </div>
         <div className="actions">
           <Link className={buttonClass({ size: 'sm' })} to={href}>
-            View details
+            {t('View details')}
           </Link>
           <Button
             variant="secondary"
@@ -110,7 +135,7 @@ export function PropertyCard({
             aria-pressed={inCompare}
             onClick={onToggleCompare}
           >
-            {inCompare ? 'In compare' : 'Compare'}
+            {inCompare ? t('In compare') : t('Compare')}
           </Button>
         </div>
       </div>

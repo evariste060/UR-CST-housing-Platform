@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 const SPY_OFFSET_PX = 190;
 const FLASH_MS = 1600;
@@ -50,10 +51,10 @@ export function OnThisPage({ items }: { items: OnThisPageItem[] }) {
   }
 
   return (
-    <nav className="onpage" aria-label="On this page">
+    <nav className="onpage" aria-label={t('On this page')}>
       <span className="t-support">
         <Icon name="target" />
-        On this page:
+        {t('On this page:')}
       </span>
       {items.map(({ id, label, icon }) => (
         <button
@@ -64,7 +65,7 @@ export function OnThisPage({ items }: { items: OnThisPageItem[] }) {
           onClick={() => jump(id)}
         >
           <Icon name={icon} />
-          {label}
+          {tNode(label)}
         </button>
       ))}
     </nav>

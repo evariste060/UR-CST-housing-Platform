@@ -107,24 +107,6 @@ describe('LoginPage', () => {
     expect(screen.getByText('Signed in as Demo Student.')).toBeInTheDocument();
   });
 
-  it('logs in with a demo account button', async () => {
-    const fetchMock = stubApi(() =>
-      json({
-        user: { ...demoStudent, fullName: 'Demo Landlord A', role: 'LANDLORD' },
-        recentInquiries: [],
-        properties: [],
-      }),
-    );
-    await openLogin();
-
-    await userEvent.click(screen.getByRole('button', { name: /Demo Landlord A/ }));
-
-    expect(
-      await screen.findByRole('heading', { name: /Good .*, Demo Landlord A/ }),
-    ).toBeInTheDocument();
-    expect(sentBody(fetchMock, '/auth/login')).toMatchObject({ email: 'landlord@demo.ur' });
-  });
-
   it('shows and hides the password', async () => {
     stubApi(() => json({}));
     await openLogin();

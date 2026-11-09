@@ -12,6 +12,7 @@ import { api } from '../lib/api';
 import { formatNumber, formatRwf, layoutLabel, typeLabel, formatKm } from '../lib/format';
 import { MAX_COMPARE, useCompare } from '../student/CompareProvider';
 import { usePropertiesByIds } from '../student/queries';
+import { t, tNode } from '../i18n';
 
 interface Row {
   label: string;
@@ -32,12 +33,12 @@ function YesNo({
   return value ? (
     <span className="yes-txt">
       <Icon name="check" />
-      {yes}
+      {tNode(yes)}
     </span>
   ) : (
     <span className="no-txt">
       <Icon name="x" />
-      {no}
+      {tNode(no)}
     </span>
   );
 }
@@ -56,7 +57,8 @@ function rows(properties: PropertySummary[]): Row[] {
       key: ({ rentRwf }) => rentRwf,
       cell: ({ rentRwf }) => (
         <>
-          <b className="num">{formatRwf(rentRwf)}</b> {rentRwf === lowest && <Best>Lowest</Best>}
+          <b className="num">{formatRwf(rentRwf)}</b>{' '}
+          {rentRwf === lowest && <Best>{t('Lowest')}</Best>}
         </>
       ),
     },
@@ -66,7 +68,7 @@ function rows(properties: PropertySummary[]): Row[] {
       cell: ({ distanceKm }) => (
         <>
           <b className="num">{formatKm(distanceKm)}</b>{' '}
-          {distanceKm === closest && <Best>Closest</Best>}
+          {distanceKm === closest && <Best>{t('Closest')}</Best>}
         </>
       ),
     },
@@ -76,9 +78,9 @@ function rows(properties: PropertySummary[]): Row[] {
       key: ({ type, selfContained }) => `${type}-${selfContained}`,
       cell: (property) => (
         <>
-          {typeLabel(property)}
+          {tNode(typeLabel(property))}
           <br />
-          <span className="t-support">{layoutLabel(property)}</span>
+          <span className="t-support">{tNode(layoutLabel(property))}</span>
         </>
       ),
     },
@@ -95,19 +97,21 @@ function rows(properties: PropertySummary[]): Row[] {
         bathroom === 'PRIVATE' ? (
           <span className="yes-txt">
             <Icon name="check" />
-            Private
+            {t('Private')}
           </span>
         ) : (
           <span className="no-txt">
             <Icon name="users" />
-            Shared
+            {t('Shared')}
           </span>
         ),
     },
     {
       label: 'Security',
       key: ({ security }) => security,
-      cell: ({ security }) => <YesNo value={security} yes="Guard / locked gate" no="No guard" />,
+      cell: ({ security }) => (
+        <YesNo value={security} yes={t('Guard / locked gate')} no={t('No guard')} />
+      ),
     },
     {
       label: 'Availability',
@@ -140,7 +144,7 @@ function AddProperty() {
   return (
     <form className="row cmp-add" onSubmit={submit}>
       <label htmlFor="cmp-add" className="sr-only">
-        Add a property to compare
+        {t('Add a property to compare')}
       </label>
       <select
         className="select"
@@ -148,15 +152,15 @@ function AddProperty() {
         value={choice}
         onChange={(event) => setChoice(event.target.value)}
       >
-        <option value="">Add a property…</option>
+        <option value="">{t('Add a property…')}</option>
         {others.map(({ id, title, rentRwf }) => (
           <option key={id} value={id}>
-            {title} · {formatNumber(rentRwf)} RWF
+            {tNode(title)} · {formatNumber(rentRwf)} {t('RWF')}
           </option>
         ))}
       </select>
       <Button variant="secondary" icon="plus" type="submit">
-        Add
+        {t('Add')}
       </Button>
     </form>
   );
@@ -170,46 +174,46 @@ function CompareTable({ properties }: { properties: PropertySummary[] }) {
       <div className="row-between cmp-head">
         <p className="tip">
           <Icon name="info" />
-          Rows marked &quot;Differs&quot; are where these properties are not the same.
+          {t('Rows marked "Differs" are where these properties are not the same.')}
         </p>
         {properties.length < MAX_COMPARE ? (
           <AddProperty />
         ) : (
           <span className="t-support">
-            <Icon name="info" /> Maximum of four reached.
+            <Icon name="info" /> {t('Maximum of four reached.')}
           </span>
         )}
       </div>
       <div className="table-wrap">
         <table className="cmp">
           <caption className="sr-only">
-            Side-by-side comparison of {properties.length} properties
+            {t('Side-by-side comparison of')} {tNode(properties.length)} {t('properties')}
           </caption>
           <thead>
             <tr>
-              <th scope="col">Property</th>
+              <th scope="col">{t('Property')}</th>
               {properties.map(({ id, title, coverUrl }) => (
                 <th scope="col" className="head-cell" key={id}>
                   {coverUrl && <img src={coverUrl} alt="" />}
                   <Link className="cmp-title" to={`/properties/${id}`}>
-                    {title}
+                    {tNode(title)}
                   </Link>
                   <div className="row cmp-actions">
                     <Link
                       className={buttonClass({ variant: 'secondary', size: 'sm' })}
                       to={`/properties/${id}`}
-                      aria-label={`Details of ${title}`}
+                      aria-label={t('Details of {title}', { title })}
                     >
-                      Details
+                      {t('Details')}
                     </Link>
                     <Button
                       variant="ghost"
                       size="sm"
                       icon="x"
-                      aria-label={`Remove ${title} from compare`}
+                      aria-label={t('Remove {title} from compare', { title })}
                       onClick={() => compare.toggle(id)}
                     >
-                      Remove
+                      {t('Remove')}
                     </Button>
                   </div>
                 </th>
@@ -221,24 +225,24 @@ function CompareTable({ properties }: { properties: PropertySummary[] }) {
               const differs = new Set(properties.map(key)).size > 1;
               return (
                 <tr key={label} className={differs ? 'diff' : undefined}>
-                  <th scope="row">{label}</th>
+                  <th scope="row">{tNode(label)}</th>
                   {properties.map((property) => (
-                    <td key={property.id}>{cell(property)}</td>
+                    <td key={property.id}>{tNode(cell(property))}</td>
                   ))}
                 </tr>
               );
             })}
             <tr>
-              <th scope="row">Action</th>
+              <th scope="row">{t('Action')}</th>
               {properties.map(({ id, title }) => (
                 <td key={id}>
                   <Link
                     className={buttonClass({ size: 'sm' })}
                     to={`/properties/${id}/contact`}
-                    aria-label={`Contact the landlord of ${title}`}
+                    aria-label={t('Contact the landlord of {title}', { title })}
                   >
                     <Icon name="message" />
-                    Contact
+                    {t('Contact')}
                   </Link>
                 </td>
               ))}
@@ -259,11 +263,11 @@ export function ComparePage() {
       return (
         <ErrorState
           icon="wifi"
-          title="Unable to load these properties. Please try again."
-          text="Check your internet connection, then try again."
+          title={t('Unable to load these properties. Please try again.')}
+          text={t('Check your internet connection, then try again.')}
           actions={
             <Button icon="refresh" onClick={() => void refetch()}>
-              Try again
+              {t('Try again')}
             </Button>
           }
         />
@@ -276,12 +280,12 @@ export function ComparePage() {
       <>
         <EmptyState
           icon="compare"
-          title={items.length ? 'Add one more property to compare' : 'Nothing to compare yet'}
-          text="Select Compare on two to four properties. You can also add one here."
+          title={items.length ? t('Add one more property to compare') : t('Nothing to compare yet')}
+          text={t('Select Compare on two to four properties. You can also add one here.')}
           actions={
             <Link className={buttonClass()} to="/search">
               <Icon name="search" />
-              Return to search
+              {t('Return to search')}
             </Link>
           }
         />
@@ -303,12 +307,12 @@ export function ComparePage() {
     <main className="page" id="main">
       <div className="page-head">
         <div>
-          <h1 className="t-page">Compare properties</h1>
-          <p className="muted">Compare up to four properties side by side.</p>
+          <h1 className="t-page">{t('Compare properties')}</h1>
+          <p className="muted">{t('Compare up to four properties side by side.')}</p>
         </div>
         {compare.ids.length > 0 && (
           <Button variant="secondary" onClick={compare.clear}>
-            Clear comparison
+            {t('Clear comparison')}
           </Button>
         )}
       </div>

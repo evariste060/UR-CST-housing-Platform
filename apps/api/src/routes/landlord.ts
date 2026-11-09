@@ -3,6 +3,7 @@ import {
   availabilityInputSchema,
   EMPTY_DRAFT,
   inquiryStatusInputSchema,
+  landlordFilterSchema,
   landlordInquiriesQuerySchema,
   landlordPropertiesQuerySchema,
   listingDraftSchema,
@@ -17,6 +18,7 @@ import {
   type InquiryThread,
   type LandlordFilter,
   type LandlordInquiry,
+  type LandlordPropertyQuery,
   type LandlordInquiryList,
   type LandlordProperty,
   type LandlordPropertyList,
@@ -30,6 +32,7 @@ import {
 import { Router, type Request } from 'express';
 import { prisma } from '../db';
 import { AppError } from '../lib/errors';
+import { notifyAdmins, notifyAvailabilityChange, notifyUsers } from '../lib/notify';
 import type { Storage } from '../lib/storage';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { photoError, photoExtension, uploadPhotos } from '../middleware/upload';
@@ -44,19 +47,30 @@ type PropertyRow = Prisma.PropertyGetPayload<{ include: typeof PROPERTY_INCLUDE 
 
 const INQUIRY_INCLUDE = {
   student: { select: { fullName: true } },
-  property: { select: { id: true, title: true, landlordId: true, draft: true } },
+  property: {
+    select: {
+      id: true,
+      title: true,
+      landlordId: true,
+      draft: true,
+      rentRwf: true,
+      reviewStatus: true,
+      location: { select: { name: true } },
+      photos: {
+        where: { pendingAdd: false },
+        orderBy: [{ isCover: 'desc' }, { position: 'asc' }],
+        take: 1,
+        select: { url: true },
+      },
+    },
+  },
   messages: { orderBy: { createdAt: 'asc' } },
 } satisfies Prisma.InquiryInclude;
 
 type InquiryRow = Prisma.InquiryGetPayload<{ include: typeof INQUIRY_INCLUDE }>;
 
-const NEWEST_FIRST = [
-  { createdAt: 'desc' },
-  { id: 'asc' },
-] satisfies Prisma.PropertyOrderByWithRelationInput[];
-
 const SUMMARY_INQUIRIES = 3;
-const SUMMARY_PROPERTIES = 4;
+const SUMMARY_PROPERTIES = 5;
 
 const listingNotFound = () =>
   new AppError(404, 'LISTING_NOT_FOUND', 'Listing not found. It may have been deleted.');
@@ -149,6 +163,8 @@ function toListItem(row: PropertyRow): LandlordProperty {
     reviewNote: row.reviewNote,
     coverUrl: cover?.url ?? null,
     hasUnsubmittedChanges: row.draft !== null,
+    updatedAt: row.updatedAt.toISOString(),
+    type: live ? row.type : (answers.type ?? null),
   };
 }
 
@@ -163,14 +179,23 @@ function toInquiry(row: InquiryRow): LandlordInquiry {
     lastMessage: {
       body: last?.body ?? '',
       fromLandlord: last?.senderId === row.property.landlordId,
+      createdAt: (last?.createdAt ?? row.createdAt).toISOString(),
     },
     createdAt: row.createdAt.toISOString(),
   };
 }
 
 function toThread(row: InquiryRow): InquiryThread {
+  const inquiry = toInquiry(row);
   return {
-    ...toInquiry(row),
+    ...inquiry,
+    property: {
+      ...inquiry.property,
+      coverUrl: row.property.photos[0]?.url ?? null,
+      area: row.property.location?.name ?? null,
+      rentRwf: row.property.rentRwf,
+      reviewStatus: row.property.reviewStatus,
+    },
     messages: row.messages.map(({ id, body, senderId, createdAt }) => ({
       id,
       body,
@@ -182,9 +207,35 @@ function toThread(row: InquiryRow): InquiryThread {
 
 function filterWhere(filter: LandlordFilter): Prisma.PropertyWhereInput {
   if (filter === 'pending') return { reviewStatus: 'PENDING' };
+  if (filter === 'changes') return { reviewStatus: 'CHANGES_REQUESTED' };
+  if (filter === 'drafts') return { reviewStatus: 'DRAFT' };
   if (filter === 'all') return {};
   const availability = filter === 'available' ? 'AVAILABLE' : 'OCCUPIED';
   return { availability, reviewStatus: { not: 'DRAFT' } };
+}
+
+function listWhere(
+  landlordId: string,
+  { filter, availability, status, q }: LandlordPropertyQuery,
+): Prisma.PropertyWhereInput {
+  const and: Prisma.PropertyWhereInput[] = [filterWhere(filter)];
+  if (availability !== 'all') {
+    and.push({
+      availability: availability === 'available' ? 'AVAILABLE' : 'OCCUPIED',
+      reviewStatus: { not: 'DRAFT' },
+    });
+  }
+  if (status !== 'all') and.push({ reviewStatus: status });
+  if (q) {
+    and.push({
+      OR: [
+        { title: { contains: q, mode: 'insensitive' } },
+        { location: { name: { contains: q, mode: 'insensitive' } } },
+        { draft: { path: ['title'], string_contains: q } },
+      ],
+    });
+  }
+  return { landlordId, deletedAt: null, AND: and };
 }
 
 const INQUIRY_STATUS: Record<Exclude<InquiryFilter, 'all'>, InquiryStatus> = {
@@ -214,13 +265,16 @@ async function findInquiry(req: Request) {
   return row;
 }
 
-function propertyCounts(landlordId: string) {
+async function propertyCounts(landlordId: string) {
   const where = { landlordId, deletedAt: null };
-  return Promise.all(
-    (['all', 'available', 'occupied', 'pending'] as const).map((filter) =>
-      prisma.property.count({ where: { ...where, ...filterWhere(filter) } }),
-    ),
+  const filters = landlordFilterSchema.options;
+  const values = await Promise.all(
+    filters.map((filter) => prisma.property.count({ where: { ...where, ...filterWhere(filter) } })),
   );
+  return Object.fromEntries(filters.map((filter, index) => [filter, values[index] ?? 0])) as Record<
+    LandlordFilter,
+    number
+  >;
 }
 
 // Created per app, so tests can keep uploaded files in memory.
@@ -231,29 +285,30 @@ export function landlordRouter(storage: Storage) {
 
   router.get('/summary', async (req, res) => {
     const landlordId = req.user!.id;
-    const [[total, available, occupied, pending], newInquiries, inquiries, properties] =
-      await Promise.all([
-        propertyCounts(landlordId),
-        prisma.inquiry.count({ where: { property: { landlordId }, status: 'NEW' } }),
-        prisma.inquiry.findMany({
-          where: { property: { landlordId } },
-          include: INQUIRY_INCLUDE,
-          orderBy: { createdAt: 'desc' },
-          take: SUMMARY_INQUIRIES,
-        }),
-        prisma.property.findMany({
-          where: { landlordId, deletedAt: null },
-          include: PROPERTY_INCLUDE,
-          orderBy: NEWEST_FIRST,
-          take: SUMMARY_PROPERTIES,
-        }),
-      ]);
+    const [counts, newInquiries, inquiries, properties] = await Promise.all([
+      propertyCounts(landlordId),
+      prisma.inquiry.count({ where: { property: { landlordId }, status: 'NEW' } }),
+      prisma.inquiry.findMany({
+        where: { property: { landlordId } },
+        include: INQUIRY_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        take: SUMMARY_INQUIRIES,
+      }),
+      prisma.property.findMany({
+        where: { landlordId, deletedAt: null },
+        include: PROPERTY_INCLUDE,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        take: SUMMARY_PROPERTIES,
+      }),
+    ]);
 
     const body: LandlordSummary = {
-      total: total as number,
-      available: available as number,
-      occupied: occupied as number,
-      pending: pending as number,
+      total: counts.all,
+      available: counts.available,
+      occupied: counts.occupied,
+      pending: counts.pending,
+      changes: counts.changes,
+      drafts: counts.drafts,
       newInquiries,
       recentInquiries: inquiries.map(toInquiry),
       properties: properties.map(toListItem),
@@ -262,15 +317,17 @@ export function landlordRouter(storage: Storage) {
   });
 
   router.get('/properties', async (req, res) => {
-    const { page, pageSize, filter } = parseQuery(landlordPropertiesQuerySchema, req.query);
+    const query = parseQuery(landlordPropertiesQuerySchema, req.query);
+    const { page, pageSize, sort } = query;
     const landlordId = req.user!.id;
-    const where = { landlordId, deletedAt: null, ...filterWhere(filter) };
+    const where = listWhere(landlordId, query);
+    const direction = sort === 'updated-asc' ? 'asc' : 'desc';
 
-    const [rows, total, [all, available, occupied, pending]] = await Promise.all([
+    const [rows, total, counts] = await Promise.all([
       prisma.property.findMany({
         where,
         include: PROPERTY_INCLUDE,
-        orderBy: NEWEST_FIRST,
+        orderBy: [{ updatedAt: direction }, { id: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -283,12 +340,7 @@ export function landlordRouter(storage: Storage) {
       total,
       page,
       pageSize,
-      counts: {
-        all: all as number,
-        available: available as number,
-        occupied: occupied as number,
-        pending: pending as number,
-      },
+      counts,
     };
     res.json(body);
   });
@@ -440,6 +492,16 @@ export function landlordRouter(storage: Storage) {
           text: `${req.user!.fullName} submitted ${values.title.trim()}`,
         },
       });
+      await notifyUsers(tx, [req.user!.id], {
+        type: 'LISTING_SUBMITTED',
+        text: `Listing submitted for review: ${values.title.trim()}.`,
+        link: '/landlord/properties',
+      });
+      await notifyAdmins(tx, {
+        type: 'LISTING_TO_REVIEW',
+        text: `New listing to review: ${values.title.trim()} (${req.user!.fullName}).`,
+        link: '/admin/review',
+      });
       return tx.property.update({
         where: { id: row.id },
         data: {
@@ -489,9 +551,15 @@ export function landlordRouter(storage: Storage) {
       const { availability } = req.body as { availability: ListingDraft['availability'] };
       // An open wizard must not put the old value back on submit.
       const draft = row.draft === null ? undefined : { ...storedDraft(row), availability };
-      await prisma.property.update({
-        where: { id: row.id },
-        data: { availability, draft: draft as Prisma.InputJsonObject | undefined },
+      await prisma.$transaction(async (tx) => {
+        await tx.property.update({
+          where: { id: row.id },
+          data: { availability, draft: draft as Prisma.InputJsonObject | undefined },
+        });
+        // Students only see approved listings, so only those savers hear about it.
+        if (availability !== row.availability && row.reviewStatus === 'APPROVED') {
+          await notifyAvailabilityChange(tx, { id: row.id, title: row.title, availability });
+        }
       });
 
       const body: AvailabilityResult = { availability, previous: row.availability };
@@ -515,9 +583,18 @@ export function landlordRouter(storage: Storage) {
   });
 
   router.get('/inquiries', async (req, res) => {
-    const { page, pageSize, status } = parseQuery(landlordInquiriesQuerySchema, req.query);
+    const { page, pageSize, status, q } = parseQuery(landlordInquiriesQuerySchema, req.query);
     const owned = { property: { landlordId: req.user!.id } };
-    const where = status === 'all' ? owned : { ...owned, status: INQUIRY_STATUS[status] };
+    const where: Prisma.InquiryWhereInput = {
+      ...owned,
+      ...(status !== 'all' && { status: INQUIRY_STATUS[status] }),
+      ...(q && {
+        OR: [
+          { student: { fullName: { contains: q, mode: 'insensitive' } } },
+          { property: { title: { contains: q, mode: 'insensitive' } } },
+        ],
+      }),
+    };
 
     const [rows, total, fresh, handled] = await Promise.all([
       prisma.inquiry.findMany({
@@ -550,12 +627,17 @@ export function landlordRouter(storage: Storage) {
     const inquiry = await findInquiry(req);
     const { message } = req.body as ReplyInput;
 
-    await prisma.$transaction([
-      prisma.inquiryMessage.create({
+    await prisma.$transaction(async (tx) => {
+      await tx.inquiryMessage.create({
         data: { inquiryId: inquiry.id, senderId: req.user!.id, body: message },
-      }),
-      prisma.inquiry.update({ where: { id: inquiry.id }, data: { status: 'HANDLED' } }),
-    ]);
+      });
+      await tx.inquiry.update({ where: { id: inquiry.id }, data: { status: 'HANDLED' } });
+      await notifyUsers(tx, [inquiry.studentId], {
+        type: 'INQUIRY_REPLIED',
+        text: `${req.user!.fullName} replied to your inquiry about ${inquiry.property.title}.`,
+        link: `/student/inquiries?open=${inquiry.id}`,
+      });
+    });
     res.status(201).json(toThread(await findInquiry(req)));
   });
 

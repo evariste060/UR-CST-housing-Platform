@@ -14,6 +14,7 @@ import { EmptyState, ErrorState, SkeletonCards, SuccessState } from '../componen
 import { ToggleTile } from '../components/ToggleTile';
 import { useToast } from '../components/Toast';
 import { useDisplay } from '../display/DisplayProvider';
+import { t, tNode } from '../i18n';
 
 const SECTIONS: OnThisPageItem[] = [
   { id: 'ds-colour', label: 'Colour', icon: 'palette' },
@@ -31,7 +32,7 @@ const SECTIONS: OnThisPageItem[] = [
 ];
 
 const SWATCHES = [
-  ['Primary blue', '#1D4ED8', 'Actions, links, focus', '6.7:1 on white'],
+  ['Primary blue', '#2563EB', 'Actions, links, focus', '5.2:1 on white'],
   ['Dark text', '#0F172A', 'Text, headings', '17.9:1 on white'],
   ['Light surface', '#F8FAFC', 'Page background', ''],
   [
@@ -63,7 +64,7 @@ const SAMPLE_PROPERTIES: PropertyCardData[] = [
     typeLabel: 'Single room',
     layoutLabel: 'Self-contained',
     area: 'Kiyovu',
-    photo: demoPhoto('#BFD3FB', '#7FA3EC'),
+    photos: [demoPhoto('#BFD3FB', '#7FA3EC')],
     facilities: [
       { label: 'Private bathroom', icon: 'bath' },
       { label: 'Water + electricity', icon: 'bolt' },
@@ -81,7 +82,7 @@ const SAMPLE_PROPERTIES: PropertyCardData[] = [
     typeLabel: 'Shared room',
     layoutLabel: 'Shared facilities',
     area: 'Nyamirambo',
-    photo: demoPhoto('#C9E7D3', '#86C79D'),
+    photos: [demoPhoto('#C9E7D3', '#86C79D')],
     facilities: [
       { label: 'Shared bathroom', icon: 'bath' },
       { label: 'Water only', icon: 'water' },
@@ -104,8 +105,8 @@ function Section({
 }) {
   return (
     <section id={id} data-sec={title} className="ds-section">
-      <h2 className="t-section">{title}</h2>
-      {intro && <p className="muted">{intro}</p>}
+      <h2 className="t-section">{tNode(title)}</h2>
+      {intro && <p className="muted">{tNode(intro)}</p>}
       {children}
     </section>
   );
@@ -122,28 +123,28 @@ function InputsDemo() {
     <div className="panel form-grid panel-top">
       <Field
         id="ds-1"
-        label="Default"
+        label={t('Default')}
         value={plain}
         onChange={setPlain}
-        placeholder="e.g. Kiyovu"
-        help="Helper text explains the field."
+        placeholder={t('e.g. Kiyovu')}
+        help={t('Helper text explains the field.')}
       />
       <Field
         id="ds-2"
-        label="With error"
+        label={t('With error')}
         value={wrong}
         onChange={setWrong}
-        error="Enter a valid email address."
+        error={t('Enter a valid email address.')}
       />
-      <PasswordField id="ds-4" label="Password" value={password} onChange={setPassword} />
+      <PasswordField id="ds-4" label={t('Password')} value={password} onChange={setPassword} />
       <div className="field">
-        <label htmlFor="ds-3">Select</label>
+        <label htmlFor="ds-3">{t('Select')}</label>
         <select className="select" id="ds-3" defaultValue="">
-          <option value="">Choose a type</option>
-          <option value="single">Single room</option>
-          <option value="shared">Shared room</option>
-          <option value="studio">Studio</option>
-          <option value="apartment">Apartment</option>
+          <option value="">{t('Choose a type')}</option>
+          <option value="single">{t('Single room')}</option>
+          <option value="shared">{t('Shared room')}</option>
+          <option value="studio">{t('Studio')}</option>
+          <option value="apartment">{t('Apartment')}</option>
         </select>
       </div>
       <label className="check">
@@ -152,10 +153,10 @@ function InputsDemo() {
           checked={checked}
           onChange={(event) => setChecked(event.target.checked)}
         />{' '}
-        Checkbox
+        {t('Checkbox')}
       </label>
       <label className="switch">
-        <span>Switch</span>
+        <span>{t('Switch')}</span>
         <input
           type="checkbox"
           role="switch"
@@ -178,7 +179,7 @@ function ChoicesDemo() {
   return (
     <div className="panel stack panel-top">
       <PickGroup
-        label="Room type (demo)"
+        label={t('Room type (demo)')}
         value={roomType}
         onChange={setRoomType}
         options={[
@@ -188,11 +189,11 @@ function ChoicesDemo() {
         ]}
       />
       <PickGroup
-        label="With an error (demo)"
+        label={t('With an error (demo)')}
         value={speed}
         onChange={setSpeed}
-        none="Nothing yet"
-        error="Choose one option to continue."
+        none={t('Nothing yet')}
+        error={t('Choose one option to continue.')}
         options={[
           { value: 'walk', label: 'Walking distance' },
           { value: 'bus', label: 'Short bus ride' },
@@ -200,14 +201,19 @@ function ChoicesDemo() {
       />
       <div className="row">
         <ToggleChip
-          label="Pick more than one"
+          label={t('Pick more than one')}
           pressed={flexible}
           onToggle={() => setFlexible(!flexible)}
         />
-        <ToggleChip label="Not selected" pressed={false} icon="plus" onToggle={() => undefined} />
+        <ToggleChip
+          label={t('Not selected')}
+          pressed={false}
+          icon="plus"
+          onToggle={() => undefined}
+        />
       </div>
       <ChoiceField
-        label="Layout (demo)"
+        label={t('Layout (demo)')}
         value={plan}
         onChoose={setPlan}
         options={[
@@ -226,9 +232,14 @@ function ChoicesDemo() {
         ]}
       />
       <div className="tilegrid">
-        <ToggleTile label="Water" icon="water" pressed={water} onToggle={() => setWater(!water)} />
         <ToggleTile
-          label="Security / guard"
+          label={t('Water')}
+          icon="water"
+          pressed={water}
+          onToggle={() => setWater(!water)}
+        />
+        <ToggleTile
+          label={t('Security / guard')}
           icon="shield"
           pressed={security}
           onToggle={() => setSecurity(!security)}
@@ -277,7 +288,7 @@ function FeedbackDemo() {
         variant="secondary"
         onClick={() => toast('Saved to your list. This does not reserve the room.')}
       >
-        Show toast
+        {t('Show toast')}
       </Button>
       <Button
         variant="secondary"
@@ -285,7 +296,7 @@ function FeedbackDemo() {
           toast('Availability updated successfully.', { undo: () => toast('Change undone.') })
         }
       >
-        Toast with Undo
+        {t('Toast with Undo')}
       </Button>
       <Button
         variant="secondary"
@@ -295,29 +306,29 @@ function FeedbackDemo() {
           })
         }
       >
-        Error toast
+        {t('Error toast')}
       </Button>
       <Button variant="secondary" onClick={() => toast('Reading stopped.', { type: 'info' })}>
-        Info toast
+        {t('Info toast')}
       </Button>
       <Button variant="secondary" onClick={() => setDialog('delete')}>
-        Confirmation dialog
+        {t('Confirmation dialog')}
       </Button>
       <Button variant="secondary" onClick={() => setDialog('reason')}>
-        Dialog with a required note
+        {t('Dialog with a required note')}
       </Button>
       <Button variant="secondary" icon="search" onClick={() => setQuickFindOpen(true)}>
-        Quick find
+        {t('Quick find')}
       </Button>
       <Button variant="secondary" icon="palette" onClick={() => setPanelOpen(true)}>
-        Display settings
+        {t('Display settings')}
       </Button>
 
       {dialog === 'delete' && (
         <ConfirmDialog
-          title="Are you sure you want to delete this listing?"
-          body="This is a demonstration of the confirmation pattern. Nothing will be deleted."
-          confirm="Delete listing"
+          title={t('Are you sure you want to delete this listing?')}
+          body={t('This is a demonstration of the confirmation pattern. Nothing will be deleted.')}
+          confirm={t('Delete listing')}
           tone="danger"
           icon="trash"
           onCancel={() => setDialog(null)}
@@ -329,9 +340,9 @@ function FeedbackDemo() {
       )}
       {dialog === 'reason' && (
         <ConfirmDialog
-          title="Reject this listing?"
-          body="This is a demonstration. The landlord would see your reason."
-          confirm="Reject listing"
+          title={t('Reject this listing?')}
+          body={t('This is a demonstration. The landlord would see your reason.')}
+          confirm={t('Reject listing')}
           tone="danger"
           icon="x"
           field={{
@@ -355,30 +366,32 @@ export function DesignSystemPage() {
     <main className="page doc" id="main">
       <div className="page-head">
         <div>
-          <span className={badgeClass('demo')}>01 · Design system</span>
-          <h1 className="t-page ds-title">Design system</h1>
-          <p className="muted">Foundations and components every screen is built from.</p>
+          <span className={badgeClass('demo')}>{t('01 · Design system')}</span>
+          <h1 className="t-page ds-title">{t('Design system')}</h1>
+          <p className="muted">{t('Foundations and components every screen is built from.')}</p>
         </div>
       </div>
       <OnThisPage items={SECTIONS} />
 
       <Section
         id="ds-colour"
-        title="Colour"
-        intro="Four foundation colours, plus semantic colours used only where needed. Status is never shown by colour alone: every badge has an icon and a word."
+        title={t('Colour')}
+        intro={t(
+          'Four foundation colours, plus semantic colours used only where needed. Status is never shown by colour alone: every badge has an icon and a word.',
+        )}
       >
         <div className="ds-grid panel-top">
           {SWATCHES.map(([name, value, use, ratio]) => (
             <div className="swatch" key={name}>
               <div className="chip-col" style={{ background: value }} />
               <div className="info">
-                <b>{name}</b>
+                <b>{tNode(name)}</b>
                 <br />
                 <code>{value}</code>
-                <p className="t-support">{use}</p>
+                <p className="t-support">{tNode(use)}</p>
                 {ratio && (
                   <p className="t-support">
-                    <b>{ratio}</b>
+                    <b>{tNode(ratio)}</b>
                   </p>
                 )}
               </div>
@@ -389,30 +402,39 @@ export function DesignSystemPage() {
 
       <Section
         id="ds-type"
-        title="Typography"
-        intro="Inter. Body text is 16px minimum. The Large setting scales everything by 12.5% and Extra large by 25%."
+        title={t('Typography')}
+        intro={t(
+          'Inter. Body text is 16px minimum. The Large setting scales everything by 12.5% and Extra large by 25%.',
+        )}
       >
         <div className="panel stack panel-top">
-          <div className="t-page">Page heading · 32 / 700</div>
-          <div className="t-section">Section heading · 22 / 700</div>
-          <div className="t-card">Card title · 17 / 600</div>
-          <div className="t-price">Price · 22 / 700 · 85,000 RWF</div>
-          <div className="t-body">Body text · 16 / 400. Used for descriptions and paragraphs.</div>
-          <div className="t-label">Form label · 15 / 600</div>
-          <div className="t-support">Supporting label · 14 / 400</div>
-          <div className="t-help">Helper text · 14 / 400, muted</div>
+          <div className="t-page">{t('Page heading · 32 / 700')}</div>
+          <div className="t-section">{t('Section heading · 22 / 700')}</div>
+          <div className="t-card">{t('Card title · 17 / 600')}</div>
+          <div className="t-price">{t('Price · 22 / 700 · 85,000 RWF')}</div>
+          <div className="t-body">
+            {t('Body text · 16 / 400. Used for descriptions and paragraphs.')}
+          </div>
+          <div className="t-label">{t('Form label · 15 / 600')}</div>
+          <div className="t-support">{t('Supporting label · 14 / 400')}</div>
+          <div className="t-help">{t('Helper text · 14 / 400, muted')}</div>
         </div>
       </Section>
 
       <Section
         id="ds-space"
-        title="Spacing & shape"
-        intro="8px spacing system. Radius 8 / 12 / 16px by size. Subtle 1px borders; shadows only on raised items (search box, dialogs, hover)."
+        title={t('Spacing & shape')}
+        intro={t(
+          '8px spacing system. Radius 8 / 12 / 16px by size. Subtle 1px borders; shadows only on raised items (search box, dialogs, hover).',
+        )}
       >
         <div className="panel stack-sm panel-top">
           {SPACING.map((size) => (
             <div className="spacing-row" key={size}>
-              <span className="num spacing-label">{size}px</span>
+              <span className="num spacing-label">
+                {tNode(size)}
+                {t('px')}
+              </span>
               <span className="bar" style={{ width: size * 3 }} />
             </div>
           ))}
@@ -421,128 +443,141 @@ export function DesignSystemPage() {
 
       <Section
         id="ds-buttons"
-        title="Buttons"
-        intro="Minimum height 44px for touch. One primary action per area. Labels say what happens."
+        title={t('Buttons')}
+        intro={t(
+          'Minimum height 44px for touch. One primary action per area. Labels say what happens.',
+        )}
       >
         <div className="panel row panel-top">
-          <Button icon="search">Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
+          <Button icon="search">{t('Primary')}</Button>
+          <Button variant="secondary">{t('Secondary')}</Button>
+          <Button variant="outline">{t('Outline')}</Button>
+          <Button variant="ghost">{t('Ghost')}</Button>
           <Button variant="success" icon="check">
-            Approve
+            {t('Approve')}
           </Button>
           <Button variant="danger-outline" icon="trash">
-            Delete
+            {t('Delete')}
           </Button>
-          <Button variant="danger">Confirm delete</Button>
-          <Button disabled>Disabled</Button>
+          <Button variant="danger">{t('Confirm delete')}</Button>
+          <Button disabled>{t('Disabled')}</Button>
           <Button variant="secondary" size="sm">
-            Small
+            {t('Small')}
           </Button>
-          <Button size="lg">Large</Button>
+          <Button size="lg">{t('Large')}</Button>
         </div>
         <p className="t-help panel-top">
-          Press Tab to see the focus ring: a 2px blue outline with a white gap.
+          {t('Press Tab to see the focus ring: a 2px blue outline with a white gap.')}
         </p>
       </Section>
 
-      <Section id="ds-inputs" title="Inputs">
+      <Section id="ds-inputs" title={t('Inputs')}>
         <InputsDemo />
       </Section>
 
       <Section
         id="ds-choices"
-        title="Choice chips & cards"
-        intro='Used instead of dropdowns and typing. The picked option is solid blue with a tick, and each group repeats the choice as "Selected: ...".'
+        title={t('Choice chips & cards')}
+        intro={t(
+          'Used instead of dropdowns and typing. The picked option is solid blue with a tick, and each group repeats the choice as "Selected: ...".',
+        )}
       >
         <ChoicesDemo />
       </Section>
 
-      <Section id="ds-way" title="Wayfinding & audio">
+      <Section id="ds-way" title={t('Wayfinding & audio')}>
         <ul>
           <li>
-            <b>Active navigation item</b> is filled blue, so the current section is clear.
+            <b>{t('Active navigation item')}</b>{' '}
+            {t('is filled blue, so the current section is clear.')}
           </li>
           <li>
-            <b>Quick find</b> (Ctrl + K) searches pages, neighbourhoods and rooms.
+            <b>{t('Quick find')}</b> {t('(Ctrl + K) searches pages, neighbourhoods and rooms.')}
           </li>
           <li>
-            <b>On this page</b> chips on long pages; the current section is shown in dark.
+            <b>{t('On this page')}</b>{' '}
+            {t('chips on long pages; the current section is shown in dark.')}
           </li>
           <li>
-            <b>Listen and display</b> are in the header on public pages and in a dock at the bottom
-            left of workspace pages; the part being read aloud gets a yellow outline.
+            <b>{t('Listen and display')}</b>{' '}
+            {t(
+              'are in the header on public pages and in a dock at the bottom left of workspace pages; the part being read aloud gets a yellow outline.',
+            )}
           </li>
         </ul>
       </Section>
 
       <Section
         id="ds-status"
-        title="Status indicators"
-        intro="Room availability and admin approval are always shown as two separate badges."
+        title={t('Status indicators')}
+        intro={t('Room availability and admin approval are always shown as two separate badges.')}
       >
         <div className="panel row panel-top">
           <AvailabilityBadge availability="AVAILABLE" />
           <AvailabilityBadge availability="OCCUPIED" />
-          <ReviewBadge status="APPROVED" />
           <ReviewBadge status="PENDING" />
           <ReviewBadge status="CHANGES_REQUESTED" />
           <ReviewBadge status="REJECTED" />
           <ReviewBadge status="REMOVED" />
           <span className={badgeClass('new')}>
             <span className="dot" aria-hidden="true" />
-            New
+            {t('New')}
           </span>
-          <Badge tone="demo">Demonstration data</Badge>
+          <Badge tone="demo">{t('Demonstration data')}</Badge>
         </div>
       </Section>
 
-      <Section id="ds-cards" title="Cards">
+      <Section id="ds-cards" title={t('Cards')}>
         <CardsDemo />
       </Section>
 
-      <Section id="ds-nav" title="Navigation">
+      <Section id="ds-nav" title={t('Navigation')}>
         <ul>
           <li>
-            <b>Students &amp; guests:</b> top header with Find Housing, Saved, Compare, Recently
-            viewed, Dashboard. On mobile it collapses into a menu.
+            <b>{t('Students & guests:')}</b>{' '}
+            {t(
+              'top header with Find Housing, Saved, Compare, Recently viewed, Dashboard. On mobile it collapses into a menu.',
+            )}
           </li>
           <li>
-            <b>Landlords &amp; administrators:</b> left sidebar with counts for items that need
-            action. On mobile it becomes a scrollable tab row.
+            <b>{t('Landlords & administrators:')}</b>{' '}
+            {t(
+              'left sidebar with counts for items that need action. On mobile it becomes a scrollable tab row.',
+            )}
           </li>
-          <li>Breadcrumbs and Back links on detail pages.</li>
+          <li>{t('Breadcrumbs and Back links on detail pages.')}</li>
         </ul>
       </Section>
 
-      <Section id="ds-feedback" title="Feedback">
+      <Section id="ds-feedback" title={t('Feedback')}>
         <FeedbackDemo />
       </Section>
 
       <Section
         id="ds-states"
-        title="Page states"
-        intro="Every data view has loading, empty, error and success states."
+        title={t('Page states')}
+        intro={t('Every data view has loading, empty, error and success states.')}
       >
         <div className="stack panel-top">
           <SkeletonCards count={2} />
           <EmptyState
-            title="No rooms match your filters"
-            text="Try a higher budget or a wider distance."
-            actions={<Button variant="secondary">Clear all filters</Button>}
+            title={t('No rooms match your filters')}
+            text={t('Try a higher budget or a wider distance.')}
+            actions={<Button variant="secondary">{t('Clear all filters')}</Button>}
           />
           <ErrorState
-            title="We could not load this page"
-            text="Check your connection and try again."
-            actions={<Button icon="refresh">Try again</Button>}
+            title={t('We could not load this page')}
+            text={t('Check your connection and try again.')}
+            actions={<Button icon="refresh">{t('Try again')}</Button>}
           />
           <SuccessState
-            title="Listing submitted"
-            text="An administrator will review it. You will get a notification with the result."
+            title={t('Listing submitted')}
+            text={t(
+              'An administrator will review it. You will get a notification with the result.',
+            )}
             actions={
               <Link className={buttonClass({ variant: 'secondary' })} to="/">
-                Go to home <Icon name="chevR" />
+                {t('Go to home')} <Icon name="chevR" />
               </Link>
             }
           />

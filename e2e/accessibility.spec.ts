@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { logIn } from './helpers';
 
 const PUBLIC_PAGES = [
   ['/', 'Find Your Next Home Near UR-CST'],
@@ -13,6 +14,9 @@ const PUBLIC_PAGES = [
   ['/saved', 'Saved properties'],
   ['/compare', 'Compare properties'],
   ['/history', 'Recently viewed & search history'],
+  ['/help', 'Help & support'],
+  ['/states', 'System states'],
+  ['/notifications', 'Log in to see your notifications'],
 ] as const;
 
 async function pageIsReady(page: Page) {
@@ -96,7 +100,7 @@ test.describe('display preferences', () => {
 
   test('workspace pages use them too', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('button', { name: /Demo Administrator/ }).click();
+    await logIn(page, 'admin@demo.ur');
     await expect(page).toHaveURL(/\/admin$/);
 
     await page.getByRole('button', { name: 'Display', exact: true }).click();
@@ -105,7 +109,7 @@ test.describe('display preferences', () => {
     await page.goto('/admin/users');
 
     await expect(page.locator('html')).toHaveClass(/dark/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Users' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'User management' })).toBeVisible();
   });
 });
 
@@ -259,7 +263,7 @@ test.describe('accessibility scan', () => {
 
   test('the landlord workspace has no serious problems', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('button', { name: /Demo Landlord A/ }).click();
+    await logIn(page, 'landlord@demo.ur');
     await expect(page).toHaveURL(/\/landlord$/);
     await pageIsReady(page);
     expect(await seriousProblems(page)).toEqual([]);
@@ -269,6 +273,8 @@ test.describe('accessibility scan', () => {
       '/landlord/properties/new',
       '/landlord/inquiries',
       '/landlord/account',
+      '/notifications',
+      '/help',
     ]) {
       await page.goto(path);
       await pageIsReady(page);
@@ -277,17 +283,54 @@ test.describe('accessibility scan', () => {
     }
   });
 
+  test('the admin workspace has no serious problems', async ({ page }) => {
+    await page.goto('/login');
+    await logIn(page, 'admin@demo.ur');
+    await expect(page).toHaveURL(/\/admin$/);
+
+    for (const path of [
+      '/admin',
+      '/admin/review',
+      '/admin/review?status=APPROVED',
+      '/admin/review/p1',
+      '/admin/users',
+      '/admin/reports',
+      '/admin/locations',
+      '/notifications',
+    ]) {
+      await page.goto(path);
+      await pageIsReady(page);
+      await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+      expect(await seriousProblems(page), path).toEqual([]);
+    }
+
+    await page.goto('/admin/reports');
+    await page
+      .getByRole('button', { name: /^Resolve the report/ })
+      .first()
+      .click();
+    await expect(page.getByRole('alertdialog')).toBeVisible();
+    expect(await seriousProblems(page), 'resolve dialog').toEqual([]);
+  });
+
   test('the student pages have no serious problems', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('button', { name: /Demo Student/ }).click();
+    await logIn(page, 'student@demo.ur');
     await expect(page).toHaveURL(/\/student$/);
 
-    for (const path of ['/student', '/account', '/saved', '/history']) {
+    for (const path of ['/student', '/account', '/saved', '/history', '/notifications', '/help']) {
       await page.goto(path);
       await pageIsReady(page);
       await page.waitForLoadState('networkidle');
       expect(await seriousProblems(page)).toEqual([]);
     }
+
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /^Notifications/ })
+      .click();
+    await expect(page.getByRole('group', { name: 'Notifications' })).toBeVisible();
+    expect(await seriousProblems(page), 'notifications menu').toEqual([]);
 
     // The table only appears with two properties in compare.
     await page.goto('/search');

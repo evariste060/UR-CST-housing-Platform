@@ -91,7 +91,7 @@ html.hl main h1[tabindex='-1']:focus {
 }
 .qf-item:hover,
 .qf-item:focus {
-  @apply bg-(--blue-50) [outline:none] [box-shadow:inset_4px_0_0_var(--blue)];
+  @apply bg-(--slate-100) text-(--blue) [outline:none] [box-shadow:none];
 }
 
 /* Dock, drawer, reader */
@@ -211,15 +211,12 @@ body.reading-on .compare-tray {
   }
 }
 html.dark .count-pill {
-  @apply bg-[#2563eb] [border-color:#2563eb];
+  @apply bg-(--blue) [border-color:var(--blue)];
 }
 html.dark .map {
   @apply [filter:brightness(0.85)];
 }
 html.dark .dp-preview,
-html.dark .drop {
-  @apply bg-(--surface);
-}
 html.dark .reading {
   @apply bg-[#3a3108]!;
 }

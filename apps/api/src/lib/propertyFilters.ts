@@ -1,5 +1,13 @@
 import type { Prisma } from '@prisma/client';
-import type { PropertyQuery, PropertySort } from '@urcst/shared';
+import {
+  FILTER_BUDGETS,
+  FILTER_DISTANCES,
+  roomTypeSchema,
+  type FilterCounts,
+  type PropertyQuery,
+  type PropertySort,
+} from '@urcst/shared';
+import { prisma } from '../db';
 import { PUBLIC_LISTING } from './propertyDto';
 
 export function propertyWhere(query: PropertyQuery): Prisma.PropertyWhereInput {
@@ -37,3 +45,57 @@ const ORDER: Record<PropertySort, Prisma.PropertyOrderByWithRelationInput[]> = {
 };
 
 export const propertyOrder = (sort: PropertySort) => ORDER[sort];
+
+type Option = [key: string, change: Partial<PropertyQuery>];
+
+/**
+ * Counts what each filter option would show alongside the visitor's other choices. Each one runs
+ * through propertyWhere, so a count can never disagree with the results.
+ */
+export async function filterCounts(query: PropertyQuery, areas: string[]): Promise<FilterCounts> {
+  async function tally(options: Option[]) {
+    const counts = await Promise.all(
+      options.map(([, change]) =>
+        prisma.property.count({ where: propertyWhere({ ...query, ...change }) }),
+      ),
+    );
+    return Object.fromEntries(options.map(([key], index) => [key, counts[index] as number]));
+  }
+
+  const noBudget = { minRent: undefined, maxRent: undefined };
+  const [areaCounts, budgets, distances, types, layouts, facilities, rooms, availability] =
+    await Promise.all([
+      tally([['', { q: '' }], ...areas.map((q): Option => [q, { q }])]),
+      tally([
+        ['any', noBudget],
+        ...FILTER_BUDGETS.map((maxRent): Option => [String(maxRent), { ...noBudget, maxRent }]),
+      ]),
+      tally([
+        ['any', { maxDistance: undefined }],
+        ...FILTER_DISTANCES.map((maxDistance): Option => [String(maxDistance), { maxDistance }]),
+      ]),
+      tally(roomTypeSchema.options.map((type): Option => [type, { types: [type] }])),
+      tally([
+        ['any', { layout: 'any' }],
+        ['self', { layout: 'self' }],
+        ['shared', { layout: 'shared' }],
+      ]),
+      tally([
+        ['water', { water: true }],
+        ['electricity', { electricity: true }],
+        ['privateBath', { privateBath: true }],
+        ['security', { security: true }],
+      ]),
+      tally([
+        ['any', { rooms: 'any' }],
+        ['1', { rooms: '1' }],
+        ['2', { rooms: '2' }],
+      ]),
+      tally([
+        ['all', { availableOnly: false }],
+        ['available', { availableOnly: true }],
+      ]),
+    ]);
+
+  return { areas: areaCounts, budgets, distances, types, layouts, facilities, rooms, availability };
+}

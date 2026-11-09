@@ -2,6 +2,7 @@ import { useId, useRef, type MouseEvent, type ReactNode } from 'react';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 export type ModalTone = 'primary' | 'danger' | 'success';
 
@@ -37,7 +38,7 @@ export function Modal({
     if (event.target === event.currentTarget) onClose();
   }
 
-  const iconTone = { primary: '', danger: ' danger', success: ' ok' }[tone];
+  const iconTone = { primary: '', danger: 'danger', success: 'ok' }[tone];
 
   return (
     // The backdrop is a mouse shortcut. Keyboard users have Esc and the Close button.
@@ -51,16 +52,21 @@ export function Modal({
         aria-labelledby={titleId}
       >
         <div className="mh">
-          <div className={`m-ic${iconTone}`}>
+          <div className={`m-ic ${iconTone}`}>
             <Icon name={icon} />
           </div>
-          <h2 id={titleId}>{title}</h2>
-          <button type="button" className="icon-btn" aria-label="Close dialog" onClick={onClose}>
+          <h2 id={titleId}>{tNode(title)}</h2>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={t('Close dialog')}
+            onClick={onClose}
+          >
             <Icon name="x" />
           </button>
         </div>
         <div className="mb">{children}</div>
-        <div className="mf">{footer}</div>
+        <div className="mf">{tNode(footer)}</div>
       </div>
     </div>
   );
@@ -86,8 +92,8 @@ const INFO: Record<InfoTopic, { title: string; body: string }> = {
 export function InfoDialog({ topic, onClose }: { topic: InfoTopic; onClose: () => void }) {
   const { title, body } = INFO[topic];
   return (
-    <Modal title={title} onClose={onClose} footer={<Button onClick={onClose}>Close</Button>}>
-      <p>{body}</p>
+    <Modal title={title} onClose={onClose} footer={<Button onClick={onClose}>{t('Close')}</Button>}>
+      <p>{tNode(body)}</p>
     </Modal>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, type ComponentProps } from 'react';
 import { Field } from './Field';
 import { Icon } from './Icon';
+import { t } from '../i18n';
 
 type PasswordFieldProps = Omit<ComponentProps<typeof Field>, 'type' | 'trailing'>;
 
@@ -15,7 +16,7 @@ export function PasswordField(props: PasswordFieldProps) {
         <button
           type="button"
           className="icon-btn"
-          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-label={visible ? t('Hide password') : t('Show password')}
           aria-pressed={visible}
           onClick={() => setVisible(!visible)}
         >

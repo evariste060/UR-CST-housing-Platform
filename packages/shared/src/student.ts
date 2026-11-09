@@ -71,3 +71,8 @@ export interface StudentInquiry {
   replied: boolean;
   createdAt: string;
 }
+
+export interface StudentInquiryThread extends StudentInquiry {
+  landlord: string;
+  messages: { id: string; body: string; fromLandlord: boolean; createdAt: string }[];
+}

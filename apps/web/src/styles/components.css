@@ -18,7 +18,7 @@
   @apply [border-radius:var(--r-lg)] overflow-hidden flex flex-col [transition:box-shadow_0.15s,_border-color_0.15s];
 }
 .pcard:hover {
-  @apply [box-shadow:var(--shadow-lg)] [border-color:var(--line-strong)];
+  @apply [box-shadow:var(--shadow-lg)];
 }
 .pcard .media {
   @apply relative [aspect-ratio:16_/_10] bg-(--slate-100);
@@ -281,9 +281,6 @@ input[type='range'] {
 }
 .auth-form {
   @apply mt-[20px];
-}
-.auth-demo-help {
-  @apply mt-[12px];
 }
 .auth-role-help {
   @apply mt-[16px];

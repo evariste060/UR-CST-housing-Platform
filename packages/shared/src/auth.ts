@@ -22,6 +22,9 @@ const email = requiredText('Please enter your email address.')
   .regex(EMAIL_PATTERN, 'Enter a valid email address.')
   .toLowerCase();
 
+/** For other forms that ask for a name and email, such as Contact support. */
+export { email as emailSchema, fullName as fullNameSchema };
+
 function newPassword(emptyMessage: string, shortMessage: string) {
   return z
     .string({ error: emptyMessage })

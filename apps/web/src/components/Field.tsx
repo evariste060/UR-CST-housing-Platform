@@ -5,6 +5,7 @@ import type {
   ReactNode,
 } from 'react';
 import { Icon } from './Icon';
+import { tNode } from '../i18n';
 
 interface FieldProps {
   id: string;
@@ -75,7 +76,7 @@ export function Field({
   return (
     <div className={error ? 'field has-error' : 'field'}>
       <label htmlFor={id}>
-        {label}
+        {tNode(label)}
         {required && (
           <>
             {' '}
@@ -87,8 +88,8 @@ export function Field({
       </label>
       {trailing ? (
         <div className="input-wrap">
-          {input}
-          {trailing}
+          {tNode(input)}
+          {tNode(trailing)}
         </div>
       ) : (
         input
@@ -96,12 +97,12 @@ export function Field({
       {error ? (
         <p className="err-msg" id={`${id}-err`}>
           <Icon name="alert" />
-          {error}
+          {tNode(error)}
         </p>
       ) : (
         help && (
           <p className="t-help" id={`${id}-help`}>
-            {help}
+            {tNode(help)}
           </p>
         )
       )}

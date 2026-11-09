@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { LANDLORD_KEY, listingKey } from './queries';
 import { forgetDraftId } from './useDraft';
+import { t, tNode } from '../i18n';
 
 interface SubmitButtonProps {
   id: string;
@@ -70,13 +71,15 @@ export function SubmitButton({
   return (
     <>
       <Button size={size} icon="send" disabled={busy} onClick={() => void ask()}>
-        {label}
+        {tNode(label)}
       </Button>
       {confirming && (
         <ConfirmDialog
-          title="Submit this listing for review?"
-          body="An administrator will check it before students can see it. You can still edit it while it is pending."
-          confirm="Submit Listing"
+          title={t('Submit this listing for review?')}
+          body={t(
+            'An administrator will check it before students can see it. You can still edit it while it is pending.',
+          )}
+          confirm={t('Submit Listing')}
           icon="send"
           onCancel={() => setConfirming(false)}
           onConfirm={() => void submit()}

@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 export interface ReadChunk {
   /** The block outlined while it is read. */
   element: HTMLElement | null;
@@ -10,10 +12,10 @@ const READ_SELECTOR =
 /** Rewrites text so the voice says "Rwandan francs" and "kilometres" instead of spelling them. */
 export function speakable(text: string): string {
   return text
-    .replace(/\bRWF\b/g, 'Rwandan francs')
-    .replace(/(\d)\s?km\b/g, '$1 kilometres')
+    .replace(/\bRWF\b/g, t('Rwandan francs'))
+    .replace(/(\d)\s?km\b/g, `$1 ${t('kilometres')}`)
     .replace(/UR-CST/g, 'U.R. C.S.T.')
-    .replace(/\/\s?month/g, 'per month')
+    .replace(/\/\s?month/g, t('per month'))
     .replace(/[·•›]/g, ', ')
     .replace(/Ctrl K/g, '')
     .replace(/\s+/g, ' ')

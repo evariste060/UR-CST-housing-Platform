@@ -1,15 +1,16 @@
 import type { Availability, ReviewStatus } from '@urcst/shared';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 export type { Availability, ReviewStatus };
 
 const TONES = {
   available: 'border-[#a7e3bc] bg-green-50 text-green-text dark:border-[#1f5a37]',
+  approved: 'border-blue-100 bg-blue-50 text-blue-700 dark:border-[#2a4a86]',
   occupied: 'border-line-strong bg-slate-100 text-[#334155] dark:text-ink',
   pending: 'border-amber-border bg-amber-50 text-amber-text',
   changes: 'border-amber-border bg-amber-50 text-amber-text',
-  approved: 'border-blue-100 bg-blue-50 text-blue-700 dark:border-[#2a4a86]',
   new: 'border-blue-100 bg-blue-50 text-blue-700 dark:border-[#2a4a86]',
   rejected: 'border-red-border bg-red-50 text-red-text',
   removed: 'border-red-border bg-red-50 text-red-text',
@@ -43,33 +44,38 @@ export function Badge({
   );
 }
 
-/** Set by the landlord. Always shown apart from ReviewBadge, which an administrator sets. */
+/** Set by the landlord. Shown apart from ReviewBadge, which an administrator sets. */
 export function AvailabilityBadge({ availability }: { availability: Availability }) {
   return availability === 'AVAILABLE' ? (
     <Badge tone="available" icon="check">
-      Available
+      {t('Available')}
     </Badge>
   ) : (
     <Badge tone="occupied" icon="door">
-      Occupied
+      {t('Occupied')}
     </Badge>
   );
 }
 
-const REVIEW: Record<ReviewStatus, { tone: BadgeTone; icon: IconName; label: string }> = {
+const REVIEW: Record<
+  Exclude<ReviewStatus, 'APPROVED'>,
+  { tone: BadgeTone; icon: IconName; label: string }
+> = {
   DRAFT: { tone: 'neutral', icon: 'edit', label: 'Draft' },
-  APPROVED: { tone: 'approved', icon: 'shieldcheck', label: 'Approved by admin' },
   PENDING: { tone: 'pending', icon: 'clock', label: 'Pending review' },
   CHANGES_REQUESTED: { tone: 'changes', icon: 'edit', label: 'Changes requested' },
   REJECTED: { tone: 'rejected', icon: 'x', label: 'Rejected' },
   REMOVED: { tone: 'removed', icon: 'trash', label: 'Removed by admin' },
 };
 
+/** An approved listing shows no review badge. */
 export function ReviewBadge({ status }: { status: ReviewStatus }) {
+  if (status === 'APPROVED') return null;
+
   const { tone, icon, label } = REVIEW[status];
   return (
     <Badge tone={tone} icon={icon}>
-      {label}
+      {tNode(label)}
     </Badge>
   );
 }

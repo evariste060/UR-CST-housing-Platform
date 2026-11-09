@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { useRovingRadio } from '../lib/useRovingRadio';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 export interface PickOption<T extends string> {
   value: T;
@@ -46,11 +47,11 @@ export function PickGroup<T extends string>({
       <div className="pick-head">
         <span className="t-label" id={labelId}>
           {step !== undefined && <span className="pick-n">{step}</span>}
-          {label}
+          {tNode(label)}
         </span>
         <span className="picked" aria-live="polite">
           {selected && <Icon name="check" />}
-          Selected: <b>{selected ? selected.label : none}</b>
+          {t('Selected:')} <b>{selected ? selected.label : none}</b>
         </span>
       </div>
       <div className="chipset" role="radiogroup" aria-labelledby={labelId}>
@@ -60,7 +61,7 @@ export function PickGroup<T extends string>({
           return (
             <button key={option.value} className="pchip" {...radio(option.value)}>
               {icon && <Icon name={icon} />}
-              {option.label}
+              {tNode(option.label)}
             </button>
           );
         })}
@@ -68,7 +69,7 @@ export function PickGroup<T extends string>({
       {error && (
         <p className="err-msg">
           <Icon name="alert" />
-          {error}
+          {tNode(error)}
         </p>
       )}
     </div>
@@ -91,7 +92,7 @@ export function ToggleChip({
   return (
     <button type="button" className="pchip sm" aria-pressed={pressed} onClick={onToggle}>
       {shown && <Icon name={shown} />}
-      {label}
+      {tNode(label)}
     </button>
   );
 }

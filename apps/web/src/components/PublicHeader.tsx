@@ -22,9 +22,11 @@ import {
   useListProperty,
 } from './HeaderMenus';
 import { Icon, type IconName } from './Icon';
+import { NotificationBell } from './NotificationBell';
 import { useToast } from './Toast';
+import { t, tNode } from '../i18n';
 
-type MenuName = 'find' | 'landlords' | 'text' | 'lang';
+type MenuName = 'find' | 'landlords' | 'text' | 'lang' | 'notifications';
 
 const FIND_PATHS = ['/search', '/properties'];
 
@@ -32,12 +34,12 @@ function CountPill({ count }: { count?: number }) {
   return count ? <span className="count-pill">{count}</span> : null;
 }
 
-/** One item in the main navigation. The current page gets a blue border. */
+/** One item in the main navigation. The current page gets blue text. */
 function navItemClass(current: boolean) {
   const base =
     'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[10px] border-2 bg-transparent px-3 py-1.5 text-[0.9375rem] font-normal no-underline transition-colors duration-150 hover:bg-blue-100 aria-expanded:bg-blue-100 [&_.ic]:size-5';
   return current
-    ? `${base} border-blue text-blue hover:text-blue-700 aria-expanded:text-blue-700`
+    ? `${base} border-transparent text-blue hover:text-blue-700 aria-expanded:text-blue-700`
     : `${base} border-transparent text-ink`;
 }
 
@@ -57,7 +59,7 @@ function NavItem({
   return (
     <NavLink to={to} end={end} className={({ isActive }) => navItemClass(isActive)}>
       <Icon name={icon} />
-      {label}
+      {tNode(label)}
       <CountPill count={count} />
     </NavLink>
   );
@@ -77,7 +79,7 @@ function SheetLink({
   return (
     <NavLink to={to} end>
       <Icon name={icon} />
-      {label}
+      {tNode(label)}
       <CountPill count={count} />
     </NavLink>
   );
@@ -104,32 +106,37 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
     // The backdrop is a mouse shortcut. Keyboard users have Esc and the Close button.
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className="mobile-nav" id="mnav" onClick={closeOnBackdrop}>
-      <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+      <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label={t('Menu')}>
         <div className="row-between sheet-head">
           <span className="logo">
             <span className="logo-mark2">
               <Icon name="logoHouse" />
             </span>
-            <span>UR-CST Housing</span>
+            <span>{t('UR-CST Housing')}</span>
           </span>
-          <button type="button" className="icon-btn" aria-label="Close menu" onClick={onClose}>
+          <button type="button" className="icon-btn" aria-label={t('Close menu')} onClick={onClose}>
             <Icon name="x" />
           </button>
         </div>
-        <SheetLink to="/" icon="home" label="Home" />
-        <SheetLink to="/search" icon="search" label="Find Housing" />
-        <SheetLink to="/saved" icon="heart" label="Saved Properties" count={saved.ids.length} />
-        <SheetLink to="/compare" icon="layers" label="Compare" count={compare.ids.length} />
+        <SheetLink to="/" icon="home" label={t('Home')} />
+        <SheetLink to="/search" icon="search" label={t('Find Housing')} />
+        <SheetLink
+          to="/saved"
+          icon="heart"
+          label={t('Saved Properties')}
+          count={saved.ids.length}
+        />
+        <SheetLink to="/compare" icon="layers" label={t('Compare')} count={compare.ids.length} />
         {isStudent ? (
           <>
-            <SheetLink to="/history" icon="clock" label="Recently Viewed" />
-            <SheetLink to="/student" icon="dash" label="My Dashboard" />
-            <SheetLink to="/account" icon="user" label="Account & preferences" />
+            <SheetLink to="/history" icon="clock" label={t('Recently Viewed')} />
+            <SheetLink to="/student" icon="dash" label={t('My Dashboard')} />
+            <SheetLink to="/account" icon="user" label={t('Account & preferences')} />
           </>
         ) : (
-          <SheetLink to="/how-it-works" icon="info" label="How It Works" />
+          <SheetLink to="/how-it-works" icon="info" label={t('How It Works')} />
         )}
-        <SheetLink to="/help" icon="help" label="Support" />
+        <SheetLink to="/help" icon="help" label={t('Support')} />
         <button
           type="button"
           className="nav-link"
@@ -139,7 +146,7 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
           }}
         >
           <Icon name="text" />
-          Text, font &amp; display
+          {t('Text, font & display')}
         </button>
         <button
           type="button"
@@ -147,14 +154,16 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
           onClick={() => setPref('theme', dark ? 'light' : 'dark')}
         >
           <Icon name={dark ? 'sun' : 'moon'} />
-          {dark ? 'Light mode' : 'Dark mode'}
+          {dark ? t('Light mode') : t('Dark mode')}
         </button>
         {user ? (
           <>
-            {!isStudent && <SheetLink to={ROLE_HOME[user.role]} icon="dash" label="My workspace" />}
+            {!isStudent && (
+              <SheetLink to={ROLE_HOME[user.role]} icon="dash" label={t('My workspace')} />
+            )}
             <button type="button" className="nav-link" onClick={logOut}>
               <Icon name="logout" />
-              Log out
+              {t('Log out')}
             </button>
           </>
         ) : (
@@ -168,14 +177,14 @@ function MobileSheet({ onClose }: { onClose: () => void }) {
               }}
             >
               <Icon name="building" />
-              For Landlords: list a property
+              {t('For Landlords: list a property')}
             </button>
             <hr className="divider" />
             <Link className={buttonClass({ variant: 'secondary', block: true })} to="/login">
-              Login
+              {t('Login')}
             </Link>
             <Link className={`${buttonClass({ block: true })} sheet-signup`} to="/register">
-              Sign Up
+              {t('Sign Up')}
             </Link>
           </>
         )}
@@ -240,59 +249,66 @@ export function PublicHeader() {
             <span className="logo-mark2">
               <Icon name="logoHouse" />
             </span>
-            <span>
-              UR-CST Housing
-              <small>Student Accommodation Platform</small>
-            </span>
+            <span>{t('UR-CST Housing')}</span>
           </Link>
-          <form className="hsearch" role="search" onSubmit={(event) => void submitSearch(event)}>
-            <div className="input-icon">
-              <Icon name="search" />
+          <form
+            className="hsearch h-11 rounded-sm border border-line-strong bg-card has-[input:focus]:border-blue high-contrast:border-2"
+            role="search"
+            onSubmit={(event) => void submitSearch(event)}
+          >
+            <div className="relative min-w-0 flex-1">
               <label htmlFor="hs-q" className="sr-only">
-                Search accommodation
+                {t('Search accommodation')}
               </label>
+              <span className="pointer-events-none absolute top-1/2 left-[22px] grid -translate-y-1/2 text-subtle max-tablet:left-3.5 [&>.ic]:size-[22px]">
+                <Icon name="search" />
+              </span>
               <input
-                className="input"
+                className="size-full min-w-0 rounded-l-[7px] rounded-r-none border-0 bg-card pr-3 pl-16 text-md text-ellipsis text-ink placeholder:text-muted focus:shadow-none focus:outline-none max-tablet:pl-11 max-tablet:text-base"
                 id="hs-q"
                 value={search}
-                placeholder="Search accommodation (e.g., Kiyovu, single room, under 100,000 RWF)"
+                placeholder={t('Kiyovu, Single room, Apartment, 80000.... ')}
                 autoComplete="off"
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
-            <button className={`${buttonClass()} px-5!`} type="submit">
-              Search
+            <button
+              type="submit"
+              className="grid w-14 flex-none cursor-pointer place-items-center rounded-l-none rounded-r-[7px] border-0 bg-blue text-white hover:bg-blue-700 max-tablet:w-16 dark:bg-blue dark:hover:bg-blue/85 [&>.ic]:size-6"
+              aria-label={t('Search')}
+            >
+              <Icon name="search" />
             </button>
           </form>
           <div className="hctl">
             <button
               type="button"
               className="tool-btn"
-              aria-label={dark ? 'Light Mode' : 'Dark Mode'}
-              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={dark ? t('Light Mode') : t('Dark Mode')}
+              title={dark ? t('Switch to light mode') : t('Switch to dark mode')}
               onClick={() => setPref('theme', dark ? 'light' : 'dark')}
             >
               <Icon name={dark ? 'sun' : 'moon'} />
-              <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
+              <span>{dark ? t('Light Mode') : t('Dark Mode')}</span>
             </button>
             <button
               type="button"
               className="tool-btn"
-              aria-label="Listen"
-              title="Read this page aloud"
+              aria-label={t('Listen')}
+              title={t('Read this page aloud')}
               onClick={() => reader.start(pageLabel(pathname, user?.role))}
             >
               <Icon name="volume" />
-              <span>Listen</span>
+              <span>{t('Listen')}</span>
             </button>
             <div className="hide-m">
               <HeaderMenu
                 id="text"
-                label="Text options"
+                label={t('Text options')}
                 buttonClass="drop-btn"
                 button={
                   <>
-                    <b className="aa">Aa</b> Text
+                    <b className="aa">{t('Aa')}</b> {t('Text')}
                     <Icon name="chevD" />
                   </>
                 }
@@ -304,11 +320,11 @@ export function PublicHeader() {
             <div className="hide-m">
               <HeaderMenu
                 id="lang"
-                label="Language"
+                label={t('Language')}
                 buttonClass="drop-btn"
                 button={
                   <>
-                    <Icon name="globe" /> Language
+                    <Icon name="globe" /> {t('Language')}
                     <Icon name="chevD" />
                   </>
                 }
@@ -317,6 +333,11 @@ export function PublicHeader() {
                 <LanguageMenuItems onDone={closeMenu} />
               </HeaderMenu>
             </div>
+            {user && (
+              <div className="max-[359px]:hidden">
+                <NotificationBell buttonClass="icon-btn" {...menuProps('notifications')} />
+              </div>
+            )}
             {user && home ? (
               <Link className={`${buttonClass({ variant: 'secondary' })} hide-m`} to={home}>
                 <Icon name="user" />
@@ -325,17 +346,17 @@ export function PublicHeader() {
             ) : (
               <>
                 <Link className={`${buttonClass({ variant: 'outline' })} hide-m`} to="/login">
-                  Login
+                  {t('Login')}
                 </Link>
                 <Link className={`${buttonClass()} hide-m`} to="/register">
-                  Sign Up
+                  {t('Sign Up')}
                 </Link>
               </>
             )}
             <button
               type="button"
               className="icon-btn qf-m"
-              aria-label="Quick find"
+              aria-label={t('Quick find')}
               onClick={() => setQuickFindOpen(true)}
             >
               <Icon name="search" />
@@ -345,7 +366,7 @@ export function PublicHeader() {
               className="icon-btn menu-btn"
               aria-expanded={sheetOpen}
               aria-controls="mnav"
-              aria-label="Open menu"
+              aria-label={t('Open menu')}
               onClick={() => setSheetPath(pathname)}
             >
               <Icon name="menu" />
@@ -357,18 +378,18 @@ export function PublicHeader() {
         <div className="in">
           <nav
             className="flex flex-wrap items-center gap-1.5 max-tablet:hidden [&_.hmenu]:right-auto [&_.hmenu]:left-0"
-            aria-label="Main"
+            aria-label={t('Main')}
           >
-            <NavItem to="/" end icon="home" label="Home" />
+            <NavItem to="/" end icon="home" label={t('Home')} />
             <HeaderMenu
               id="find"
-              label="Find Housing"
+              label={t('Find Housing')}
               buttonClass={navItemClass(findCurrent)}
               openOnHover
               button={
                 <>
                   <Icon name="search" />
-                  Find Housing
+                  {t('Find Housing')}
                   <Icon name="chevD" />
                 </>
               }
@@ -376,28 +397,33 @@ export function PublicHeader() {
             >
               <FindMenuItems onDone={closeMenu} />
             </HeaderMenu>
-            <NavItem to="/saved" icon="heart" label="Saved Properties" count={saved.ids.length} />
-            <NavItem to="/compare" icon="layers" label="Compare" count={compare.ids.length} />
+            <NavItem
+              to="/saved"
+              icon="heart"
+              label={t('Saved Properties')}
+              count={saved.ids.length}
+            />
+            <NavItem to="/compare" icon="layers" label={t('Compare')} count={compare.ids.length} />
             {isStudent ? (
               <>
-                <NavItem to="/history" icon="clock" label="Recently Viewed" />
-                <NavItem to="/student" icon="dash" label="My Dashboard" />
+                <NavItem to="/history" icon="clock" label={t('Recently Viewed')} />
+                <NavItem to="/student" icon="dash" label={t('My Dashboard')} />
               </>
             ) : (
               <>
-                <NavItem to="/how-it-works" icon="info" label="How It Works" />
+                <NavItem to="/how-it-works" icon="info" label={t('How It Works')} />
                 {user ? (
-                  <NavItem to={ROLE_HOME[user.role]} icon="dash" label="My Workspace" />
+                  <NavItem to={ROLE_HOME[user.role]} icon="dash" label={t('My Workspace')} />
                 ) : (
                   <HeaderMenu
                     id="landlords"
-                    label="For landlords"
+                    label={t('For landlords')}
                     buttonClass={navItemClass(false)}
                     openOnHover
                     button={
                       <>
                         <Icon name="building" />
-                        For Landlords
+                        {t('For Landlords')}
                         <Icon name="chevD" />
                       </>
                     }
@@ -408,7 +434,7 @@ export function PublicHeader() {
                 )}
               </>
             )}
-            <NavItem to="/help" icon="help" label="Support" />
+            <NavItem to="/help" icon="help" label={t('Support')} />
           </nav>
         </div>
       </div>

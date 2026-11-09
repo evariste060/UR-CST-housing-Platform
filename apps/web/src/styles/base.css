@@ -2,6 +2,10 @@
 html {
   @apply text-[100%];
 }
+/* Chosen by the person, never the default: body text becomes 15px. */
+html.small-text {
+  @apply text-[93.75%];
+}
 html.large-text {
   @apply text-[112.5%];
 }

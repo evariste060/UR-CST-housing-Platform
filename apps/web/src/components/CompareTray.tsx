@@ -3,6 +3,7 @@ import { MAX_COMPARE, useCompare } from '../student/CompareProvider';
 import { usePropertiesByIds } from '../student/queries';
 import { Button, buttonClass } from './Button';
 import { Icon } from './Icon';
+import { t, tNode } from '../i18n';
 
 const TRAY_PAGES = [/^\/search$/, /^\/saved$/, /^\/properties\/[^/]+$/];
 
@@ -15,21 +16,21 @@ export function CompareTray() {
   if (items.length === 0 || !TRAY_PAGES.some((page) => page.test(pathname))) return null;
 
   return (
-    <div className="compare-tray" role="region" aria-label="Compare selection">
+    <div className="compare-tray" role="region" aria-label={t('Compare selection')}>
       <Icon name="compare" />
       <span>
-        <b>{items.length}</b> of {MAX_COMPARE} selected
+        <b>{tNode(items.length)}</b> {t('of')} {tNode(MAX_COMPARE)} {t('selected')}
       </span>
       <span className="thumbs-mini">
         {items.map(({ id, title, coverUrl }) =>
-          coverUrl ? <img key={id} src={coverUrl} alt={title} /> : null,
+          coverUrl ? <img key={id} src={coverUrl} alt={tNode(title)} /> : null,
         )}
       </span>
       <Link className={buttonClass({ size: 'sm' })} to="/compare">
-        {items.length < 2 ? 'Open compare' : 'Compare now'}
+        {items.length < 2 ? t('Open compare') : t('Compare now')}
       </Link>
       <Button variant="on-dark" size="sm" onClick={compare.clear}>
-        Clear
+        {t('Clear')}
       </Button>
     </div>
   );

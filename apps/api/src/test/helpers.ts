@@ -1,4 +1,5 @@
 import type { AccountStatus, Prisma, Role } from '@prisma/client';
+import type { SupportMessageInput } from '@urcst/shared';
 import bcrypt from 'bcrypt';
 import { createApp } from '../app';
 import { prisma } from '../db';
@@ -74,9 +75,10 @@ export async function createListing(
   });
 }
 
-/** An app whose mailer keeps reset links instead of printing them. */
+/** An app whose mailer keeps reset links and support messages instead of printing them. */
 export function createTestApp() {
   const sentLinks: string[] = [];
+  const supportMessages: SupportMessageInput[] = [];
   const files = new Map<string, Buffer>();
   const storage: Storage = {
     async save(data, extension) {
@@ -92,9 +94,12 @@ export function createTestApp() {
     async sendPasswordReset(_to, link) {
       sentLinks.push(link);
     },
+    async sendSupportMessage(message) {
+      supportMessages.push(message);
+    },
   };
 
-  return { app: createApp({ mailer, storage }), sentLinks, files };
+  return { app: createApp({ mailer, storage }), sentLinks, supportMessages, files };
 }
 
 export function tokenFrom(link: string | undefined): string {

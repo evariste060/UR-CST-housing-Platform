@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useToast } from '../components/Toast';
 import { COMPARE_KEY, readIds, writeJson } from './storage';
+import { t } from '../i18n';
 
 export const MAX_COMPARE = 4;
 export const COMPARE_LIMIT_MESSAGE = 'You can compare up to four properties at a time.';
@@ -38,7 +39,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
         return;
       }
       store([...ids, id]);
-      toast(`Added to compare (${ids.length + 1} of ${MAX_COMPARE}).`);
+      toast(t('Added to compare ({p0} of {MAX_COMPARE}).', { p0: ids.length + 1, MAX_COMPARE }));
     }
 
     return {

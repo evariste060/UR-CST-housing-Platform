@@ -15,7 +15,6 @@ export const SUMMARY_INCLUDE = {
   photos: {
     where: PUBLIC_PHOTOS,
     orderBy: [{ isCover: 'desc' }, { position: 'asc' }],
-    take: 1,
   },
 } satisfies Prisma.PropertyInclude;
 
@@ -54,6 +53,7 @@ export function toSummary(row: SummaryRow): PropertySummary {
     selfContained: row.selfContained,
     availability: row.availability,
     coverUrl: row.photos[0]?.url ?? null,
+    photoUrls: row.photos.map(({ url }) => url),
   };
 }
 

@@ -7,6 +7,7 @@ import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
 import { buttonClass } from '../components/Button';
+import { t, tNode } from '../i18n';
 
 function ExpiredLink() {
   return (
@@ -14,10 +15,10 @@ function ExpiredLink() {
       <span className="state-ic">
         <Icon name="alert" />
       </span>
-      <h1 className="state-title">This reset link has expired or was already used.</h1>
-      <p>Request a new link to choose your password.</p>
+      <h1 className="state-title">{t('This reset link has expired or was already used.')}</h1>
+      <p>{t('Request a new link to choose your password.')}</p>
       <Link className={buttonClass()} to="/forgot-password">
-        Request a new link
+        {t('Request a new link')}
       </Link>
     </div>
   );
@@ -73,29 +74,29 @@ export function ResetPasswordPage() {
           <ExpiredLink />
         ) : (
           <>
-            <h1 className="t-page auth-title">Choose a new password</h1>
-            <p className="muted auth-intro">Enter your new password below.</p>
+            <h1 className="t-page auth-title">{t('Choose a new password')}</h1>
+            <p className="muted auth-intro">{t('Enter your new password below.')}</p>
 
             {formError && (
               <div className="notice err auth-notice" role="alert">
                 <Icon name="alert" />
-                <span>{formError}</span>
+                <span>{tNode(formError)}</span>
               </div>
             )}
 
             <form ref={formRef} className="stack auth-form" onSubmit={handleSubmit} noValidate>
               <PasswordField
                 id="reset-password"
-                label="New password"
+                label={t('New password')}
                 value={password}
                 onChange={setPassword}
                 autoComplete="new-password"
-                help="At least 8 characters."
+                help={t('At least 8 characters.')}
                 error={errors.password}
               />
               <PasswordField
                 id="reset-confirm"
-                label="Confirm new password"
+                label={t('Confirm new password')}
                 value={confirmPassword}
                 onChange={setConfirmPassword}
                 autoComplete="new-password"
@@ -106,7 +107,7 @@ export function ResetPasswordPage() {
                 type="submit"
                 disabled={busy}
               >
-                Save new password
+                {t('Save new password')}
               </button>
             </form>
           </>

@@ -1,44 +1,39 @@
 import {
   DISTANCE_SLIDER,
+  EMPTY_FILTERS,
+  FILTER_BUDGETS,
+  FILTER_DISTANCES,
   RENT_SLIDER,
   ROOM_TYPE_LABELS,
+  roomTypeSchema,
   type Layout,
   type RoomType,
   type RoomsFilter,
   type SearchFilters,
 } from '@urcst/shared';
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useRef, useState, type ReactNode, type RefObject } from 'react';
 import { formatNumber } from '../lib/format';
 import { useFocusTrap } from '../lib/useFocusTrap';
-import { useLocations } from '../student/queries';
+import { useFilterCounts, useLocations } from '../student/queries';
 import { withBudget, withDistance } from '../student/filters';
 import { Button } from './Button';
-import { Icon, type IconName } from './Icon';
-import { PickGroup, ToggleChip } from './PickGroup';
-import { ToggleTile } from './ToggleTile';
-
-const SLIDER_DELAY_MS = 200;
+import { Icon } from './Icon';
+import { t, tNode } from '../i18n';
 
 const BUDGETS = [
   { value: 'any', label: 'Any' },
-  { value: '50000', label: 'Up to 50,000' },
-  { value: '75000', label: 'Up to 75,000' },
-  { value: '100000', label: 'Up to 100,000' },
-  { value: '150000', label: 'Up to 150,000' },
+  ...FILTER_BUDGETS.map((budget) => ({
+    value: String(budget),
+    label: `Up to ${formatNumber(budget)}`,
+  })),
 ];
 
 const DISTANCES = [
-  { value: '1', label: 'Within 1 km', icon: 'pin' as IconName },
-  { value: '2', label: 'Within 2 km', icon: 'pin' as IconName },
-  { value: '3', label: 'Within 3 km', icon: 'pin' as IconName },
-  { value: 'any', label: 'Any distance', icon: 'route' as IconName },
-];
-
-const ROOM_TYPES: { type: RoomType; icon: IconName }[] = [
-  { type: 'SINGLE', icon: 'bed' },
-  { type: 'SHARED', icon: 'users' },
-  { type: 'STUDIO', icon: 'door' },
-  { type: 'APARTMENT', icon: 'building' },
+  ...FILTER_DISTANCES.map((distance) => ({
+    value: String(distance),
+    label: `Within ${distance} km`,
+  })),
+  { value: 'any', label: 'Any distance' },
 ];
 
 const LAYOUTS: { value: Layout; label: string }[] = [
@@ -48,10 +43,10 @@ const LAYOUTS: { value: Layout; label: string }[] = [
 ];
 
 const FACILITIES = [
-  { key: 'water', label: 'Water', icon: 'water' },
-  { key: 'electricity', label: 'Electricity', icon: 'bolt' },
-  { key: 'privateBath', label: 'Private bathroom', icon: 'bath' },
-  { key: 'security', label: 'Security / guard', icon: 'shield' },
+  { key: 'water', label: 'Water' },
+  { key: 'electricity', label: 'Electricity' },
+  { key: 'privateBath', label: 'Private bathroom' },
+  { key: 'security', label: 'Security / guard' },
 ] as const;
 
 const ROOMS: { value: RoomsFilter; label: string }[] = [
@@ -60,145 +55,96 @@ const ROOMS: { value: RoomsFilter; label: string }[] = [
   { value: '2', label: '2 or more' },
 ];
 
-/** Follows the page, but holds a dragged slider back until it settles. */
-function useSlider(value: number, commit: (value: number) => void) {
-  const [draft, setDraft] = useState<number | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+const AVAILABILITY = [
+  { value: 'all', label: 'All rooms' },
+  { value: 'available', label: 'Available only' },
+];
 
-  useEffect(() => () => clearTimeout(timer.current), []);
+type Counts = Record<string, number> | undefined;
 
-  function onChange(next: number) {
-    setDraft(next);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      commit(next);
-      setDraft(null);
-    }, SLIDER_DELAY_MS);
-  }
-
-  return [draft ?? value, onChange] as const;
-}
-
-interface FilterProps {
-  filters: SearchFilters;
-  onChange: (filters: SearchFilters) => void;
-}
-
-function BudgetFilter({ filters, onChange }: FilterProps) {
-  const low = filters.minRent ?? RENT_SLIDER.min;
-  const high = filters.maxRent ?? RENT_SLIDER.max;
-  const [min, setMin] = useSlider(low, (minRent) =>
-    onChange({ ...filters, minRent: minRent <= RENT_SLIDER.min ? undefined : minRent }),
-  );
-  const [max, setMax] = useSlider(high, (maxRent) => onChange(withBudget(filters, maxRent)));
-
-  const preset =
-    filters.minRent !== undefined
-      ? undefined
-      : filters.maxRent === undefined
-        ? 'any'
-        : BUDGETS.find(({ value }) => value === String(filters.maxRent))?.value;
-
+function FilterOption({
+  type,
+  name,
+  label,
+  count,
+  checked,
+  onChange,
+}: {
+  type: 'radio' | 'checkbox';
+  name: string;
+  label: string;
+  count: number | undefined;
+  checked: boolean;
+  onChange: () => void;
+}) {
   return (
-    <div className="filter-group">
-      <PickGroup
-        label="Monthly budget (RWF)"
-        value={preset}
-        options={BUDGETS}
-        none={`${formatNumber(low)} to ${formatNumber(high)}`}
-        compact
-        onChange={(value) =>
-          onChange({
-            ...filters,
-            minRent: undefined,
-            maxRent: value === 'any' ? undefined : Number(value),
-          })
-        }
+    <label className="flex min-h-9 cursor-pointer items-center gap-2.5 text-base text-ink has-checked:font-semibold max-tablet:min-h-11 pointer-coarse:min-h-11">
+      <input
+        className="size-4 flex-none cursor-pointer accent-blue"
+        type={type}
+        name={name}
+        checked={checked}
+        onChange={onChange}
       />
-      <details className="fine" open={preset === undefined ? true : undefined}>
-        <summary>Set an exact range</summary>
-        <label htmlFor="f-min" className="t-support">
-          Minimum
-        </label>
-        <input
-          type="range"
-          id="f-min"
-          min={RENT_SLIDER.min}
-          max={RENT_SLIDER.max}
-          step={RENT_SLIDER.step}
-          value={min}
-          aria-valuetext={`${formatNumber(min)} RWF`}
-          onChange={(event) => setMin(Number(event.target.value))}
-        />
-        <label htmlFor="f-max" className="t-support">
-          Maximum
-        </label>
-        <input
-          type="range"
-          id="f-max"
-          min={RENT_SLIDER.min}
-          max={RENT_SLIDER.max}
-          step={RENT_SLIDER.step}
-          value={max}
-          aria-valuetext={`${formatNumber(max)} RWF`}
-          onChange={(event) => setMax(Number(event.target.value))}
-        />
-        <div className="range-out">
-          <span>
-            From <b className="num">{formatNumber(min)}</b>
-          </span>
-          <span>
-            To <b className="num">{formatNumber(max)}</b>
-          </span>
-        </div>
-      </details>
+      <span>
+        {tNode(label)}
+        {count !== undefined && (
+          <span className="num font-normal text-muted"> ({formatNumber(count)})</span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+function FilterSection({
+  id,
+  title,
+  role = 'group',
+  children,
+}: {
+  id: string;
+  title: string;
+  role?: 'group' | 'radiogroup';
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="border-t border-line py-3 first:border-t-0"
+      role={role}
+      aria-labelledby={`f-${id}`}
+    >
+      <h3 className="mb-1 text-base font-bold text-ink" id={`f-${id}`}>
+        {tNode(title)}
+      </h3>
+      {children}
     </div>
   );
 }
 
-function DistanceFilter({ filters, onChange }: FilterProps) {
-  const current = filters.maxDistance ?? DISTANCE_SLIDER.max;
-  const [distance, setDistance] = useSlider(current, (value) =>
-    onChange(withDistance(filters, value)),
-  );
-  const preset =
-    filters.maxDistance === undefined
-      ? 'any'
-      : DISTANCES.find(({ value }) => value === String(filters.maxDistance))?.value;
-
-  return (
-    <div className="filter-group">
-      <PickGroup
-        label="Distance from UR-CST"
-        value={preset}
-        options={DISTANCES}
-        none={`Within ${current} km`}
-        compact
-        onChange={(value) =>
-          onChange(withDistance(filters, value === 'any' ? DISTANCE_SLIDER.max : Number(value)))
-        }
-      />
-      <details className="fine" open={preset === undefined ? true : undefined}>
-        <summary>Set an exact distance</summary>
-        <input
-          type="range"
-          min={DISTANCE_SLIDER.min}
-          max={DISTANCE_SLIDER.max}
-          step={DISTANCE_SLIDER.step}
-          value={distance}
-          aria-label="Distance in kilometres"
-          aria-valuetext={`Within ${distance} kilometres`}
-          onChange={(event) => setDistance(Number(event.target.value))}
-        />
-        <div className="range-out">
-          <span>{DISTANCE_SLIDER.min} km</span>
-          <span>
-            Within <b className="num">{distance}</b> km
-          </span>
-        </div>
-      </details>
-    </div>
-  );
+function RadioList<Value extends string>({
+  name,
+  options,
+  value,
+  counts,
+  onChange,
+}: {
+  name: string;
+  options: { value: Value; label: string }[];
+  value: string | undefined;
+  counts: Counts;
+  onChange: (value: Value) => void;
+}) {
+  return options.map((option) => (
+    <FilterOption
+      key={option.value}
+      type="radio"
+      name={name}
+      label={option.label}
+      count={counts?.[option.value]}
+      checked={value === option.value}
+      onChange={() => onChange(option.value)}
+    />
+  ));
 }
 
 function FocusTrap({
@@ -212,33 +158,62 @@ function FocusTrap({
   return null;
 }
 
-interface FiltersPanelProps extends FilterProps {
+interface FiltersPanelProps {
+  filters: SearchFilters;
+  onChange: (filters: SearchFilters, message?: string) => void;
   /** On phones the panel opens as a drawer. */
   open: boolean;
   onClose: () => void;
   onClear: () => void;
-  resultCount: number | undefined;
 }
 
-export function FiltersPanel({
-  filters,
-  onChange,
-  open,
-  onClose,
-  onClear,
-  resultCount,
-}: FiltersPanelProps) {
+export function FiltersPanel({ filters, onChange, open, onClose, onClear }: FiltersPanelProps) {
   const panel = useRef<HTMLElement>(null);
   const { data: locations = [] } = useLocations();
-  const q = filters.q.toLowerCase();
-  const area = locations.find(({ name }) => name.toLowerCase() === q);
-  const required = FACILITIES.filter(({ key }) => filters[key]).map(({ label }) => label);
+
+  // Choices wait here until Apply Filters. A change from elsewhere, such as a removed chip,
+  // replaces them.
+  const [draft, setDraft] = useState(filters);
+  const applied = JSON.stringify(filters);
+  const [seen, setSeen] = useState(applied);
+  if (seen !== applied) {
+    setSeen(applied);
+    setDraft(filters);
+  }
+  const { data: counts } = useFilterCounts(draft);
+
+  const area = locations.find(({ name }) => name.toLowerCase() === draft.q.toLowerCase());
+  const budget =
+    draft.minRent !== undefined
+      ? undefined
+      : draft.maxRent === undefined
+        ? 'any'
+        : BUDGETS.find(({ value }) => value === String(draft.maxRent))?.value;
+  const distance =
+    draft.maxDistance === undefined
+      ? 'any'
+      : DISTANCES.find(({ value }) => value === String(draft.maxDistance))?.value;
+  const low = draft.minRent ?? RENT_SLIDER.min;
+  const high = draft.maxRent ?? RENT_SLIDER.max;
+  const reach = draft.maxDistance ?? DISTANCE_SLIDER.max;
 
   function toggleType(type: RoomType) {
-    const types = filters.types.includes(type)
-      ? filters.types.filter((item) => item !== type)
-      : [...filters.types, type];
-    onChange({ ...filters, types });
+    setDraft((current) => ({
+      ...current,
+      types: current.types.includes(type)
+        ? current.types.filter((item) => item !== type)
+        : [...current.types, type],
+    }));
+  }
+
+  function apply() {
+    onChange(draft, 'Filters applied.');
+    onClose();
+  }
+
+  function reset() {
+    setDraft(EMPTY_FILTERS);
+    onClear();
   }
 
   return (
@@ -247,123 +222,197 @@ export function FiltersPanel({
         ref={panel}
         className={open ? 'filters open' : 'filters'}
         id="filters"
-        aria-label="Filters"
+        aria-label={t('Filters')}
         {...(open ? { role: 'dialog', 'aria-modal': true } : {})}
       >
-        <div className="filter-head">
-          <h2 className="t-card">
-            <Icon name="filter" /> Filters
-          </h2>
+        <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+          <h2 className="text-lg font-bold text-ink">{t('Filters')}</h2>
           <div className="row">
-            <button type="button" className="link-btn" onClick={onClear}>
-              Clear all
+            <button type="button" className="link-btn" onClick={reset}>
+              {t('Clear all')}
             </button>
             <button
               type="button"
               className="icon-btn mobile-filter-btn"
-              aria-label="Close filters"
+              aria-label={t('Close filters')}
               onClick={onClose}
             >
               <Icon name="x" />
             </button>
           </div>
         </div>
-        <p className="tip filter-tip">
-          <Icon name="hand" />
-          Tap to choose. Blue with a tick means it is selected.
-        </p>
-        <div className="filter-group">
-          <PickGroup
-            label="Neighbourhood"
-            value={filters.q ? area?.name : ''}
-            options={[
-              { value: '', label: 'Any', icon: 'map' },
-              ...locations.map(({ name }) => ({ value: name, label: name })),
-            ]}
-            none={`"${filters.q}"`}
-            compact
-            onChange={(value) => onChange({ ...filters, q: value })}
-          />
-        </div>
-        <BudgetFilter filters={filters} onChange={onChange} />
-        <DistanceFilter filters={filters} onChange={onChange} />
-        <div className="filter-group" role="group" aria-labelledby="f-types">
-          <div className="pick-head">
-            <span className="t-label" id="f-types">
-              Room type
-            </span>
-            <span className="picked" aria-live="polite">
-              Selected:{' '}
-              <b>
-                {filters.types.length
-                  ? filters.types.map((type) => ROOM_TYPE_LABELS[type]).join(', ')
-                  : 'Any type'}
-              </b>
-            </span>
-          </div>
-          <p className="t-help filter-help">You can pick more than one.</p>
-          <div className="chipset">
-            {ROOM_TYPES.map(({ type, icon }) => (
-              <ToggleChip
+        <div className="min-h-0 overflow-y-auto px-4 max-tablet:flex-1">
+          <FilterSection id="area" title={t('Neighbourhood')} role="radiogroup">
+            <RadioList
+              name="area"
+              options={[
+                { value: '', label: 'Any' },
+                ...locations.map(({ name }) => ({ value: name, label: name })),
+              ]}
+              value={draft.q ? area?.name : ''}
+              counts={counts?.areas}
+              onChange={(q) => setDraft((current) => ({ ...current, q }))}
+            />
+          </FilterSection>
+          <FilterSection id="budget" title={t('Monthly budget (RWF)')} role="radiogroup">
+            <RadioList
+              name="budget"
+              options={BUDGETS}
+              value={budget}
+              counts={counts?.budgets}
+              onChange={(value) =>
+                setDraft((current) => ({
+                  ...current,
+                  minRent: undefined,
+                  maxRent: value === 'any' ? undefined : Number(value),
+                }))
+              }
+            />
+            <details className="fine" open={budget === undefined ? true : undefined}>
+              <summary>{t('Set an exact range')}</summary>
+              <label htmlFor="f-min" className="t-support">
+                {t('Minimum')}
+              </label>
+              <input
+                type="range"
+                id="f-min"
+                min={RENT_SLIDER.min}
+                max={RENT_SLIDER.max}
+                step={RENT_SLIDER.step}
+                value={low}
+                aria-valuetext={t('{p0} RWF', { p0: formatNumber(low) })}
+                onChange={(event) => {
+                  const minRent = Number(event.target.value);
+                  setDraft((current) => ({
+                    ...current,
+                    minRent: minRent <= RENT_SLIDER.min ? undefined : minRent,
+                  }));
+                }}
+              />
+              <label htmlFor="f-max" className="t-support">
+                {t('Maximum')}
+              </label>
+              <input
+                type="range"
+                id="f-max"
+                min={RENT_SLIDER.min}
+                max={RENT_SLIDER.max}
+                step={RENT_SLIDER.step}
+                value={high}
+                aria-valuetext={t('{p0} RWF', { p0: formatNumber(high) })}
+                onChange={(event) => {
+                  const maxRent = Number(event.target.value);
+                  setDraft((current) => withBudget(current, maxRent));
+                }}
+              />
+              <div className="range-out">
+                <span>
+                  {t('From')} <b className="num">{formatNumber(low)}</b>
+                </span>
+                <span>
+                  {t('To')} <b className="num">{formatNumber(high)}</b>
+                </span>
+              </div>
+            </details>
+          </FilterSection>
+          <FilterSection id="distance" title={t('Distance from UR-CST')} role="radiogroup">
+            <RadioList
+              name="distance"
+              options={DISTANCES}
+              value={distance}
+              counts={counts?.distances}
+              onChange={(value) =>
+                setDraft((current) =>
+                  withDistance(current, value === 'any' ? DISTANCE_SLIDER.max : Number(value)),
+                )
+              }
+            />
+            <details className="fine" open={distance === undefined ? true : undefined}>
+              <summary>{t('Set an exact distance')}</summary>
+              <input
+                type="range"
+                min={DISTANCE_SLIDER.min}
+                max={DISTANCE_SLIDER.max}
+                step={DISTANCE_SLIDER.step}
+                value={reach}
+                aria-label={t('Distance in kilometres')}
+                aria-valuetext={t('Within {reach} kilometres', { reach })}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  setDraft((current) => withDistance(current, value));
+                }}
+              />
+              <div className="range-out">
+                <span>
+                  {tNode(DISTANCE_SLIDER.min)} {t('km')}
+                </span>
+                <span>
+                  {t('Within')} <b className="num">{tNode(reach)}</b> {t('km')}
+                </span>
+              </div>
+            </details>
+          </FilterSection>
+          <FilterSection id="types" title={t('Room type')}>
+            {roomTypeSchema.options.map((type) => (
+              <FilterOption
                 key={type}
+                type="checkbox"
+                name="types"
                 label={ROOM_TYPE_LABELS[type]}
-                icon={icon}
-                pressed={filters.types.includes(type)}
-                onToggle={() => toggleType(type)}
+                count={counts?.types[type]}
+                checked={draft.types.includes(type)}
+                onChange={() => toggleType(type)}
               />
             ))}
-          </div>
-        </div>
-        <div className="filter-group">
-          <PickGroup
-            label="Kitchen & bathroom layout"
-            value={filters.layout}
-            options={LAYOUTS}
-            compact
-            onChange={(layout) => onChange({ ...filters, layout })}
-          />
-        </div>
-        <div className="filter-group" role="group" aria-labelledby="f-must">
-          <div className="pick-head">
-            <span className="t-label" id="f-must">
-              Must include
-            </span>
-            <span className="picked" aria-live="polite">
-              Selected: <b>{required.length ? required.join(', ') : 'Nothing required'}</b>
-            </span>
-          </div>
-          <div className="tilegrid">
-            {FACILITIES.map(({ key, label, icon }) => (
-              <ToggleTile
+          </FilterSection>
+          <FilterSection id="layout" title={t('Kitchen & bathroom layout')} role="radiogroup">
+            <RadioList
+              name="layout"
+              options={LAYOUTS}
+              value={draft.layout}
+              counts={counts?.layouts}
+              onChange={(layout) => setDraft((current) => ({ ...current, layout }))}
+            />
+          </FilterSection>
+          <FilterSection id="must" title={t('Facilities')}>
+            {FACILITIES.map(({ key, label }) => (
+              <FilterOption
                 key={key}
+                type="checkbox"
+                name={key}
                 label={label}
-                icon={icon}
-                pressed={filters[key]}
-                onToggle={() => onChange({ ...filters, [key]: !filters[key] })}
+                count={counts?.facilities[key]}
+                checked={draft[key]}
+                onChange={() => setDraft((current) => ({ ...current, [key]: !current[key] }))}
               />
             ))}
-          </div>
+          </FilterSection>
+          <FilterSection id="rooms" title={t('Number of rooms')} role="radiogroup">
+            <RadioList
+              name="rooms"
+              options={ROOMS}
+              value={draft.rooms}
+              counts={counts?.rooms}
+              onChange={(rooms) => setDraft((current) => ({ ...current, rooms }))}
+            />
+          </FilterSection>
+          <FilterSection id="availability" title={t('Availability')} role="radiogroup">
+            <RadioList
+              name="availability"
+              options={AVAILABILITY}
+              value={draft.availableOnly ? 'available' : 'all'}
+              counts={counts?.availability}
+              onChange={(value) =>
+                setDraft((current) => ({ ...current, availableOnly: value === 'available' }))
+              }
+            />
+          </FilterSection>
         </div>
-        <div className="filter-group">
-          <PickGroup
-            label="Number of rooms"
-            value={filters.rooms}
-            options={ROOMS}
-            compact
-            onChange={(rooms) => onChange({ ...filters, rooms })}
-          />
-        </div>
-        <div className="filter-group filter-last">
-          <PickGroup
-            label="Availability"
-            value={filters.availableOnly ? 'available' : 'all'}
-            options={[
-              { value: 'all', label: 'All rooms' },
-              { value: 'available', label: 'Available only', icon: 'check' },
-            ]}
-            compact
-            onChange={(value) => onChange({ ...filters, availableOnly: value === 'available' })}
-          />
+        <div className="grid grid-cols-2 gap-2 border-t border-line p-3">
+          <Button onClick={apply}>{t('Apply Filters')}</Button>
+          <Button variant="outline" onClick={reset}>
+            {t('Reset')}
+          </Button>
         </div>
       </aside>
       {open && (
@@ -372,14 +421,6 @@ export function FiltersPanel({
           {/* The backdrop is a mouse shortcut. Keyboard users have Esc and the Close button. */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="filter-backdrop" onClick={onClose} />
-          <div className="filter-drawer-foot">
-            <Button variant="secondary" onClick={onClear}>
-              Clear all
-            </Button>
-            <Button onClick={onClose}>
-              {resultCount === undefined ? 'Show results' : `Show ${resultCount} results`}
-            </Button>
-          </div>
         </>
       )}
     </>

@@ -1,4 +1,5 @@
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 export function ToggleTile({
   label,
@@ -14,8 +15,8 @@ export function ToggleTile({
   return (
     <button type="button" className="ptile" aria-pressed={pressed} onClick={onToggle}>
       <Icon name={pressed ? 'check' : icon} />
-      <span>{label}</span>
-      <span className="st">{pressed ? 'Required' : 'Not required'}</span>
+      <span>{tNode(label)}</span>
+      <span className="st">{pressed ? t('Required') : t('Not required')}</span>
     </button>
   );
 }

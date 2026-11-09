@@ -349,7 +349,14 @@ describe('lists', () => {
     await startDraft(agent, { title: 'A draft' });
 
     const { body } = await agent.get('/api/landlord/properties');
-    expect(body.counts).toEqual({ all: 4, available: 2, occupied: 1, pending: 1 });
+    expect(body.counts).toEqual({
+      all: 4,
+      available: 2,
+      occupied: 1,
+      pending: 1,
+      changes: 0,
+      drafts: 1,
+    });
 
     const { body: pending } = await agent.get('/api/landlord/properties?filter=pending');
     expect(pending.items).toHaveLength(1);
@@ -400,13 +407,68 @@ describe('lists', () => {
       available: 1,
       occupied: 1,
       pending: 0,
+      changes: 0,
+      drafts: 0,
       newInquiries: 1,
     });
+    expect(body.properties[0].updatedAt).toEqual(expect.any(String));
     expect(body.recentInquiries[0]).toMatchObject({
       student: 'Test Person',
       status: 'NEW',
       lastMessage: { body: 'Is it free?', fromLandlord: false },
     });
+  });
+});
+
+describe('GET /api/landlord/summary attention counts', () => {
+  it('counts listings that need changes and unfinished drafts, and lists the latest update first', async () => {
+    const { agent, owner } = await setUp();
+    await createListing(owner.id, { reviewStatus: 'CHANGES_REQUESTED' });
+    await createListing(owner.id, { reviewStatus: 'DRAFT' });
+    const latest = await createListing(owner.id);
+    await prisma.property.update({ where: { id: latest.id }, data: { rentRwf: 70000 } });
+
+    const { body } = await agent.get('/api/landlord/summary');
+    const changes = await agent.get('/api/landlord/properties?filter=changes');
+
+    expect(body).toMatchObject({ changes: 1, drafts: 1 });
+    expect(body.properties[0].id).toBe(latest.id);
+    expect(changes.body.total).toBe(1);
+    expect(changes.body.counts).toMatchObject({ changes: 1, drafts: 1 });
+  });
+});
+
+describe('GET /api/landlord/properties search, filters, sort and pages', () => {
+  it('combines search, availability, listing status and sort, and pages the result', async () => {
+    const { agent, owner } = await setUp();
+    const older = await createListing(owner.id, { title: 'Garden Room' });
+    await createListing(owner.id, { title: 'Corner Room', availability: 'OCCUPIED' });
+    await createListing(owner.id, { title: 'Muhima Studio', reviewStatus: 'PENDING' });
+    const newer = await createListing(owner.id, { title: 'Hill Room' });
+    await prisma.property.update({ where: { id: newer.id }, data: { rentRwf: 71000 } });
+
+    const rooms = await agent.get('/api/landlord/properties?q=room');
+    const available = await agent.get('/api/landlord/properties?q=ROOM&availability=available');
+    const pending = await agent.get('/api/landlord/properties?status=PENDING');
+    const oldest = await agent.get('/api/landlord/properties?q=room&sort=updated-asc&pageSize=1');
+    const second = await agent.get('/api/landlord/properties?q=room&pageSize=2&page=2');
+
+    expect(rooms.body.total).toBe(3);
+    expect(rooms.body.items[0].id).toBe(newer.id);
+    expect(available.body.total).toBe(2);
+    expect(pending.body.items.map((item: { title: string }) => item.title)).toEqual([
+      'Muhima Studio',
+    ]);
+    expect(oldest.body.items[0].id).toBe(older.id);
+    expect(second.body).toMatchObject({ total: 3, page: 2 });
+    expect(second.body.items).toHaveLength(1);
+    expect(rooms.body.counts).toMatchObject({ all: 4, pending: 1 });
+  });
+
+  it('rejects an unknown listing status', async () => {
+    const { agent } = await setUp();
+
+    expect((await agent.get('/api/landlord/properties?status=VERIFIED')).status).toBe(400);
   });
 });
 
@@ -424,6 +486,22 @@ describe('inquiries', () => {
     });
     return { ...context, inquiry };
   }
+  it('searches by student name or property title and shows property details on the thread', async () => {
+    const { agent, inquiry } = await withInquiry();
+
+    const byName = await agent.get('/api/landlord/inquiries?q=test%20person');
+    const none = await agent.get('/api/landlord/inquiries?q=nobody');
+    const thread = await agent.get(`/api/landlord/inquiries/${inquiry.id}`);
+
+    expect(byName.body.total).toBe(1);
+    expect(byName.body.items[0].lastMessage.createdAt).toEqual(expect.any(String));
+    expect(none.body.total).toBe(0);
+    expect(thread.body.property).toMatchObject({
+      reviewStatus: 'APPROVED',
+      rentRwf: expect.any(Number),
+    });
+    expect(thread.body).not.toHaveProperty('studentEmail');
+  });
 
   it('filters by status and counts each tab', async () => {
     const { agent } = await withInquiry();

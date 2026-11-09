@@ -14,6 +14,7 @@ import { formatRwf, initials, formatKm } from '../lib/format';
 import { useFocusFirstError } from '../lib/useFocusFirstError';
 import { useProperty } from '../student/queries';
 import { ListingUnavailable, PropertyLoading } from './PropertyPage';
+import { t, tNode } from '../i18n';
 
 type Method = 'phone' | 'whatsapp' | 'inapp';
 
@@ -35,26 +36,30 @@ function PhonePanel({ property }: { property: PropertyDetail }) {
       await navigator.clipboard.writeText(phone ?? '');
       toast('Number copied.');
     } catch {
-      toast(`Copy not available here. The number is ${phone}.`, { type: 'info' });
+      toast(t('Copy not available here. The number is {phone}.', { phone }), { type: 'info' });
     }
   }
 
   return (
     <>
-      <h2 className="t-card">Call {name}</h2>
+      <h2 className="t-card">
+        {t('Call')} {tNode(name)}
+      </h2>
       <p className="t-page num contact-number">{phone}</p>
       <div className="row contact-actions">
         <a className={buttonClass()} href={`tel:${phone?.replace(/\s/g, '')}`}>
           <Icon name="phone" />
-          Call now
+          {t('Call now')}
         </a>
         <Button variant="secondary" icon="copy" onClick={() => void copy()}>
-          Copy number
+          {t('Copy number')}
         </Button>
       </div>
       <div className="tip contact-tip">
         <Icon name="info" />
-        Tip: ask if the room is still free, what is included in the rent, and when you can visit.
+        {t(
+          'Tip: ask if the room is still free, what is included in the rent, and when you can visit.',
+        )}
       </div>
     </>
   );
@@ -66,9 +71,11 @@ function WhatsAppPanel({ property }: { property: PropertyDetail }) {
 
   return (
     <>
-      <h2 className="t-card">WhatsApp {landlord.name}</h2>
-      <p className="muted">Your message will be ready to send in WhatsApp:</p>
-      <blockquote className="panel panel-tight contact-quote">{message}</blockquote>
+      <h2 className="t-card">
+        {t('WhatsApp')} {tNode(landlord.name)}
+      </h2>
+      <p className="muted">{t('Your message will be ready to send in WhatsApp:')}</p>
+      <blockquote className="panel panel-tight contact-quote">{tNode(message)}</blockquote>
       <a
         className={buttonClass()}
         href={`https://wa.me/${landlord.whatsapp}?text=${encodeURIComponent(message)}`}
@@ -76,7 +83,7 @@ function WhatsAppPanel({ property }: { property: PropertyDetail }) {
         rel="noreferrer"
       >
         <Icon name="whatsapp" />
-        Open WhatsApp
+        {t('Open WhatsApp')}
       </a>
     </>
   );
@@ -121,15 +128,15 @@ function MessageForm({ property }: { property: PropertyDetail }) {
   if (sent) {
     return (
       <SuccessState
-        title="Message sent"
-        text="Your inquiry is now in your dashboard. The landlord can read it and reply."
+        title={t('Message sent')}
+        text={t('Your inquiry is now in your dashboard. The landlord can read it and reply.')}
         actions={
           <>
             <Link className={buttonClass()} to="/student">
-              View my inquiries
+              {t('View my inquiries')}
             </Link>
             <Link className={buttonClass({ variant: 'secondary' })} to="/search">
-              Keep searching
+              {t('Keep searching')}
             </Link>
           </>
         }
@@ -140,7 +147,7 @@ function MessageForm({ property }: { property: PropertyDetail }) {
   return (
     <form ref={form} className="stack" onSubmit={(event) => void send(event)} noValidate>
       <div className={errors.message ? 'field has-error' : 'field'}>
-        <label htmlFor="inq-msg">Your message</label>
+        <label htmlFor="inq-msg">{t('Your message')}</label>
         <textarea
           className="textarea"
           id="inq-msg"
@@ -153,17 +160,17 @@ function MessageForm({ property }: { property: PropertyDetail }) {
         {errors.message ? (
           <p className="err-msg" id="inq-msg-err">
             <Icon name="alert" />
-            {errors.message}
+            {tNode(errors.message)}
           </p>
         ) : (
           <p className="t-help" id="inq-msg-help">
-            Say when you would like to move in or visit.
+            {t('Say when you would like to move in or visit.')}
           </p>
         )}
       </div>
       <div className="row">
         <Button type="submit" icon="send" disabled={busy}>
-          Send message
+          {t('Send message')}
         </Button>
       </div>
     </form>
@@ -179,8 +186,8 @@ function MessagePanel({ property }: { property: PropertyDetail }) {
   if (user) {
     return (
       <>
-        <h2 className="t-card">Send a message</h2>
-        <p className="muted">Only student accounts can send messages to landlords.</p>
+        <h2 className="t-card">{t('Send a message')}</h2>
+        <p className="muted">{t('Only student accounts can send messages to landlords.')}</p>
       </>
     );
   }
@@ -189,20 +196,20 @@ function MessagePanel({ property }: { property: PropertyDetail }) {
 
   return (
     <>
-      <h2 className="t-card">Send a message</h2>
+      <h2 className="t-card">{t('Send a message')}</h2>
       <p className="muted">
-        Log in as a student so the landlord knows who is asking and you can see replies.
+        {t('Log in as a student so the landlord knows who is asking and you can see replies.')}
       </p>
       <div className="row contact-actions">
         <Link className={buttonClass()} to="/login" state={{ from }}>
-          Log in
+          {t('Log in')}
         </Link>
         <Link
           className={buttonClass({ variant: 'secondary' })}
           to="/register"
           state={{ from, role: 'STUDENT' }}
         >
-          Create an account
+          {t('Create an account')}
         </Link>
       </div>
     </>
@@ -227,34 +234,43 @@ function ContactContent({ property }: { property: PropertyDetail }) {
   return (
     <div className="two-col">
       <div className="stack">
-        <ChoiceField label="Contact method" value={method} options={options} onChoose={setMethod} />
+        <ChoiceField
+          label={t('Contact method')}
+          value={method}
+          options={options}
+          onChoose={setMethod}
+        />
         <div className="panel">
           {method === 'phone' && <PhonePanel property={property} />}
           {method === 'whatsapp' && <WhatsAppPanel property={property} />}
           {method === 'inapp' && <MessagePanel property={property} />}
-          {!method && <p className="muted">This landlord has no contact method turned on.</p>}
+          {!method && (
+            <p className="muted">{t('This landlord has no contact method turned on.')}</p>
+          )}
         </div>
       </div>
-      <aside className="stack" aria-label="About this listing">
+      <aside className="stack" aria-label={t('About this listing')}>
         <div className="panel">
           {coverUrl && <img className="contact-photo" src={coverUrl} alt="" />}
-          <h2 className="t-card contact-title">{title}</h2>
+          <h2 className="t-card contact-title">{tNode(title)}</h2>
           <p className="num contact-line">
             <b>{formatRwf(rentRwf)}</b>{' '}
-            <span className="muted">/ month · {formatKm(distanceKm)}</span>
+            <span className="muted">
+              {t('/ month ·')} {formatKm(distanceKm)}
+            </span>
           </p>
           <div className="row contact-badge">
             <AvailabilityBadge availability={availability} />
           </div>
         </div>
         <div className="panel">
-          <h2 className="t-card">Landlord</h2>
+          <h2 className="t-card">{t('Landlord')}</h2>
           <div className="row contact-landlord">
             <span className="avatar">{initials(landlord.name)}</span>
             <span>
-              <b>{landlord.name}</b>
+              <b>{tNode(landlord.name)}</b>
               <span className="t-support choice-text">
-                Accepts: {options.map((option) => option.title).join(', ')}
+                {t('Accepts:')} {options.map((option) => option.title).join(', ')}
               </span>
             </span>
           </div>
@@ -275,11 +291,11 @@ export function ContactPage() {
       return (
         <ErrorState
           icon="wifi"
-          title="Unable to load this listing. Please try again."
-          text="Check your internet connection, then try again."
+          title={t('Unable to load this listing. Please try again.')}
+          text={t('Check your internet connection, then try again.')}
           actions={
             <Button icon="refresh" onClick={() => void refetch()}>
-              Try again
+              {t('Try again')}
             </Button>
           }
         />
@@ -296,8 +312,8 @@ export function ContactPage() {
     <main className="page" id="main">
       <div className="page-head">
         <div>
-          <h1 className="t-page">Contact landlord</h1>
-          <p className="muted">Choose how you would like to get in touch.</p>
+          <h1 className="t-page">{t('Contact landlord')}</h1>
+          <p className="muted">{t('Choose how you would like to get in touch.')}</p>
         </div>
       </div>
       {content()}

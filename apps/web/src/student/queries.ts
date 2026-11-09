@@ -1,7 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { PropertySort, PropertySummary, SearchFilters } from '@urcst/shared';
 import { useMemo } from 'react';
-import { api } from '../lib/api';
+import { ApiError, api } from '../lib/api';
 import { filtersToParams } from './filters';
 
 const PAGE_SIZE = 20;
@@ -50,6 +50,15 @@ export async function countResults(filters: SearchFilters) {
   return (await api.properties(params)).total;
 }
 
+export function useFilterCounts(filters: SearchFilters) {
+  const params = filtersToParams(filters);
+  return useQuery({
+    queryKey: ['filter-counts', params.toString()],
+    queryFn: () => api.filterCounts(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useResultCount(filters: SearchFilters) {
   return useQuery({
     queryKey: ['result-count', filtersToParams(filters).toString()],
@@ -96,5 +105,14 @@ export function useInquiries(enabled = true) {
     queryKey: ['inquiries'],
     queryFn: async () => (await api.inquiries()).items,
     enabled,
+  });
+}
+
+export function useInquiryConversation(id: string) {
+  return useQuery({
+    queryKey: ['inquiries', id],
+    queryFn: () => api.inquiry(id),
+    retry: (failures, error) =>
+      failures < 3 && !(error instanceof ApiError && error.status === 404),
   });
 }

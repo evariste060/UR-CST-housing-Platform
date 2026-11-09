@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { hasOpenFocusTrap } from '../lib/useFocusTrap';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 const VISIBLE_MS = 4200;
 const VISIBLE_WITH_UNDO_MS = 7000;
@@ -79,7 +80,7 @@ function ToastItem({ toast, onDismiss, onUndoShown }: ToastItemProps) {
     >
       <Icon name={ICONS[type]} />
       <span className="toast-text" id={`${toastElementId(id)}-text`}>
-        {text}
+        {tNode(text)}
       </span>
       {undo && (
         <button
@@ -91,10 +92,10 @@ function ToastItem({ toast, onDismiss, onUndoShown }: ToastItemProps) {
             undo();
           }}
         >
-          <Icon name="undo" /> Undo
+          <Icon name="undo" /> {t('Undo')}
         </button>
       )}
-      <button type="button" className="x" aria-label="Dismiss" onClick={() => onDismiss(id)}>
+      <button type="button" className="x" aria-label={t('Dismiss')} onClick={() => onDismiss(id)}>
         <Icon name="x" />
       </button>
     </div>

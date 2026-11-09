@@ -52,8 +52,12 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   );
 
   const resetPrefs = useCallback(() => {
+    // The language is not a display setting: a reset keeps it, so nobody is sent back to English.
+    const { lang } = loadPrefs();
     clearPrefs();
-    setPrefs({ ...PREF_DEFAULT });
+    const next = { ...PREF_DEFAULT, lang };
+    if (lang !== PREF_DEFAULT.lang) savePrefs(next);
+    setPrefs(next);
     toast('Display settings reset to default.');
   }, [toast]);
 

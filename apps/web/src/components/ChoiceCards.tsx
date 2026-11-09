@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { useRovingRadio } from '../lib/useRovingRadio';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 interface Choice<T extends string> {
   value: T;
@@ -22,8 +23,8 @@ export function ChoiceCards<T extends string>({ options, onChoose }: ChoiceCards
         <button key={value} type="button" className="choice" onClick={() => onChoose(value)}>
           <Icon name={icon} />
           <span>
-            <b>{title}</b>
-            <span className="t-support choice-text">{description}</span>
+            <b>{tNode(title)}</b>
+            <span className="t-support choice-text">{tNode(description)}</span>
           </span>
         </button>
       ))}
@@ -61,7 +62,7 @@ export function ChoiceField<T extends string>({
     <div className={error ? 'field has-error' : 'field'}>
       <div className="pick-head">
         <span className="label" id={labelId}>
-          {label}
+          {tNode(label)}
           {required && (
             <span className="req" aria-hidden="true">
               {' '}
@@ -71,10 +72,10 @@ export function ChoiceField<T extends string>({
         </span>
         <span className="picked" aria-live="polite">
           {selected && <Icon name="check" />}
-          Selected: <b>{selected ? selected.title : 'Nothing yet'}</b>
+          {t('Selected:')} <b>{selected ? selected.title : t('Nothing yet')}</b>
         </span>
       </div>
-      {help && <p className="t-help">{help}</p>}
+      {help && <p className="t-help">{tNode(help)}</p>}
       <div
         className="choice-grid"
         role="radiogroup"
@@ -85,8 +86,8 @@ export function ChoiceField<T extends string>({
           <button key={option.value} className="choice" {...radio(option.value)}>
             <Icon name={option.value === value ? 'check' : option.icon} />
             <span>
-              <b>{option.title}</b>
-              <span className="t-support choice-text">{option.description}</span>
+              <b>{tNode(option.title)}</b>
+              <span className="t-support choice-text">{tNode(option.description)}</span>
             </span>
           </button>
         ))}
@@ -94,7 +95,7 @@ export function ChoiceField<T extends string>({
       {error && (
         <p className="err-msg">
           <Icon name="alert" />
-          {error}
+          {tNode(error)}
         </p>
       )}
     </div>

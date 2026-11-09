@@ -41,3 +41,14 @@ export function reportLimiter() {
     handler: (_req, _res, next) => next(tooManyAttempts),
   });
 }
+
+// Each message emails the support team, and guests can send them.
+export function supportLimiter() {
+  return rateLimit({
+    windowMs: WINDOW_MS,
+    limit: 5,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler: (_req, _res, next) => next(tooManyAttempts),
+  });
+}

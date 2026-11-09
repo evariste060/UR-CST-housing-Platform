@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/StateBlocks';
 import { useListing } from '../../landlord/queries';
 import { SubmitButton } from '../../landlord/SubmitButton';
 import { useLocations } from '../../student/queries';
+import { t } from '../../i18n';
 
 /** The saved answers, shaped like the listing students would see. */
 function toPreview(form: ListingForm, locations: LocationDto[], landlord: string): PropertyDetail {
@@ -31,6 +32,9 @@ function toPreview(form: ListingForm, locations: LocationDto[], landlord: string
     selfContained: values.selfContained,
     availability: values.availability,
     coverUrl: photos.find(({ id }) => id === coverId)?.url ?? null,
+    photoUrls: [...photos]
+      .sort((a, b) => Number(b.id === coverId) - Number(a.id === coverId))
+      .map(({ url }) => url),
     description: values.description || 'No description yet.',
     address: values.address || null,
     // A preview is never the live listing, so its student buttons stay off.
@@ -51,15 +55,15 @@ export function PreviewPage() {
   if (!form) {
     return (
       <main className="page" id="main">
-        <h1 className="sr-only">Preview</h1>
+        <h1 className="sr-only">{t('Preview')}</h1>
         {!isPending && (
           <EmptyState
             icon="eye"
-            title="Nothing to preview"
-            text="Start adding a property first."
+            title={t('Nothing to preview')}
+            text={t('Start adding a property first.')}
             actions={
               <Link className={buttonClass()} to="/landlord/properties/new">
-                Add accommodation
+                {t('Add accommodation')}
               </Link>
             }
           />
@@ -70,12 +74,18 @@ export function PreviewPage() {
 
   return (
     <main className="page" id="main">
-      <div className="notice warn preview-notice">
-        <Icon name="eye" />
-        <span>
-          <b>Preview.</b> This is how students will see your listing. It is not visible to students
-          yet.
-        </span>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-border bg-amber-50 px-5 py-4">
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 flex-none place-items-center rounded-full bg-card text-amber-text">
+            <Icon name="eye" />
+          </span>
+          <p className="m-0">
+            <b className="block">{t('Preview mode')}</b>
+            <span className="text-sm">
+              {t('This is how students will see your listing. It is not visible to students yet.')}
+            </span>
+          </p>
+        </div>
       </div>
       <PropertyBody
         property={toPreview(form, locations, user?.fullName ?? '')}
@@ -86,13 +96,13 @@ export function PreviewPage() {
               to={`/landlord/properties/${id}/edit?step=5`}
             >
               <Icon name="edit" />
-              Return to editing
+              {t('Return to editing')}
             </Link>
             <SubmitButton
               id={id}
               values={form.values}
               photoCount={form.photos.length}
-              label="Submit for review"
+              label={t('Submit for review')}
             />
           </>
         }

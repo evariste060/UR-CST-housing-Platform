@@ -11,6 +11,7 @@ import { useFocusTrap } from '../lib/useFocusTrap';
 import { useLocations } from '../student/queries';
 import { useRunSearch } from '../student/useHistory';
 import { Icon, type IconName } from './Icon';
+import { t, tNode } from '../i18n';
 
 const MAX_LISTINGS = 6;
 
@@ -30,8 +31,8 @@ function QuickFindItem({
       <button type="button" className="qf-item" onClick={onOpen}>
         <Icon name={icon} />
         <span>
-          <b>{title}</b>
-          {detail && <span className="t-support choice-text">{detail}</span>}
+          <b>{tNode(title)}</b>
+          {detail && <span className="t-support choice-text">{tNode(detail)}</span>}
         </span>
         <Icon name="chevR" />
       </button>
@@ -119,21 +120,21 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
         className="qf-box"
         role="dialog"
         aria-modal="true"
-        aria-label="Quick find"
+        aria-label={t('Quick find')}
         onKeyDown={onKeyDown}
       >
         <div className="qf-top">
           <div className="input-icon qf-field">
             <Icon name="search" />
             <label htmlFor="qf-input" className="sr-only">
-              Search pages and accommodation
+              {t('Search pages and accommodation')}
             </label>
             <input
               ref={input}
               className="input"
               id="qf-input"
               value={query}
-              placeholder="Where do you want to go? e.g. Saved, Kiyovu, add accommodation"
+              placeholder={t('Where do you want to go? e.g. Saved, Kiyovu, add accommodation')}
               autoComplete="off"
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -141,7 +142,7 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className="icon-btn"
-            aria-label="Close quick find"
+            aria-label={t('Close quick find')}
             onClick={onClose}
           >
             <Icon name="x" />
@@ -149,12 +150,12 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
         </div>
         <p className="qf-here">
           <Icon name="pin" />
-          You are on: <b>{pageLabel(pathname, user?.role)}</b>
+          {t('You are on:')} <b>{tNode(pageLabel(pathname, user?.role))}</b>
         </p>
         <div className="qf-res">
           {pages.length > 0 && (
             <>
-              <p className="qf-h">{query ? 'Pages' : 'Go to'}</p>
+              <p className="qf-h">{query ? t('Pages') : t('Go to')}</p>
               <ul>
                 {pages.map(({ label, to, icon }) => (
                   <QuickFindItem key={to} icon={icon} title={label} onOpen={() => open(to)} />
@@ -164,13 +165,13 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
           )}
           {areas.length > 0 && (
             <>
-              <p className="qf-h">Neighbourhoods</p>
+              <p className="qf-h">{t('Neighbourhoods')}</p>
               <ul>
                 {areas.map(({ id, name, distanceKm }) => (
                   <QuickFindItem
                     key={id}
                     icon="pin"
-                    title={`Rooms in ${name}`}
+                    title={t('Rooms in {name}', { name })}
                     detail={`About ${formatKm(distanceKm)} from UR-CST`}
                     onOpen={() => openArea(name)}
                   />
@@ -180,7 +181,7 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
           )}
           {listings.length > 0 && (
             <>
-              <p className="qf-h">Accommodation</p>
+              <p className="qf-h">{t('Accommodation')}</p>
               <ul>
                 {listings.map(({ id, title, rentRwf, distanceKm, availability }) => (
                   <QuickFindItem
@@ -198,13 +199,16 @@ function QuickFindDialog({ onClose }: { onClose: () => void }) {
           )}
           {found === 0 && (
             <p className="muted qf-none" role="status">
-              Nothing found for &quot;{query}&quot;. Try a neighbourhood like Kiyovu, or a page like
-              Saved.
+              {t('Nothing found for "')}
+              {tNode(query)}
+              {t('". Try a neighbourhood like Kiyovu, or a page like Saved.')}
             </p>
           )}
         </div>
         <p className="t-help qf-tip">
-          Tip: press Ctrl + K on any page to open this. Use the arrow keys to move, Enter to open.
+          {t(
+            'Tip: press Ctrl + K on any page to open this. Use the arrow keys to move, Enter to open.',
+          )}
         </p>
       </div>
     </div>

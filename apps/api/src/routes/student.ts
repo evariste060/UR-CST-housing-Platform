@@ -2,6 +2,7 @@ import {
   mergeSavedSchema,
   paginationSchema,
   recordSearchSchema,
+  replySchema,
   restoreHistorySchema,
   searchFiltersSchema,
   type HistoryResponse,
@@ -9,12 +10,16 @@ import {
   type Paginated,
   type PropertySummary,
   type RecentSearch,
+  type ReplyInput,
   type StudentInquiry,
+  type StudentInquiryThread,
 } from '@urcst/shared';
+import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import type { z } from 'zod';
 import { prisma } from '../db';
 import { AppError } from '../lib/errors';
+import { notifyUsers } from '../lib/notify';
 import { PUBLIC_LISTING, SUMMARY_INCLUDE, toSummary } from '../lib/propertyDto';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { parseQuery, validate } from '../middleware/validate';
@@ -23,6 +28,30 @@ const HISTORY_LENGTH = 8;
 
 // Saved rooms that have since been removed or sent back for review stay out of sight.
 const VISIBLE_SAVE = { property: PUBLIC_LISTING };
+
+const INQUIRY_INCLUDE = {
+  property: { include: { ...SUMMARY_INCLUDE, landlord: { select: { fullName: true } } } },
+  messages: { orderBy: { createdAt: 'asc' } },
+} satisfies Prisma.InquiryInclude;
+
+type InquiryRow = Prisma.InquiryGetPayload<{ include: typeof INQUIRY_INCLUDE }>;
+
+function toInquiry(row: InquiryRow, studentId: string): StudentInquiry | null {
+  const last = row.messages.at(-1);
+  if (!last) return null;
+
+  return {
+    id: row.id,
+    property: toSummary(row.property),
+    lastMessage: {
+      body: last.body,
+      fromLandlord: last.senderId !== studentId,
+      createdAt: last.createdAt.toISOString(),
+    },
+    replied: row.messages.some(({ senderId }) => senderId !== studentId),
+    createdAt: row.createdAt.toISOString(),
+  };
+}
 
 export const studentRouter = Router();
 
@@ -211,10 +240,7 @@ studentRouter.get('/inquiries', async (req, res) => {
   const [rows, total] = await prisma.$transaction([
     prisma.inquiry.findMany({
       where,
-      include: {
-        property: { include: SUMMARY_INCLUDE },
-        messages: { orderBy: { createdAt: 'asc' } },
-      },
+      include: INQUIRY_INCLUDE,
       orderBy: { updatedAt: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -222,24 +248,68 @@ studentRouter.get('/inquiries', async (req, res) => {
     prisma.inquiry.count({ where }),
   ]);
 
-  const items: StudentInquiry[] = rows.flatMap((row) => {
-    const last = row.messages.at(-1);
-    if (!last) return [];
-    return [
-      {
-        id: row.id,
-        property: toSummary(row.property),
-        lastMessage: {
-          body: last.body,
-          fromLandlord: last.senderId !== studentId,
-          createdAt: last.createdAt.toISOString(),
-        },
-        replied: row.messages.some(({ senderId }) => senderId !== studentId),
-        createdAt: row.createdAt.toISOString(),
-      },
-    ];
-  });
+  const items = rows.flatMap((row) => toInquiry(row, studentId) ?? []);
 
   const body: Paginated<StudentInquiry> = { items, total, page, pageSize };
   res.json(body);
+});
+
+function inquiryNotFound() {
+  return new AppError(404, 'INQUIRY_NOT_FOUND', 'This conversation could not be found.');
+}
+
+async function findThread(id: string, studentId: string) {
+  const row = await prisma.inquiry.findFirst({
+    where: { id, studentId },
+    include: INQUIRY_INCLUDE,
+  });
+  const inquiry = row && toInquiry(row, studentId);
+  if (!row || !inquiry) throw inquiryNotFound();
+
+  const body: StudentInquiryThread = {
+    ...inquiry,
+    landlord: row.property.landlord.fullName,
+    messages: row.messages.map(({ id: messageId, body: text, senderId, createdAt }) => ({
+      id: messageId,
+      body: text,
+      fromLandlord: senderId !== studentId,
+      createdAt: createdAt.toISOString(),
+    })),
+  };
+  return body;
+}
+
+studentRouter.get('/inquiries/:id', async (req, res) => {
+  res.json(await findThread(req.params.id as string, req.user!.id));
+});
+
+/** The student writes again in a conversation they started. The landlord sees it as new. */
+studentRouter.post('/inquiries/:id/messages', validate(replySchema), async (req, res) => {
+  const student = req.user!;
+  const { message } = req.body as ReplyInput;
+  const inquiry = await prisma.inquiry.findFirst({
+    where: { id: req.params.id as string, studentId: student.id },
+    include: { property: { select: { title: true, landlordId: true, deletedAt: true } } },
+  });
+  if (!inquiry) throw inquiryNotFound();
+  if (inquiry.property.deletedAt) {
+    throw new AppError(
+      409,
+      'LISTING_REMOVED',
+      'This listing was removed, so you cannot send new messages. You can still read the conversation.',
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.inquiryMessage.create({
+      data: { inquiryId: inquiry.id, senderId: student.id, body: message },
+    });
+    await tx.inquiry.update({ where: { id: inquiry.id }, data: { status: 'NEW' } });
+    await notifyUsers(tx, [inquiry.property.landlordId], {
+      type: 'INQUIRY_RECEIVED',
+      text: `${student.fullName} sent a new message about ${inquiry.property.title}.`,
+      link: `/landlord/inquiries?open=${inquiry.id}`,
+    });
+  });
+  res.status(201).json(await findThread(inquiry.id, student.id));
 });

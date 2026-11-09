@@ -1,16 +1,15 @@
 import { EMPTY_FILTERS, type PropertySort, type SearchFilters } from '@urcst/shared';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../auth/useAuth';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button, buttonClass } from '../components/Button';
 import { FiltersPanel } from '../components/FiltersPanel';
+import { HeaderMenu } from '../components/HeaderMenus';
 import { Icon, type IconName } from '../components/Icon';
 import { ListingCard } from '../components/ListingCard';
 import { EmptyState, ErrorState, SkeletonCards } from '../components/StateBlocks';
 import { useToast } from '../components/Toast';
 import { formatNumber } from '../lib/format';
 import { useRovingRadio } from '../lib/useRovingRadio';
-import { useSaved } from '../student/SavedProvider';
 import {
   filterChips,
   filtersFromParams,
@@ -22,8 +21,8 @@ import {
   withDistance,
   withoutFacilityAndTypeFilters,
 } from '../student/filters';
-import { countResults, usePropertySearch } from '../student/queries';
-import { useRunSearch } from '../student/useHistory';
+import { usePropertySearch } from '../student/queries';
+import { t, tNode } from '../i18n';
 
 const SORTS: { value: PropertySort; label: string; icon: IconName }[] = [
   { value: 'recommended', label: 'Recommended', icon: 'star' },
@@ -37,65 +36,59 @@ function resultCountText(count: number) {
   return count === 1 ? '1 place matches your search' : `${count} places match your search`;
 }
 
-/** Remounted by a new `key` when the place changes elsewhere, so the box shows the new text. */
-function SearchBox({ initial, onSearch }: { initial: string; onSearch: (text: string) => void }) {
-  const [text, setText] = useState(initial);
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    onSearch(text.trim());
-  }
-
-  return (
-    <form className="searchbar" role="search" onSubmit={submit}>
-      <div className="input-icon">
-        <Icon name="search" />
-        <label htmlFor="s-q" className="sr-only">
-          Search by neighbourhood or landmark
-        </label>
-        <input
-          className="input"
-          id="s-q"
-          value={text}
-          placeholder="Search a neighbourhood, e.g. Kiyovu, Muhima"
-          autoComplete="off"
-          onChange={(event) => setText(event.target.value)}
-        />
-      </div>
-      <button className={buttonClass()} type="submit">
-        Search
-      </button>
-    </form>
-  );
-}
-
-function SortChips({
+function SortMenu({
   sort,
   onChange,
 }: {
   sort: PropertySort;
   onChange: (sort: PropertySort) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const wrapper = useRef<HTMLDivElement>(null);
   const radio = useRovingRadio(
     SORTS.map(({ value }) => value),
     sort,
     onChange,
   );
+  const current = SORTS.find(({ value }) => value === sort);
+
+  function choose(value: PropertySort) {
+    onChange(value);
+    setOpen(false);
+    wrapper.current?.querySelector('button')?.focus();
+  }
 
   return (
-    <>
-      <span className="t-support" id="sort-lbl">
-        Sort:
-      </span>
-      <div className="chipset" role="radiogroup" aria-labelledby="sort-lbl">
-        {SORTS.map(({ value, label, icon }) => (
-          <button key={value} className="pchip sm" {...radio(value)}>
-            <Icon name={sort === value ? 'check' : icon} />
-            {label}
-          </button>
-        ))}
-      </div>
-    </>
+    <div ref={wrapper}>
+      <HeaderMenu
+        id="sort"
+        label={t('Sort results')}
+        buttonClass={buttonClass({ variant: 'secondary', size: 'sm' })}
+        openOnHover
+        open={open}
+        onOpenChange={setOpen}
+        button={
+          <>
+            {t('Sort:')} {tNode(current?.label)}
+            <Icon name="chevD" />
+          </>
+        }
+      >
+        <div className="flex flex-col gap-0.5" role="radiogroup" aria-label={t('Sort results')}>
+          {SORTS.map(({ value, label, icon }) => (
+            <button
+              key={value}
+              className="hmenu-item"
+              {...radio(value)}
+              onClick={() => choose(value)}
+            >
+              <Icon name={sort === value ? 'check' : icon} />
+              <span>{tNode(label)}</span>
+            </button>
+          ))}
+        </div>
+      </HeaderMenu>
+    </div>
   );
 }
 
@@ -111,8 +104,8 @@ function NoResults({ filters, onChange }: NoResultsProps) {
   return (
     <EmptyState
       icon="search"
-      title="No accommodation matches your search."
-      text="Try one of these changes. Each one updates the results straight away."
+      title={t('No accommodation matches your search.')}
+      text={t('Try one of these changes. Each one updates the results straight away.')}
       actions={
         <>
           {budget !== undefined && (
@@ -126,7 +119,7 @@ function NoResults({ filters, onChange }: NoResultsProps) {
                 )
               }
             >
-              Increase budget to {formatNumber(budget)} RWF
+              {t('Increase budget to')} {formatNumber(budget)} {t('RWF')}
             </Button>
           )}
           {distance !== undefined && (
@@ -137,7 +130,7 @@ function NoResults({ filters, onChange }: NoResultsProps) {
                 onChange(withDistance(filters, distance), `Distance expanded to ${distance} km.`)
               }
             >
-              Expand distance to {distance} km
+              {t('Expand distance to')} {tNode(distance)} {t('km')}
             </Button>
           )}
           <Button
@@ -150,9 +143,9 @@ function NoResults({ filters, onChange }: NoResultsProps) {
               )
             }
           >
-            Remove facility &amp; type filters
+            {t('Remove facility & type filters')}
           </Button>
-          <Button onClick={() => onChange(EMPTY_FILTERS)}>View all properties</Button>
+          <Button onClick={() => onChange(EMPTY_FILTERS)}>{t('View all properties')}</Button>
         </>
       }
     />
@@ -162,10 +155,7 @@ function NoResults({ filters, onChange }: NoResultsProps) {
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const { filters, sort } = filtersFromParams(params);
-  const { user } = useAuth();
-  const saved = useSaved();
   const toast = useToast();
-  const runSearch = useRunSearch();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const search = usePropertySearch(filters, sort);
@@ -189,17 +179,6 @@ export function SearchPage() {
     if (message) toast(message);
   }
 
-  async function searchFor(q: string) {
-    const next = { ...filters, q };
-    runSearch(next);
-    try {
-      const count = await countResults(next);
-      toast(`Showing ${count} result${count === 1 ? '' : 's'}.`, { type: 'info' });
-    } catch {
-      // The results area already says what went wrong.
-    }
-  }
-
   function changeSort(next: PropertySort) {
     setParams(filtersToParams(filters, next), { replace: true });
   }
@@ -214,11 +193,13 @@ export function SearchPage() {
       return (
         <ErrorState
           icon="wifi"
-          title="Unable to load accommodation. Please try again."
-          text="Check your internet connection. Your filters are kept, so you will not need to set them again."
+          title={t('Unable to load accommodation. Please try again.')}
+          text={t(
+            'Check your internet connection. Your filters are kept, so you will not need to set them again.',
+          )}
           actions={
             <Button icon="refresh" onClick={() => void search.refetch()}>
-              Try again
+              {t('Try again')}
             </Button>
           }
         />
@@ -230,17 +211,19 @@ export function SearchPage() {
       <>
         <div className="toolbar">
           <p className="result-count" aria-live="polite" id="res-count">
-            {resultCountText(total)}
+            {tNode(resultCountText(total))}
           </p>
         </div>
         {chips.length > 0 && (
-          <div className="chips" role="group" aria-label="Applied filters">
+          <div className="chips" role="group" aria-label={t('Applied filters')}>
             {chips.map(({ key, label }) => (
               <span className="chip" key={key}>
-                {label}
+                {tNode(label)}
                 <button
                   type="button"
-                  aria-label={`Remove filter ${label}`}
+                  aria-label={t('Remove filter {label}', { label })}
+                  // The click handler reads the ref, not render. The compiler cannot tell once t() is in this list.
+                  // eslint-disable-next-line react-hooks/refs
                   onClick={() => change(removeChip(filters, key))}
                 >
                   <Icon name="x" />
@@ -248,7 +231,7 @@ export function SearchPage() {
               </span>
             ))}
             <button type="button" className="link-btn" onClick={() => change(EMPTY_FILTERS)}>
-              Clear all filters
+              {t('Clear all filters')}
             </button>
           </div>
         )}
@@ -268,7 +251,7 @@ export function SearchPage() {
                   disabled={search.isFetchingNextPage}
                   onClick={() => void search.fetchNextPage()}
                 >
-                  Show more
+                  {t('Show more')}
                 </Button>
               </div>
             )}
@@ -282,20 +265,14 @@ export function SearchPage() {
     <main className="page" id="main">
       <div className="page-head">
         <div>
-          <h1 className="t-page">Find accommodation near UR-CST</h1>
+          <h1 className="t-page">{t('Find accommodation near UR-CST')}</h1>
           <p className="muted">
-            Prices are per month in RWF. Distances are approximate walking-route estimates from the
-            campus gate.
+            {t(
+              'Prices are per month in RWF. Distances are approximate walking-route estimates from the campus gate.',
+            )}
           </p>
         </div>
-        {user?.role !== 'STUDENT' && (
-          <Link className={buttonClass({ variant: 'secondary', size: 'sm' })} to="/saved">
-            <Icon name="heart" />
-            Saved ({saved.ids.length})
-          </Link>
-        )}
       </div>
-      <SearchBox key={filters.q} initial={filters.q} onSearch={(q) => void searchFor(q)} />
       <div className="toolbar">
         <button
           type="button"
@@ -305,18 +282,29 @@ export function SearchPage() {
           onClick={() => setDrawerOpen(true)}
         >
           <Icon name="filter" />
-          Filters {chips.length > 0 && <span className="count-pill">{chips.length}</span>}
+          {t('Filters')}{' '}
+          {chips.length > 0 && <span className="count-pill">{tNode(chips.length)}</span>}
         </button>
         <div className="row sort-row">
-          <SortChips sort={sort} onChange={changeSort} />
-          <div className="seg" role="group" aria-label="Layout">
-            <button type="button" aria-pressed={view === 'grid'} onClick={() => setView('grid')}>
+          <SortMenu sort={sort} onChange={changeSort} />
+          <div className="seg" role="group" aria-label={t('Layout')}>
+            <button
+              type="button"
+              className="aria-pressed:bg-blue aria-pressed:text-white"
+              aria-pressed={view === 'grid'}
+              onClick={() => setView('grid')}
+            >
               <Icon name="grid" />
-              <span className="sr-only">Grid view</span>
+              <span className="sr-only">{t('Grid view')}</span>
             </button>
-            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}>
+            <button
+              type="button"
+              className="aria-pressed:bg-blue aria-pressed:text-white"
+              aria-pressed={view === 'list'}
+              onClick={() => setView('list')}
+            >
               <Icon name="list" />
-              <span className="sr-only">List view</span>
+              <span className="sr-only">{t('List view')}</span>
             </button>
           </div>
         </div>
@@ -327,11 +315,10 @@ export function SearchPage() {
           onChange={change}
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          onClear={() => change(EMPTY_FILTERS)}
-          resultCount={total}
+          onClear={() => change(EMPTY_FILTERS, 'Filters cleared.')}
         />
-        <section id="results-region" aria-label="Results">
-          {results()}
+        <section id="results-region" aria-label={t('Results')}>
+          {tNode(results())}
         </section>
       </div>
     </main>

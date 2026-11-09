@@ -6,6 +6,7 @@ import {
   roomTypeSchema,
   type Availability,
   type ReviewStatus,
+  type RoomType,
 } from './properties';
 
 export const MIN_RENT_RWF = 10_000;
@@ -128,12 +129,37 @@ export function listingErrors(draft: ListingDraft, photoCount: number) {
   );
 }
 
-export const landlordFilterSchema = z.enum(['all', 'available', 'occupied', 'pending']);
+export const landlordFilterSchema = z.enum([
+  'all',
+  'available',
+  'occupied',
+  'pending',
+  'changes',
+  'drafts',
+]);
 export type LandlordFilter = z.infer<typeof landlordFilterSchema>;
 
+export const LISTING_STATUS_FILTERS = [
+  'all',
+  'DRAFT',
+  'PENDING',
+  'APPROVED',
+  'CHANGES_REQUESTED',
+  'REJECTED',
+  'REMOVED',
+] as const;
+
+const searchText = z.string().trim().max(100, 'Use 100 characters or fewer.').default('');
+
+/** My Properties: a quick tab, the two dropdowns, search and sort all combine. */
 export const landlordPropertiesQuerySchema = paginationSchema.extend({
   filter: landlordFilterSchema.default('all'),
+  availability: z.enum(['all', 'available', 'occupied']).default('all'),
+  status: z.enum(LISTING_STATUS_FILTERS).default('all'),
+  q: searchText,
+  sort: z.enum(['updated-desc', 'updated-asc']).default('updated-desc'),
 });
+export type LandlordPropertyQuery = z.infer<typeof landlordPropertiesQuerySchema>;
 
 export const photoArrangementSchema = z.object({
   order: z.array(z.string().min(1)).max(MAX_PHOTOS),
@@ -148,6 +174,7 @@ export type InquiryStatus = z.infer<typeof inquiryStatusSchema>;
 
 export const landlordInquiriesQuerySchema = paginationSchema.extend({
   status: z.enum(['all', 'new', 'handled']).default('all'),
+  q: searchText,
 });
 export type InquiryFilter = z.infer<typeof landlordInquiriesQuerySchema>['status'];
 
@@ -175,6 +202,8 @@ export interface LandlordProperty {
   coverUrl: string | null;
   /** Saved answers are waiting to be submitted. */
   hasUnsubmittedChanges: boolean;
+  updatedAt: string;
+  type: RoomType | null;
 }
 
 export interface LandlordPropertyList {
@@ -205,7 +234,7 @@ export interface LandlordInquiry {
   student: string;
   property: { id: string; title: string };
   status: InquiryStatus;
-  lastMessage: { body: string; fromLandlord: boolean };
+  lastMessage: { body: string; fromLandlord: boolean; createdAt: string };
   createdAt: string;
 }
 
@@ -218,6 +247,13 @@ export interface LandlordInquiryList {
 }
 
 export interface InquiryThread extends LandlordInquiry {
+  /** The listing the student asked about. Student contact details stay private. */
+  property: LandlordInquiry['property'] & {
+    coverUrl: string | null;
+    area: string | null;
+    rentRwf: number;
+    reviewStatus: ReviewStatus;
+  };
   messages: { id: string; body: string; fromLandlord: boolean; createdAt: string }[];
 }
 
@@ -226,6 +262,8 @@ export interface LandlordSummary {
   available: number;
   occupied: number;
   pending: number;
+  changes: number;
+  drafts: number;
   newInquiries: number;
   recentInquiries: LandlordInquiry[];
   properties: LandlordProperty[];
