@@ -30,11 +30,7 @@ describe('RegisterPage', () => {
     expect(await screen.findByRole('heading', { name: 'Create an account' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /I am a Student/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /I am a Landlord/ })).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Administrator accounts are created by the platform team and cannot be registered here.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Administrator/ })).not.toBeInTheDocument();
   });
 
   it('shows the prototype messages for an empty student form', async () => {

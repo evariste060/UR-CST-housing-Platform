@@ -1712,4 +1712,8 @@ export const rw: Dictionary = {
     'Iri tangazo ryakuweho, ntushobora kohereza ubutumwa bushya. Ushobora gusoma ikiganiro.',
   '{fullName} sent a new message about {title}.':
     '{fullName} yohereje ubutumwa bushya ku byerekeye {title}.',
+  'Show step names': "Erekana amazina y'intambwe",
+  'Hide step names': "Hisha amazina y'intambwe",
+  'Photo uploaded successfully.': 'Ifoto yashyizweho neza.',
+  '{count} photos uploaded successfully.': 'Amafoto {count} yashyizweho neza.',
 };

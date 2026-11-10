@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import { Icon, type IconName } from '../../components/Icon';
 import { formatRwf, layoutLabel } from '../../lib/format';
+import { SHOW_MAP_PIN } from './LocationStep';
 import { useLocations } from '../../student/queries';
 import { t, tNode } from '../../i18n';
 
@@ -88,7 +89,9 @@ export function ReviewStep({ values, photos, isEdit, onEdit }: ReviewStepProps) 
             ['Neighbourhood', area],
             ['Landmark', values.landmark],
             ['Address or directions', values.address || 'Not given'],
-            ['Map pin', values.pin ? 'Placed' : 'Neighbourhood centre'],
+            ...(SHOW_MAP_PIN
+              ? [['Map pin', values.pin ? 'Placed' : 'Neighbourhood centre'] as [string, ReactNode]]
+              : []),
           ]}
         />
       </Section>

@@ -282,9 +282,6 @@ input[type='range'] {
 .auth-form {
   @apply mt-[20px];
 }
-.auth-role-help {
-  @apply mt-[16px];
-}
 .auth-sent {
   @apply [border:0] p-[8px];
 }

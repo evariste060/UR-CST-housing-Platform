@@ -14,7 +14,7 @@ import { PhotosStep } from '../../landlord/steps/PhotosStep';
 import { RentStep } from '../../landlord/steps/RentStep';
 import { ReviewStep } from '../../landlord/steps/ReviewStep';
 import { forgetDraftId, readDraftId, useDraft } from '../../landlord/useDraft';
-import { t, tNode } from '../../i18n';
+import { t, tNode, tr } from '../../i18n';
 
 const LAST_STEP = WIZARD_STEPS.length;
 
@@ -47,10 +47,19 @@ const STEP_INFO = [
   },
 ];
 
-function Progress({ step, onGo }: { step: number; onGo: (step: number) => void }) {
+function Progress({
+  step,
+  expanded,
+  onGo,
+}: {
+  step: number;
+  expanded: boolean;
+  onGo: (step: number) => void;
+}) {
   return (
     <ol
       className="relative m-0 flex list-none justify-between p-0 desktop:flex-col desktop:gap-1"
+      id="wizard-steps"
       aria-label={t('Progress')}
     >
       {WIZARD_STEPS.map((label, index) => {
@@ -70,6 +79,7 @@ function Progress({ step, onGo }: { step: number; onGo: (step: number) => void }
               className="flex w-full cursor-pointer flex-col items-center gap-1 rounded-md border-0 bg-transparent p-1 text-center text-ink transition-colors enabled:hover:bg-blue-50 disabled:cursor-default desktop:flex-row desktop:items-start desktop:gap-3 desktop:p-2 desktop:text-left"
               disabled={number > step}
               aria-current={current ? 'step' : undefined}
+              title={expanded ? undefined : tr(label)}
               onClick={() => onGo(number)}
             >
               <span
@@ -85,11 +95,15 @@ function Progress({ step, onGo }: { step: number; onGo: (step: number) => void }
               </span>
               <span className="flex min-w-0 flex-col desktop:pt-1.5">
                 <span
-                  className={`text-sm leading-tight font-semibold desktop:text-base ${current ? 'text-ink' : 'text-muted'} max-tablet:sr-only`}
+                  className={
+                    expanded
+                      ? `text-sm leading-tight font-semibold desktop:text-base ${current ? 'text-ink' : 'text-muted'}`
+                      : 'sr-only'
+                  }
                 >
                   {tNode(label)}
                 </span>
-                <span className="hidden text-sm text-muted desktop:block">
+                <span className={expanded ? 'hidden text-sm text-muted desktop:block' : 'hidden'}>
                   {tNode(STEP_INFO[index]?.hint)}
                 </span>
                 <span className="sr-only">
@@ -122,6 +136,8 @@ function Wizard({ form }: { form: ListingForm | null }) {
   const heading = useRef<HTMLHeadingElement>(null);
   // Separate from `errors`, so fixing one field does not pull focus to the next while typing.
   const [failedCheck, setFailedCheck] = useState<Record<string, string>>({});
+  // The progress panel starts small, showing only the step numbers.
+  const [stepsOpen, setStepsOpen] = useState(false);
   useFocusFirstError(formElement, failedCheck);
 
   // A step can't be opened before the ones ahead of it are complete, even from the address.
@@ -178,19 +194,47 @@ function Wizard({ form }: { form: ListingForm | null }) {
   const percent = Math.round(((step - 1) / LAST_STEP) * 100);
 
   return (
-    <div className="grid grid-cols-1 items-start gap-6 desktop:grid-cols-[300px_minmax(0,1fr)]">
+    <div
+      className={`grid grid-cols-1 items-start gap-6 transition-[grid-template-columns] duration-200 motion-reduce:transition-none ${stepsOpen ? 'desktop:grid-cols-[300px_minmax(0,1fr)]' : 'desktop:grid-cols-[92px_minmax(0,1fr)]'}`}
+    >
       <aside className="flex flex-col gap-4 desktop:sticky desktop:top-24">
-        <div className="rounded-lg border border-line bg-card p-4">
-          <div className="mb-3 flex items-center justify-between gap-2 px-1">
-            <span className="text-sm font-semibold text-muted">{t('Your progress')}</span>
+        <div
+          className={`rounded-lg border border-line bg-card ${stepsOpen ? 'p-4' : 'p-4 desktop:p-3'}`}
+        >
+          <div
+            className={`mb-3 flex flex-wrap items-center justify-between gap-2 px-1 ${stepsOpen ? '' : 'desktop:flex-col desktop:px-0'}`}
+          >
+            <span
+              className={`text-sm font-semibold text-muted ${stepsOpen ? '' : 'desktop:sr-only'}`}
+            >
+              {t('Your progress')}
+            </span>
             <span className="num text-sm font-semibold text-blue-700">
               {percent}
-              {t('% done')}
+              <span className={stepsOpen ? undefined : 'desktop:sr-only'}>{t('% done')}</span>
+              {!stepsOpen && (
+                <span className="hidden desktop:inline" aria-hidden="true">
+                  %
+                </span>
+              )}
             </span>
+            <button
+              type="button"
+              className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 rounded-md border border-line bg-card px-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+              aria-expanded={stepsOpen}
+              aria-controls="wizard-steps"
+              title={stepsOpen ? t('Hide step names') : t('Show step names')}
+              onClick={() => setStepsOpen((open) => !open)}
+            >
+              <Icon name={stepsOpen ? 'chevL' : 'chevR'} />
+              <span className="desktop:sr-only">
+                {stepsOpen ? t('Hide step names') : t('Show step names')}
+              </span>
+            </button>
           </div>
-          <Progress step={step} onGo={goTo} />
+          <Progress step={step} expanded={stepsOpen} onGo={goTo} />
         </div>
-        {info && (
+        {stepsOpen && info && (
           <div className="hidden gap-3 rounded-lg bg-blue-50 p-4 desktop:flex">
             <span className="mt-0.5 text-blue-700">
               <Icon name="info" />

@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       strictPort: true,
+      // Lets an ngrok tunnel share the dev server without deploying.
+      allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.app'],
       proxy: {
         '/api': env.API_PROXY_TARGET || 'http://localhost:4000',
         '/uploads': env.API_PROXY_TARGET || 'http://localhost:4000',

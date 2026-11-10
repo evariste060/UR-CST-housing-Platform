@@ -1698,4 +1698,8 @@ export const fr: Dictionary = {
     'Cette annonce a été retirée : vous ne pouvez plus envoyer de messages. Vous pouvez toujours lire la conversation.',
   '{fullName} sent a new message about {title}.':
     '{fullName} a envoyé un nouveau message au sujet de {title}.',
+  'Show step names': 'Afficher le nom des étapes',
+  'Hide step names': 'Masquer le nom des étapes',
+  'Photo uploaded successfully.': 'Photo ajoutée avec succès.',
+  '{count} photos uploaded successfully.': '{count} photos ajoutées avec succès.',
 };

@@ -170,7 +170,7 @@ function PropertySearch() {
       </span>
       <input
         id="landlord-search"
-        className="min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none"
+        className="min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none focus:shadow-none focus-visible:shadow-none"
         type="search"
         value={term}
         placeholder={t('Search your properties')}
@@ -269,6 +269,7 @@ export function LandlordTools() {
         <div className="max-tablet:hidden">
           <HeaderMenu
             id="profile"
+            openOnHover
             label={t('Your account')}
             buttonClass="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent py-1 pr-2 pl-1 text-left text-ink transition-colors hover:bg-slate-100"
             button={

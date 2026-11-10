@@ -64,24 +64,7 @@ function LandlordSidebar() {
           <LandlordCount to={to} className={SIDE_COUNT} />
         </NavLink>
       ))}
-      <div className="mt-auto rounded-lg border border-white/20 bg-white/10 p-4 text-white">
-        <p className="m-0 flex items-center gap-2 font-semibold">
-          <span className="grid size-8 place-items-center rounded-full bg-white/15 text-white">
-            <Icon name="help" />
-          </span>
-          {t('Need help?')}
-        </p>
-        <p className="mt-2 mb-3 text-sm text-white">
-          {t('Questions about your listings or inquiries? We can help.')}
-        </p>
-        <Link
-          className={`${buttonClass({ variant: 'outline', size: 'sm', block: true })} border-white! bg-white! text-side-from! hover:bg-blue-50!`}
-          to="/help"
-        >
-          {t('Contact Support')}
-        </Link>
-      </div>
-      <button type="button" className={`${SIDE_LOGOUT} mt-3!`} onClick={() => void logOut()}>
+      <button type="button" className={SIDE_LOGOUT} onClick={() => void logOut()}>
         <Icon name="logout" />
         {t('Log out')}
       </button>

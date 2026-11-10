@@ -39,8 +39,15 @@ export function PhotosStep({ draft, error, onError }: PhotosStepProps) {
     if (files.length === 0) return;
 
     setUploading(true);
-    await run(() => api.addPhotos(id, files));
+    const added = await run(() => api.addPhotos(id, files));
     setUploading(false);
+    if (added) {
+      toast(
+        files.length === 1
+          ? 'Photo uploaded successfully.'
+          : `${files.length} photos uploaded successfully.`,
+      );
+    }
   }
 
   function arrange(order: string[], cover: string) {

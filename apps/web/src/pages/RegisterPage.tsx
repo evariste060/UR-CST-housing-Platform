@@ -212,11 +212,6 @@ export function RegisterPage() {
                 ]}
               />
             </div>
-            <p className="t-help auth-role-help">
-              {t(
-                'Administrator accounts are created by the platform team and cannot be registered here.',
-              )}
-            </p>
           </>
         )}
         <p className="auth-footer">

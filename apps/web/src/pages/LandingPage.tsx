@@ -303,7 +303,7 @@ export function LandingPage() {
           className="absolute inset-y-0 right-0 w-[58%] before:absolute before:inset-0 before:z-1 before:bg-[linear-gradient(90deg,#eef4ff_0%,rgba(238,244,255,0.85)_10%,rgba(238,244,255,0)_32%)] before:content-[''] max-tablet:relative max-tablet:h-[200px] max-tablet:w-full max-tablet:before:bg-[linear-gradient(0deg,#eef4ff_0%,rgba(238,244,255,0)_40%)] dark:before:bg-[linear-gradient(90deg,#10203d_0%,rgba(16,32,61,0.8)_10%,rgba(16,32,61,0)_32%)]"
           aria-hidden="true"
         >
-          <img className="size-full object-cover object-[center_38%]" src="/hero.jpg" alt="" />
+          <img className="size-full object-cover object-[center_30%]" src="/hero-campus.jpg" alt="" />
         </div>
         <div className="relative z-2 mx-auto min-h-[330px] max-w-[1440px] pt-11 pr-6 pb-10 pl-16 max-tablet:min-h-0 max-tablet:px-4 max-tablet:pt-5 max-tablet:pb-7">
           <h1

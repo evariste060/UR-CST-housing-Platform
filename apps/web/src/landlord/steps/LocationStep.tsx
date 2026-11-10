@@ -18,6 +18,9 @@ const NUDGES: Record<string, [number, number]> = {
 };
 const CENTRE = { x: 0.5, y: 0.5 };
 
+/** The map is a drawing, not a real map, so it is hidden for now. Set to true to show it again. */
+export const SHOW_MAP_PIN = false;
+
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
 export function LocationStep({ values, errors, change }: StepProps) {
@@ -89,37 +92,41 @@ export function LocationStep({ values, errors, change }: StepProps) {
           />
         </div>
       </StepSection>
-      <StepSection
-        icon="map"
-        title={t('Map pin (optional)')}
-        intro={t('Tap the map where the house is, or use the arrow keys to move the pin.')}
-      >
-        <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            className="map map-pick overflow-hidden rounded-lg border border-line"
-            aria-label={t('Place the map pin. Tap the map, or use the arrow keys to move the pin.')}
-            onClick={placeFromClick}
-            onKeyDown={nudge}
-          >
-            <SchematicMap locations={locations} area={location?.name} pin={values.pin} />
-          </button>
-          <p className="t-help m-0 flex flex-wrap items-center gap-2">
-            {values.pin ? (
-              <>
-                <span className="inline-flex items-center gap-1 font-semibold text-green-text">
-                  <Icon name="check" /> {t('Pin placed')}
-                </span>
-                <button type="button" className="link-btn" onClick={() => change({ pin: null })}>
-                  {t('Remove pin')}
-                </button>
-              </>
-            ) : (
-              t('No pin yet. Students will see the centre of the neighbourhood.')
-            )}
-          </p>
-        </div>
-      </StepSection>
+      {SHOW_MAP_PIN && (
+        <StepSection
+          icon="map"
+          title={t('Map pin (optional)')}
+          intro={t('Tap the map where the house is, or use the arrow keys to move the pin.')}
+        >
+          <div className="flex flex-col gap-3">
+            <button
+              type="button"
+              className="map map-pick overflow-hidden rounded-lg border border-line"
+              aria-label={t(
+                'Place the map pin. Tap the map, or use the arrow keys to move the pin.',
+              )}
+              onClick={placeFromClick}
+              onKeyDown={nudge}
+            >
+              <SchematicMap locations={locations} area={location?.name} pin={values.pin} />
+            </button>
+            <p className="t-help m-0 flex flex-wrap items-center gap-2">
+              {values.pin ? (
+                <>
+                  <span className="inline-flex items-center gap-1 font-semibold text-green-text">
+                    <Icon name="check" /> {t('Pin placed')}
+                  </span>
+                  <button type="button" className="link-btn" onClick={() => change({ pin: null })}>
+                    {t('Remove pin')}
+                  </button>
+                </>
+              ) : (
+                t('No pin yet. Students will see the centre of the neighbourhood.')
+              )}
+            </p>
+          </div>
+        </StepSection>
+      )}
     </StepSections>
   );
 }
